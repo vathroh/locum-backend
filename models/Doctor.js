@@ -1,0 +1,29 @@
+// import mongoose 
+const mongoose = require("mongoose");
+
+// Buat Schema
+const Doctor = mongoose.Schema(
+    {
+        doctorName: {
+            type: String,
+            required: true
+        },
+        specialist: {
+            type: String,
+            required: true
+        },
+        address: {
+            type: String,
+            required: true
+        },
+        userID: {
+            type: String,
+            required: false
+        }
+    },
+    {
+        timestamps: true
+    }
+);
+
+module.exports = mongoose.model('Doctors', Doctor);
