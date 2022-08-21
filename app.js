@@ -7,6 +7,7 @@ const userRoute = require('./routes/userRoutes.js');
 const userRoleRoute = require('./routes/userRoleRoutes.js');
 const attendanceRoute = require('./routes/attendanceRecordRoutes.js');
 const doctorRanksRoute = require('./routes/doctorRanksRoutes.js');
+const indexRoute = require('./routes/indexRoutes.js')
 const cors = require("cors");
 
 const app = express();
@@ -32,7 +33,7 @@ app.use('/doctor', doctorRoute);
 app.use('/clinic', clinicRoute);
 app.use('/auth', authRoutes)
 app.use('/user', userRoute)
-
+app.use('/', indexRoute)
 
 
 
