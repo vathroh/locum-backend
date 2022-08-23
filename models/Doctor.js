@@ -16,6 +16,11 @@ const Doctor = mongoose.Schema(
             type: String,
             required: true
         },
+        gender: {
+            type: String,
+            required: true,
+            enum: ['male', 'female']
+        },
         userID: {
             type: String,
             required: false

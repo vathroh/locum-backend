@@ -5,16 +5,15 @@ const mongoose = require("mongoose");
 const Attendance = mongoose.Schema(
     {
         date: {
-            type: String,
+            type: Number,
             required: true
         },
         time_start: {
-            type: String,
+            type: Number,
             required: true
         },
         time_end: {
-            type: String,
-            required: true
+            type: Number
         },
         doctor: [
             {

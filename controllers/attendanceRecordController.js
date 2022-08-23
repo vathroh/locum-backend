@@ -20,7 +20,21 @@ const getAttendanceById = async (req, res) => {
 }
 
 const saveAttendance = async (req, res) => {
-    const record = new Record(req.body);
+
+    let date = new Date(req.body.date)
+    let time_start = new Date(req.body.date + "T" + req.body.time_start + ":00.000Z")
+    let time_end = new Date(req.body.date + "T" + req.body.time_end + ":00.000Z")
+
+    let request = {
+        date: date.getTime(),
+        time_start: time_start.getTime(),
+        time_end: time_end.getTime(),
+        doctor: req.body.doctor,
+        clinic: req.body.clinic
+    }
+
+    let record = new Record(request);
+
     try {
         const savedRecord = await record.save();
         res.status(201).json(savedRecord);
