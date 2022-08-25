@@ -14,8 +14,6 @@ const getDoctorRanksByClinicId = async (req, res) => {
     const genderPreference = req.query.gender;
     const doctors = await Doctor.find();
 
-    console.log(genderPreference)
-
     const ranks = doctors.map(async (d) => {
         let score = 0
         const score1 = score
@@ -30,14 +28,14 @@ const getDoctorRanksByClinicId = async (req, res) => {
 
         //Attendance
         const now = new Date();
-        const aDayAgo = now.getTime() - 172800;
+        const aDayAgo = now.getTime() - 172800000;
 
         const aDayAttendance = await Attendance.find({
-            "doctor.doctorId": d._id, "clinic.clinicId": clinic._id, date: { $lt: `${aDayAgo}` }
+            "doctor_id": d._id, "clinic_id": clinic._id, date: { $gt: aDayAgo }
         });
 
         if (aDayAttendance.length > 0) {
-            score += 20
+            score += 15
         }
 
         const score3 = score

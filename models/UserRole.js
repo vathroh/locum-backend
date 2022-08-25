@@ -15,4 +15,4 @@ const UserRole = mongoose.Schema(
 );
 
 // export model
-module.exports = mongoose.model('Userroles', UserRole);
+module.exports = mongoose.model('Userrole', UserRole);

@@ -15,19 +15,15 @@ const Attendance = mongoose.Schema(
         time_end: {
             type: Number
         },
-        doctor: [
-            {
-                doctorId: String,
-                doctorName: String
-            }
-        ],
-        clinic: [
-            {
-                clinicId: String,
-                clinicName: String
-            }
-        ]
+        doctor_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Doctor'
+        },
+        clinic_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Clinic'
+        }
     }
 );
 
-module.exports = mongoose.model('Attendances', Attendance);
+module.exports = mongoose.model('Attendance', Attendance);

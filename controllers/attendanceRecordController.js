@@ -1,9 +1,14 @@
 const Record = require("../models/AttendanceRecord.js");
+const Doctor = require("../models/Doctor.js")
+const Clinic = require("../models/Clinic.js")
 
 const getAttendances = async (req, res) => {
+
     try {
-        const records = await Record.find();
-        res.json(records);
+        Record.find().
+            populate('doctor_id').
+            populate('clinic_id').
+            then((data) => { res.json(data) })
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -29,8 +34,8 @@ const saveAttendance = async (req, res) => {
         date: date.getTime(),
         time_start: time_start.getTime(),
         time_end: time_end.getTime(),
-        doctor: req.body.doctor,
-        clinic: req.body.clinic
+        doctor_id: req.body.doctor_id,
+        clinic_id: req.body.clinic_id
     }
 
     let record = new Record(request);

@@ -13,4 +13,4 @@ const DoctorRank = mongoose.Schema(
 );
 
 // export model
-module.exports = mongoose.model('DoctorRanks', DoctorRank);
+module.exports = mongoose.model('DoctorRank', DoctorRank);
