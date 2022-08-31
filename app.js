@@ -26,7 +26,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 
-
+app.use('/jobs', require('./routes/jobRoutes.js'))
 app.use('/doctor-ranks', doctorRanksRoute)
 app.use('/attendance', attendanceRoute)
 app.use('/user-role', userRoleRoute)
@@ -36,6 +36,7 @@ app.use('/message', fcmRoute);
 app.use('/auth', authRoutes)
 app.use('/user', userRoute)
 app.use('/', indexRoute)
+
 
 
 

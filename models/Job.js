@@ -2,32 +2,32 @@
 const mongoose = require("mongoose");
 
 // Buat Schema
-const Clinic = mongoose.Schema(
+const Job = mongoose.Schema(
     {
-        logo: {
-            type: String,
+        clinic: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Clinic'
         },
-        clinicName: {
+        date: {
+            type: Date,
+            required: true
+        },
+        work_time_start: {
             type: String,
             required: true
         },
-        description: {
+        work_time_finish: {
             type: String,
             required: true
         },
-        clinicAddress: {
+        price: {
+            type: Number,
+            requiered: true
+        },
+        scope: [{
             type: String,
             required: true
-        },
-        location: {
-            type: String,
-            required: true
-        },
-        type: [
-            {
-                type: String
-            }
-        ]
+        }]
     },
     {
         timestamps: true
@@ -35,4 +35,4 @@ const Clinic = mongoose.Schema(
 );
 
 // export model
-module.exports = mongoose.model('Clinic', Clinic);
+module.exports = mongoose.model('Job', Job);

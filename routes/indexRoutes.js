@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const verifyIdToken = require('../controllers/indexController.js')
+
+
+// router.get('/', verifyIdToken);
 
 router.get('/', (req, res) => {
-    res.json('Hello from LOCUM App.')
+    res.send('<center><h1 style="margin-top:200px;">Hello from LOCUM App.</h1></center>')
 });
 
 

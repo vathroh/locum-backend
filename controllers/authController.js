@@ -1,21 +1,21 @@
 const { initializeApp } = require("firebase/app");
 const admin = require("firebase-admin");
-const { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } = require('firebase/auth')
+const { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, sendSignInLinkToEmail } = require('firebase/auth')
 const serviceAccount = require("../config/serviceAccountKey.json")
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount)
+// });
 
 
 const firebaseConfig = {
-    apiKey: "AIzaSyB82LtKWddKxPOmE2APSglezDJlz8sXyfI",
-    authDomain: "locum-af.firebaseapp.com",
-    projectId: "locum-af",
-    storageBucket: "locum-af.appspot.com",
-    messagingSenderId: "670724039255",
-    appId: "1:670724039255:web:75c231e8ded18bea0b3912",
-    measurementId: "G-CCVBWGF1FL"
+    apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
+    authDomain: "locumsg-82094.firebaseapp.com",
+    projectId: "locumsg-82094",
+    storageBucket: "locumsg-82094.appspot.com",
+    messagingSenderId: "868654243090",
+    appId: "1:868654243090:web:4dbde59e391fb6d82a67cb",
+    measurementId: "G-BMJF0EBZ33"
 };
 
 const provider = new GoogleAuthProvider();
@@ -52,31 +52,5 @@ const login = async (req, res) => {
         })
 }
 
-const googleAuth = async () => {
-    await signInWithRedirect(auth, provider);
-    res.json('google')
-}
 
-const signInWithGoogle = async (req, res) => {
-    await getRedirectResult(auth)
-        .then((result) => {
-            // This gives you a Google Access Token. You can use it to access Google APIs.
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const token = credential.accessToken;
-
-            // The signed-in user info.
-            const user = result.user;
-            res.json(user)
-        }).catch((error) => {
-            // Handle Errors here.
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            // The email of the user's account used.
-            const email = error.customData.email;
-            // The AuthCredential type that was used.
-            const credential = GoogleAuthProvider.credentialFromError(error);
-            // ...
-        });
-}
-
-module.exports = { register, login, signInWithGoogle, googleAuth }
+module.exports = { register, login }
