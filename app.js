@@ -32,7 +32,7 @@ app.use('/attendance', attendanceRoute)
 app.use('/user-role', userRoleRoute)
 app.use('/doctor', doctorRoute);
 app.use('/clinic', clinicRoute);
-app.use('/message', fcmRoute);
+app.use('/send', fcmRoute);
 app.use('/auth', authRoutes)
 app.use('/user', userRoute)
 app.use('/', indexRoute)

@@ -19,6 +19,7 @@
     "moment": "^2.29.4",
     "mongoose": "^6.5.2",
     "node-calendar": "^0.1.5",
-    "node-fetch": "^3.2.10"
+    "node-fetch": "^3.2.10",
+    "nodemailer": "^6.7.8"
   }
 }

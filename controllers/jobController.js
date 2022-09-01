@@ -23,6 +23,7 @@ const getUpcomingJobs = async (req, res) => {
                 }
             }
         )
+            .sort({ date: 'asc' })
             .populate('clinic').
             then((data) => { res.json(data) })
     } catch (error) {
@@ -53,6 +54,17 @@ const getPastJobs = async (req, res) => {
 const getJobById = async (req, res) => {
     try {
         let job = await Job.findById(req.params.id);
+        res.json(job);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+
+}
+
+const getJobByClinicId = async (req, res) => {
+    console.log(req.params.id)
+    try {
+        let job = await Job.find({ "clinic": req.params.id });
         res.json(job);
     } catch (error) {
         res.status(404).json({ message: error.message });
@@ -96,4 +108,4 @@ const deleteJob = async (req, res) => {
     }
 }
 
-module.exports = { getAllJobs, getUpcomingJobs, getPastJobs, getJobById, saveJob, updateJob, deleteJob }
+module.exports = { getAllJobs, getUpcomingJobs, getPastJobs, getJobById, getJobByClinicId, saveJob, updateJob, deleteJob }
