@@ -6,7 +6,7 @@ const verifyIdToken = require('../controllers/indexController.js')
 // router.get('/', verifyIdToken);
 
 router.get('/', (req, res) => {
-    res.send('<center><h1 style="margin-top:200px;">Hello from LOCUM App.</h1></center>')
+    res.send('<center><h1 style="margin-top:200px;">Hello from LOCUM App.git </h1></center>')
 });
 
 

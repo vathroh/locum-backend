@@ -37,7 +37,7 @@ app.use('/auth', authRoutes)
 app.use('/user', userRoute)
 app.use('/', indexRoute)
 
-
-
+// app.use('/quee/send', require('./services/rabbitmq/producer.js'))
+// app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
 app.listen('5000', () => console.log('Server Running at port: 5000'));
