@@ -6,7 +6,8 @@ const Job = mongoose.Schema(
     {
         clinic: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Clinic'
+            ref: 'Clinic',
+            exists: true
         },
         date: {
             type: Date,
@@ -24,9 +25,22 @@ const Job = mongoose.Schema(
             type: Number,
             requiered: true
         },
+        prefered_gender: {
+            type: String,
+            enum: ["male", "female", "both"],
+            default: "both"
+        },
         scope: [{
             type: String,
             required: true
+        }],
+        job_desription: [{
+            type: String,
+            required: true
+        }],
+        applied_by: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
         }]
     },
     {

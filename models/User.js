@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
+const { array } = require("mongoose/lib/utils");
 
 const User = mongoose.Schema(
     {
-        userName: {
+        full_name: {
             type: String,
             required: true
         },
@@ -12,14 +13,22 @@ const User = mongoose.Schema(
         },
         firebaseUUID: {
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         role: {
-            type: String
+            type: String,
+            enum: ["user", "super admin", "system admin", "clinic_admin", "doctor", "clinic_assistants"],
+            default: "user"
         },
-        job: [{
-            type: String
-        }],
+        job: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Doctor',
+                exists: true,
+                required: false
+            }
+        ],
         status: {
             type: String,
             default: "created"
