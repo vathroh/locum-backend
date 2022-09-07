@@ -74,7 +74,6 @@ const getJobByClinicId = async (req, res) => {
 
 }
 
-// function Create Clinic
 const saveJob = async (req, res) => {
 
     const job = new Job(req.body);
@@ -86,7 +85,6 @@ const saveJob = async (req, res) => {
     }
 }
 
-// function Update Clinic
 const updateJob = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
     if (!jobId) return res.status(404).json({ message: "The job is not found." });
@@ -98,7 +96,7 @@ const updateJob = async (req, res) => {
     }
 }
 
-// function Delete Clinic
+
 const deleteJob = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
     if (!jobId) return res.status(404).json({ message: "The job is not found." });
