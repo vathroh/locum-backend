@@ -1,0 +1,30 @@
+version: "3.7"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - mynetwork
+    ports:
+      - 27017:27017
+  backend:
+    depends_on:
+      - mongodb
+    build: .
+    container_name: mainapp
+    networks:
+      - mynetwork
+    ports:
+      - 5000:5000
+    volumes:
+      - ./:/app
+    environment:
+      - MONGOURI=mongodb://mongo:27017/restful_db
+
+networks:
+  mynetwork:
+volumes:
+  mongodb-data:

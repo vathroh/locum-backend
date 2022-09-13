@@ -38,7 +38,11 @@ const Job = mongoose.Schema(
             type: String,
             required: true
         }],
-        applied_by: [{
+        booked_by: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        }],
+        assigned_to: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         }]

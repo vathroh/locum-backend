@@ -38,8 +38,6 @@ router.post('/notification', (req, res) => {
 });
 
 router.post('/email', async (req, res) => {
-    let testAccount = await nodemailer.createTestAccount();
-
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -48,23 +46,27 @@ router.post('/email', async (req, res) => {
         }
     })
 
-    const sendEmail = (email) => {
+    const email = req.body.email
+    const subject = req.body.subject
+    const text = req.body.text
+    const html = req.body.html
+
+    const sendEmail = (email, subject, text, html) => {
         const options = {
             from: "'LOCUM' <noreplay@locum.com>",
             to: email,
-            subject: 'Uji Coba',
-            text: 'Ini Uji Coba mengiri email dengan node js.'
+            subject: subject,
+            text: text,
+            html: html
         }
 
         transporter.sendMail(options, (err, info) => {
             if (err) res.json(err)
-            res.json('Email terkirim.')
+            res.json('The email has been sent.')
         })
     }
 
-    sendEmail('romfatur@gmail.com')
-    // res.json(req.body)
-
+    sendEmail(email, subject, text, html)
 })
 
 module.exports = router;

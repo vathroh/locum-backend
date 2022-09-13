@@ -33,7 +33,7 @@ const User = mongoose.Schema(
             type: String,
             default: "created"
         },
-        balcklist: {
+        blacklist: {
             type: Boolean,
             default: false
         }

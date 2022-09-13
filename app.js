@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const dotenv = require('dotenv').config();
 const doctorRoute = require("./routes/doctorRoutes.js");
 const clinicRoute = require("./routes/clinicRoutes.js");
 const authRoutes = require('./routes/authRoutes.js');
@@ -10,10 +11,11 @@ const doctorRanksRoute = require('./routes/doctorRanksRoutes.js');
 const indexRoute = require('./routes/indexRoutes.js')
 const fcmRoute = require('./routes/fcmRoutes')
 const cors = require("cors");
+const port = process.env.PORT
 
 const app = express();
 
-mongoose.connect("mongodb://localhost:27017/restful_db", {
+mongoose.connect(process.env.MONGOURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -26,6 +28,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 
+
+app.use('/booking', require('./routes/bookingRoutes'))
+
 app.use('/jobs', require('./routes/jobRoutes.js'))
 app.use('/doctor-ranks', doctorRanksRoute)
 app.use('/attendance', attendanceRoute)
@@ -37,7 +42,7 @@ app.use('/auth', authRoutes)
 app.use('/user', userRoute)
 app.use('/', indexRoute)
 
-// app.use('/quee/send', require('./services/rabbitmq/producer.js'))
+// app.use('/quee/send', require('./services/rabbitmq/producer.js')) 
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
-app.listen('5000', () => console.log('Server Running at port: 5000'));
+app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
