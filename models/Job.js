@@ -45,7 +45,11 @@ const Job = mongoose.Schema(
         assigned_to: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
-        }]
+        }],
+        completed: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         timestamps: true

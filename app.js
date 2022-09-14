@@ -16,8 +16,10 @@ const port = process.env.PORT
 const app = express();
 
 mongoose.connect(process.env.MONGOURI, {
+    autoIndex: false,
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    maxPoolSize: 5
 });
 
 const db = mongoose.connection;

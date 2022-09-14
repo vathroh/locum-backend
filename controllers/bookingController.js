@@ -100,9 +100,37 @@ const upcomingBookingsByUserId = async (req, res) => {
 }
 
 const upcomingAssignmentsByUserId = async (req, res) => {
+    const today = moment().startOf('day')
     try {
         const jobs = await Job.find({
-            assigned_to: { $in: [req.params.userId] }
+            assigned_to: { $in: [req.params.userId] },
+            date: { $gte: today.toDate() }
+        })
+        res.status(200).json(jobs)
+
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const completedJobsByUser = async (req, res) => {
+    try {
+        const jobs = await Job.find({
+            assigned_to: { $in: [req.params.userId] },
+            completed: true
+        })
+        res.status(200).json(jobs)
+
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const upcomingBookingByClinic = async (req, res) => {
+    try {
+        const jobs = await Job.find({
+            assigned_to: { $in: [req.params.userId] },
+            completed: true
         })
         res.status(200).json(jobs)
 
@@ -115,19 +143,16 @@ const upcomingBookingsBymonth = async (req, res) => {
 
 }
 
-const completedBookings = async (req, res) => {
-
-}
-
 const completedBookingsByMonth = async (req, res) => {
 
 }
-
-
 
 module.exports = {
     createBooking,
     deleteBooking,
     upcomingBookingsByUserId,
+    upcomingAssignmentsByUserId,
+    upcomingBookingByClinic,
+    completedJobsByUser,
     AssignTo
 }
