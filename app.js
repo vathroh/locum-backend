@@ -12,8 +12,10 @@ const indexRoute = require('./routes/indexRoutes.js')
 const fcmRoute = require('./routes/fcmRoutes')
 const cors = require("cors");
 const port = process.env.PORT
+const path = require('path')
 
 const app = express();
+app.use('/public', express.static(path.join(__dirname, './public')))
 
 mongoose.connect(process.env.MONGOURI, {
     autoIndex: false,

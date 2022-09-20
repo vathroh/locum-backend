@@ -10,16 +10,21 @@ const Job = mongoose.Schema(
             exists: true
         },
         date: {
-            type: Date,
+            type: Number,
             required: true
         },
         work_time_start: {
-            type: String,
+            type: Number,
             required: true
         },
         work_time_finish: {
-            type: String,
+            type: Number,
             required: true
+        },
+        profession: {
+            type: String,
+            required: true,
+            enum: ["doctor", "clinical assistant"]
         },
         price: {
             type: Number,
@@ -34,7 +39,7 @@ const Job = mongoose.Schema(
             type: String,
             required: true
         }],
-        job_desription: [{
+        job_description: [{
             type: String,
             required: true
         }],

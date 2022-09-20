@@ -5,9 +5,59 @@ const { DateTime } = require('luxon')
 
 const getAllJobs = async (req, res) => {
     try {
-        const jobs = await Job.find()
-            .populate('clinic')
-            .then((data) => { res.json(data) })
+        await Job.find()
+            .sort({ date: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+
+}
+
+const getNewJobs = async (req, res) => {
+    try {
+        await Job.find()
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -18,16 +68,112 @@ const getUpcomingJobs = async (req, res) => {
     const today = moment().startOf('day')
 
     try {
+        await Job.find(
+            {
+                work_time_start: {
+                    $gte: DateTime.now().toMillis()
+                }
+            }
+        )
+            .sort({ date: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+
+}
+
+const getUpcomingDoctorJobs = async (req, res) => {
+    const today = moment().startOf('day')
+
+    try {
         const jobs = await Job.find(
             {
                 date: {
                     $gte: today.toDate()
-                }
+                },
+                profession: "doctor"
             }
         )
-            .sort({ date: 'asc' })
-            .populate('clinic').
-            then((data) => { res.json(data) })
+            .sort({ date: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+
+}
+
+const getUpcomingClinicalAssistantJobs = async (req, res) => {
+    const today = moment().startOf('day')
+
+    try {
+        const jobs = await Job.find(
+            {
+                date: {
+                    $gte: today.toDate()
+                },
+                profession: "clinical assistant"
+            }
+        )
+            .sort({ date: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
@@ -45,8 +191,27 @@ const getPastJobs = async (req, res) => {
                 }
             }
         )
-            .populate('clinic').
-            then((data) => { res.json(data) })
+            .sort({ date: -1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
@@ -55,7 +220,23 @@ const getPastJobs = async (req, res) => {
 
 const getJobById = async (req, res) => {
     try {
-        let job = await Job.findById(req.params.id);
+        let job = await Job.findById(req.params.id)
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .then((data) => {
+
+                data.number = ""
+
+                data.time_start_format = DateTime.fromMillis(data.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                data.time_finish_format = DateTime.fromMillis(data.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                data.date_format = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                data.day = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('cccc')
+                res.json(data)
+            })
         res.json(job);
     } catch (error) {
         res.status(404).json({ message: error.message });
@@ -64,10 +245,28 @@ const getJobById = async (req, res) => {
 }
 
 const getJobByClinicId = async (req, res) => {
-    console.log(req.params.id)
     try {
-        let job = await Job.find({ "clinic": req.params.id });
-        res.json(job);
+        await Job.find({ "clinic": req.params.id })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
@@ -76,7 +275,13 @@ const getJobByClinicId = async (req, res) => {
 
 const saveJob = async (req, res) => {
 
-    const job = new Job(req.body);
+    let data = req.body
+    data.work_time_start = DateTime.fromISO(req.body.date + "T" + req.body.work_time_start, { zone: "Asia/Singapore" }).toMillis()
+    data.work_time_finish = DateTime.fromISO(req.body.date + "T" + req.body.work_time_finish, { zone: "Asia/Singapore" }).toMillis()
+    data.date = DateTime.fromISO(req.body.date, { zone: "Asia/Singapore" }).toMillis();
+
+    const job = new Job(data);
+
     try {
         const savedJob = await job.save();
         res.status(201).json(savedJob);
@@ -107,131 +312,6 @@ const deleteJob = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 }
-
-
-//Booking 
-
-const createBooking = async (req, res) => {
-
-
-    const jobId = await Job.findById(req.params.id);
-
-    if (!jobId) return res.status(404).json({ message: "The job is not found." });
-
-    let hasUserBooked = jobId.booked_by.includes(req.body.user_id)
-
-    if (!hasUserBooked) {
-        let updatedData = jobId
-
-        updatedData.booked_by.push(req.body.user_id)
-
-        try {
-            const bookedJob = await Job.updateOne({ _id: req.params.id }, { $set: updatedData });
-            res.json(bookedJob)
-        } catch (error) {
-            res.status(400).json({ message: error.message });
-        }
-
-    } else {
-        res.json("You have already booked this job.")
-    }
-}
-
-const deleteBooking = async (req, res) => {
-
-    const jobId = await Job.findById(req.params.id);
-
-    if (!jobId) return res.status(404).json({ message: "The job is not found." });
-
-    let hasUserBooked = jobId.booked_by.includes(req.body.user_id)
-
-    if (hasUserBooked) {
-        let updatedData = jobId
-
-        updatedData.booked_by.pop(req.body.user_id)
-
-        try {
-            const bookedJob = await Job.updateOne({ _id: req.params.id }, { $set: updatedData });
-            res.json(bookedJob)
-        } catch (error) {
-            res.status(400).json({ message: error.message });
-        }
-
-    } else {
-        res.json("You have already canceled booking this job.")
-    }
-}
-
-const AssignTo = async (req, res) => {
-
-    const jobId = await Job.findById(req.params.id);
-    if (!jobId) return res.status(404).json({ message: "The job is not found." });
-
-    let assignmentAmount = jobId.assigned_to.length
-
-    if (assignmentAmount >= 1) {
-        let hasAssignment = jobId.assigned_to.includes(req.body.user_id)
-
-        if (!hasAssignment) {
-            let updatedData = jobId
-
-            updatedData.applied_by.push(req.body.user_id)
-
-            try {
-                const bookedJob = await Job.updateOne({ _id: req.params.id }, { $set: updatedData });
-                res.json(bookedJob)
-            } catch (error) {
-                res.status(400).json({ message: error.message });
-            }
-
-        } else {
-            res.status(400).json("You have booked this job.")
-        }
-
-    } else {
-        res.status(400).json("The job has been assigned.")
-
-    }
-}
-
-const upcomingBookingsByUserId = async (req, res) => {
-    try {
-        const jobs = await Job.find({
-            booked_by: { $in: [req.params.userId] }
-        })
-        res.status(200).json(jobs)
-
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-}
-
-const upcomingAssignmentsByUserId = async (req, res) => {
-    try {
-        const jobs = await Job.find({
-            assigned_to: { $in: [req.params.userId] }
-        })
-        res.status(200).json(jobs)
-
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-}
-
-const upcomingBookingsBymonth = async (req, res) => {
-
-}
-
-const completedBookings = async (req, res) => {
-
-}
-
-const completedBookingsByMonth = async (req, res) => {
-
-}
-
-
-
 
 
 //Searching Jobs
@@ -266,7 +346,8 @@ module.exports = {
     saveJob,
     updateJob,
     deleteJob,
-    createBooking,
-    deleteBooking,
+    getNewJobs,
+    getUpcomingDoctorJobs,
+    getUpcomingClinicalAssistantJobs,
     filteredJob
 }

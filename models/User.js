@@ -36,6 +36,9 @@ const User = mongoose.Schema(
         blacklist: {
             type: Boolean,
             default: false
+        },
+        profile_pict: {
+            type: String
         }
     },
     {
