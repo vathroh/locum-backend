@@ -1,7 +1,6 @@
 const Job = require("../models/Job.js");
 const moment = require('moment')
-const { DateTime } = require('luxon')
-
+const { DateTime, Duration } = require('luxon')
 
 const getAllJobs = async (req, res) => {
     try {
@@ -20,6 +19,8 @@ const getAllJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -51,6 +52,8 @@ const getNewJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -89,6 +92,8 @@ const getUpcomingJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -128,6 +133,8 @@ const getUpcomingDoctorJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -167,6 +174,8 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -205,6 +214,8 @@ const getPastJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -230,7 +241,8 @@ const getJobById = async (req, res) => {
             .then((data) => {
 
                 data.number = ""
-
+                e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                e.priceDuration = e.duration.hours * e.price
                 data.time_start_format = DateTime.fromMillis(data.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                 data.time_finish_format = DateTime.fromMillis(data.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                 data.date_format = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -260,6 +272,8 @@ const getJobByClinicId = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                     e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -275,19 +289,23 @@ const getJobByClinicId = async (req, res) => {
 
 const saveJob = async (req, res) => {
 
+    res.status(200).json(req.body);
     let data = req.body
     data.work_time_start = DateTime.fromISO(req.body.date + "T" + req.body.work_time_start, { zone: "Asia/Singapore" }).toMillis()
     data.work_time_finish = DateTime.fromISO(req.body.date + "T" + req.body.work_time_finish, { zone: "Asia/Singapore" }).toMillis()
     data.date = DateTime.fromISO(req.body.date, { zone: "Asia/Singapore" }).toMillis();
 
+
     const job = new Job(data);
 
-    try {
-        const savedJob = await job.save();
-        res.status(201).json(savedJob);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+
+
+    // try {
+    //     const savedJob = await job.save();
+    //     res.status(200).json(savedJob);
+    // } catch (error) {
+    //     res.status(400).json({ message: error.message });
+    // }
 }
 
 const updateJob = async (req, res) => {

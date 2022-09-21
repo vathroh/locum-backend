@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const verifyIdToken = require('../controllers/indexController.js')
+const { authMiddleware, verifyIdToken } = require('../middleware/authMiddleware')
 
 const multer = require('multer')
 const path = require("path")
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "Images")
+        cb(null, "public/images")
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + '-' + file.originalname)
@@ -17,11 +17,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 router.post('/upload', upload.single('image'), (req, res) => {
+    console.log(req.body);
     res.send('Image uploaded')
 })
-// router.get('/', verifyIdToken);
 
-router.get('/', (req, res) => {
+router.get('/verify', verifyIdToken);
+
+router.get('/', authMiddleware, (req, res) => {
     res.send('<center><h1 style="margin-top:200px;">Hello from LOCUM App.</h1></center>')
 });
 

@@ -54,6 +54,9 @@ const Job = mongoose.Schema(
         completed: {
             type: Boolean,
             default: false
+        },
+        image: {
+            type: String
         }
     },
     {

@@ -6,28 +6,45 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
 
+//https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=[API_KEY]
 
 const verifyIdToken = (req, res) => {
     const token = req.headers.authorization ? req.headers.authorization.split(" ") : null
-    // console.log(token[1]);
     if (!token) {
         res.json("You are not logged in!")
     } else {
+        // console.log(token[1]);
         admin.auth().verifyIdToken(token[1])
-            // admin.auth().getUsers()
             .then((decodedToken) => {
                 // const uid = decodedToken.uid;
                 console.log(decodedToken);
+                // console.log(uid)
                 // ...
+                res.json('good1')
             })
             .catch((error) => {
                 // Handle error
                 res.json(error)
             });
-        res.json('good')
     }
 
-    res.json('halo')
 }
 
-module.exports = verifyIdToken;
+const authMiddleware = (req, res, next) => {
+    const token = req.headers.authorization ? req.headers.authorization.split(" ") : null
+    if (!token) {
+        res.json("You are not logged in!")
+    } else {
+        admin.auth().verifyIdToken(token[1])
+            .then((decodedToken) => {
+                next()
+            })
+            .catch((error) => {
+                res.status(401).json("The Token has been expired. Please login.")
+            });
+
+    }
+
+}
+
+module.exports = { verifyIdToken, authMiddleware };

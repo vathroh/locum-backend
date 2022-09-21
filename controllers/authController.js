@@ -1,7 +1,8 @@
 const { initializeApp } = require("firebase/app");
 const admin = require("firebase-admin");
 const { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, sendSignInLinkToEmail } = require('firebase/auth')
-const serviceAccount = require("../config/serviceAccountKey.json")
+const serviceAccount = require("../config/serviceAccountKey.json");
+const { response } = require("express");
 
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount)
@@ -33,9 +34,11 @@ const register = async (req, res) => {
     })
         .then((result) => {
             console.log(result)
+            res.json(result)
         })
         .catch((error) => {
             console.log(error)
+            res.json(error.message)
         })
     res.json(userResponse)
 }
@@ -45,10 +48,10 @@ const login = async (req, res) => {
     const password = req.body.password
     await signInWithEmailAndPassword(auth, email, password)
         .then((userCred) => {
-            res.json(userCred.user)
+            res.json(userCred)
         })
         .catch((err) => {
-            res.status(err.code).json(err.message)
+            res.status(401).json({ message: "Invalid credentials!" })
         })
 }
 
