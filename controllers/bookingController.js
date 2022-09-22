@@ -1,6 +1,6 @@
 const Job = require("../models/Job.js");
 const moment = require('moment')
-const { DateTime } = require('luxon')
+const { DateTime, Duration } = require('luxon')
 
 const createBooking = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
@@ -91,7 +91,7 @@ const upcomingBookingsByUserId = async (req, res) => {
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -127,7 +127,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -178,7 +178,7 @@ const completedJobsByUser = async (req, res) => {
             assigned_to: { $in: [req.params.userId] },
             completed: true
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -226,7 +226,7 @@ const upcomingBookingByClinic = async (req, res) => {
             assigned_to: { $in: [req.params.userId] },
             completed: true
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .populate({
                 path: 'clinic',
                 select: 'clinicName Address'

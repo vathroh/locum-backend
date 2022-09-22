@@ -2,7 +2,9 @@ const { initializeApp } = require("firebase/app");
 const admin = require("firebase-admin");
 const { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, sendSignInLinkToEmail } = require('firebase/auth')
 const serviceAccount = require("../config/serviceAccountKey.json");
+const User = require("../models/User.js");
 const { response } = require("express");
+const bcrypt = require('bcrypt');
 
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount)
@@ -25,7 +27,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app)
 auth.languageCode = 'it';
 
-const register = async (req, res) => {
+const registerWithFirebase = async (req, res) => {
     const userResponse = await admin.auth().createUser({
         email: req.body.email,
         password: req.body.password,
@@ -55,5 +57,40 @@ const login = async (req, res) => {
         })
 }
 
+const register = async (req, res) => {
+    if (req.body.full_name == "") {
+        res.status(400).json({ message: "Please enter your name!" })
+    } else if (req.body.email == "") {
+        res.status(400).json({ message: "Email is required!" })
+    } else if (req.body.password == "") {
+        res.status(400).json({ message: "Password is required!" })
+    } else if (req.body.confirm_password == "") {
+        res.status(400).json({ message: "Please confirm the password!" })
+    } else if (req.body.password !== req.body.confirm_password) {
+        res.status(400).json({ message: 'The password are not match!' })
+    }
 
-module.exports = { register, login }
+    ValidateEmail(req, res)
+    encryptedPassword = await bcrypt.hash(req.body.password, 10);
+    req.body.password = encryptedPassword
+
+    const user = new User(req.body);
+
+    try {
+        const savedUser = await user.save();
+        res.status(200).json(savedUser);
+    } catch (error) {
+        res.status(400).json({ message: error.message })
+    }
+}
+
+function ValidateEmail(req, res) {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body.email)) {
+        return (true)
+    }
+    res.status(400).json("You have entered an invalid email address!")
+    return (false)
+}
+
+
+module.exports = { register, login, registerWithFirebase }

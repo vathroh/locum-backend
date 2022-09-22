@@ -6,7 +6,7 @@ const getAllJobs = async (req, res) => {
     try {
         await Job.find()
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -37,7 +37,7 @@ const getAllJobs = async (req, res) => {
 const getNewJobs = async (req, res) => {
     try {
         await Job.find()
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .sort({ createdAt: -1 })
             .limit(5)
             .lean()
@@ -79,7 +79,7 @@ const getUpcomingJobs = async (req, res) => {
             }
         )
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -125,7 +125,7 @@ const getUpcomingDoctorJobs = async (req, res) => {
                 path: 'clinic',
                 select: 'clinicName Address'
             })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .then((data) => {
                 data.map((e, index) => {
                     if (index === 0 || index === 1) {
@@ -166,7 +166,7 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                 path: 'clinic',
                 select: 'clinicName Address'
             })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .then((data) => {
                 data.map((e, index) => {
                     if (index === 0 || index === 1) {
@@ -201,7 +201,7 @@ const getPastJobs = async (req, res) => {
             }
         )
             .sort({ date: -1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -232,7 +232,7 @@ const getPastJobs = async (req, res) => {
 const getJobById = async (req, res) => {
     try {
         let job = await Job.findById(req.params.id)
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -241,8 +241,8 @@ const getJobById = async (req, res) => {
             .then((data) => {
 
                 data.number = ""
-                e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                e.priceDuration = e.duration.hours * e.price
+                data.duration = Duration.fromMillis(data.work_time_finish - data.work_time_start).shiftTo("hours").toObject()
+                data.priceDuration = data.duration.hours * data.price
                 data.time_start_format = DateTime.fromMillis(data.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                 data.time_finish_format = DateTime.fromMillis(data.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                 data.date_format = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
@@ -259,7 +259,7 @@ const getJobById = async (req, res) => {
 const getJobByClinicId = async (req, res) => {
     try {
         await Job.find({ "clinic": req.params.id })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -289,23 +289,19 @@ const getJobByClinicId = async (req, res) => {
 
 const saveJob = async (req, res) => {
 
-    res.status(200).json(req.body);
     let data = req.body
     data.work_time_start = DateTime.fromISO(req.body.date + "T" + req.body.work_time_start, { zone: "Asia/Singapore" }).toMillis()
     data.work_time_finish = DateTime.fromISO(req.body.date + "T" + req.body.work_time_finish, { zone: "Asia/Singapore" }).toMillis()
     data.date = DateTime.fromISO(req.body.date, { zone: "Asia/Singapore" }).toMillis();
 
-
     const job = new Job(data);
 
-
-
-    // try {
-    //     const savedJob = await job.save();
-    //     res.status(200).json(savedJob);
-    // } catch (error) {
-    //     res.status(400).json({ message: error.message });
-    // }
+    try {
+        const savedJob = await job.save();
+        res.status(200).json(savedJob);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 }
 
 const updateJob = async (req, res) => {

@@ -18,7 +18,7 @@ router.get('/past', getPastJobs);
 router.get('/new', getNewJobs);
 router.get('/:id', getJobById);
 router.get('/', getAllJobs);
-router.post('/', saveJob);
+// router.post('/', saveJob);
 router.patch('/:id', updateJob);
 router.delete('/:id', deleteJob);
 

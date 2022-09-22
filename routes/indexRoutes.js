@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const Job = require("../models/Job.js");
 const { authMiddleware, verifyIdToken } = require('../middleware/authMiddleware')
+const { DateTime, Duration } = require('luxon')
 
 const multer = require('multer')
 const path = require("path")
@@ -17,8 +19,27 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 router.post('/upload', upload.single('image'), (req, res) => {
+
     console.log(req.body);
-    res.send('Image uploaded')
+    res.send(req.body)
+})
+
+router.post('/jobs', upload.single('image'), async (req, res) => {
+    let data = req.body
+    data.image = req.file?.destination + "/" + req.file?.filename;
+    console.log(req.file?.destination);
+    data.work_time_start = DateTime.fromISO(req.body.date + "T" + req.body.work_time_start, { zone: "Asia/Singapore" }).toMillis()
+    data.work_time_finish = DateTime.fromISO(req.body.date + "T" + req.body.work_time_finish, { zone: "Asia/Singapore" }).toMillis()
+    data.date = DateTime.fromISO(req.body.date, { zone: "Asia/Singapore" }).toMillis();
+
+    const job = new Job(data);
+
+    try {
+        const savedJob = await job.save();
+        res.status(200).json(savedJob);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 })
 
 router.get('/verify', verifyIdToken);

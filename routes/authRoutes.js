@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+    registerWithFirebase,
     register,
     login
 } = require("../controllers/authController.js");
