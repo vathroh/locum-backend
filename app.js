@@ -13,6 +13,7 @@ const fcmRoute = require('./routes/fcmRoutes')
 const cors = require("cors");
 const port = process.env.PORT
 const path = require('path')
+// var io = require('socket.io')(server)
 
 const app = express();
 app.use(cors());
@@ -36,6 +37,7 @@ db.once('open', () => console.log('Database Connected'));
 
 app.use('/booking', require('./routes/bookingRoutes'))
 
+app.use('/conversation', require('./routes/conversationRoutes'))
 app.use('/jobs', require('./routes/jobRoutes.js'))
 app.use('/doctor-ranks', doctorRanksRoute)
 app.use('/attendance', attendanceRoute)
@@ -49,5 +51,9 @@ app.use('/', indexRoute)
 
 // app.use('/quee/send', require('./services/rabbitmq/producer.js')) 
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
+
+// io.on("connection", (socket) => {
+//     console.log("connected")
+// })
 
 app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));

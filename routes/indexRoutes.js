@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Job = require("../models/Job.js");
-const { authMiddleware, verifyIdToken } = require('../middleware/authMiddleware')
+const { authFirebaseMiddleware, authJwtMiddleware, verifyIdToken } = require('../middleware/authMiddleware')
 const { DateTime, Duration } = require('luxon')
 
 const multer = require('multer')
@@ -44,7 +44,7 @@ router.post('/jobs', upload.single('image'), async (req, res) => {
 
 router.get('/verify', verifyIdToken);
 
-router.get('/', authMiddleware, (req, res) => {
+router.get('/', authFirebaseMiddleware, (req, res) => {
     res.send('<center><h1 style="margin-top:200px;">Hello from LOCUM App.</h1></center>')
 });
 

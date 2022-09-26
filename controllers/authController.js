@@ -1,10 +1,12 @@
 const { initializeApp } = require("firebase/app");
 const admin = require("firebase-admin");
 const { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, sendSignInLinkToEmail } = require('firebase/auth')
-const serviceAccount = require("../config/serviceAccountKey.json");
+// const serviceAccount = require("../config/serviceAccountKey.json");
 const User = require("../models/User.js");
-const { response } = require("express");
+// const { response } = require("express");
+const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
+const axios = require('axios')
 
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount)
@@ -34,9 +36,40 @@ const registerWithFirebase = async (req, res) => {
         emailVerified: false,
         disabled: false
     })
-        .then((result) => {
+        .then(async (result) => {
             console.log(result)
-            res.json(result)
+
+            // res.json(result)
+
+            const data = {}
+            data.firebaseUUID = result.uid
+            data.full_name = ""
+            data.email = result.email
+            data.phone_number = ""
+
+            // return res.json(userCred)
+
+            const newUser = new User(data);
+
+            try {
+                const savedUser = await newUser.save();
+                const user = {}
+                const findUser = await User.findOne({ firebaseUUID: result.uid })
+
+                if (findUser) {
+                    user._id = findUser._id
+                    user.full_name = findUser.full_name
+                    user.role = findUser.role
+                    user.phone_number = findUser.phone_number ?? ""
+                    user.profile_pict = findUser.profile_pict ?? ""
+                }
+
+                return res.status(200).json({ user: user });
+            } catch (error) {
+                return res.status(400).json({ message: error.message });
+            }
+
+            // res.json(result)
         })
         .catch((error) => {
             console.log(error)
@@ -45,12 +78,55 @@ const registerWithFirebase = async (req, res) => {
     res.json(userResponse)
 }
 
-const login = async (req, res) => {
+const loginWithFirebase = async (req, res) => {
     const email = req.body.email
     const password = req.body.password
     await signInWithEmailAndPassword(auth, email, password)
-        .then((userCred) => {
-            res.json(userCred)
+        .then(async (userCred) => {
+
+            const user = {}
+            const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
+
+            if (findUser) {
+                user._id = findUser._id
+                user.full_name = findUser.full_name
+                user.role = findUser.role
+                user.phone_number = findUser.phone_number ?? ""
+                user.profile_pict = findUser.profile_pict ?? ""
+            } else {
+                console.log(userCred)
+
+                const data = {}
+                data.firebaseUUID = userCred.user.uid
+                data.full_name = userCred._tokenResponse.displayName
+                data.email = userCred._tokenResponse.email
+                data.phone_number = userCred._tokenResponse.phoneNumber
+
+                // return res.json(userCred)
+
+                const newUser = new User(data);
+
+                try {
+                    const savedUser = await newUser.save();
+                    const user = {}
+                    const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
+
+                    if (findUser) {
+                        user._id = findUser._id
+                        user.full_name = findUser.full_name
+                        user.role = findUser.role
+                        user.phone_number = findUser.phone_number ?? ""
+                        user.profile_pict = findUser.profile_pict ?? ""
+                    }
+
+                    return res.status(200).json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
+                } catch (error) {
+                    return res.status(400).json({ message: error.message });
+                }
+            }
+
+
+            res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken })
         })
         .catch((err) => {
             res.status(401).json({ message: "Invalid credentials!" })
@@ -59,29 +135,71 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
     if (req.body.full_name == "") {
-        res.status(400).json({ message: "Please enter your name!" })
+        return res.status(400).json({ message: "Please enter your name!" })
     } else if (req.body.email == "") {
-        res.status(400).json({ message: "Email is required!" })
+        return res.status(400).json({ message: "Email is required!" })
     } else if (req.body.password == "") {
-        res.status(400).json({ message: "Password is required!" })
+        return res.status(400).json({ message: "Password is required!" })
     } else if (req.body.confirm_password == "") {
-        res.status(400).json({ message: "Please confirm the password!" })
+        return res.status(400).json({ message: "Please confirm the password!" })
     } else if (req.body.password !== req.body.confirm_password) {
-        res.status(400).json({ message: 'The password are not match!' })
+        return res.status(400).json({ message: 'The password are not match!' })
     }
 
-    ValidateEmail(req, res)
-    encryptedPassword = await bcrypt.hash(req.body.password, 10);
-    req.body.password = encryptedPassword
-
-    const user = new User(req.body);
-
     try {
+
+        ValidateEmail(req, res)
+        const encryptedPassword = await bcrypt.hash(req.body.password, 10);
+        req.body.password = encryptedPassword
+
+        const user = new User(req.body);
+
         const savedUser = await user.save();
         res.status(200).json(savedUser);
     } catch (error) {
         res.status(400).json({ message: error.message })
     }
+}
+
+const loginWithEmail = async (req, res) => {
+
+    const findUser = await User.findOne({ email: req.body.email }).lean()
+
+    if (!findUser) {
+        return res.status(400).json("Wrong email or please register!")
+    }
+
+    try {
+        if (await bcrypt.compare(req.body.password, findUser.password)) {
+
+            const user = {}
+            user._id = findUser._id
+            user.full_name = findUser.full_name
+            user.role = findUser.role
+            user.phone_number = findUser.phone_number ?? ""
+            user.profile_pict = findUser.profile_pict ?? ""
+
+            const accessToken = generateAccessToken(user)
+            const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
+
+            return res.status(200).json({ user: user, idToken: accessToken, refreshToken: refreshToken })
+        } else {
+            return res.status(400).json({ message: "Invalid credentials!" })
+        }
+    } catch (error) {
+        return res.status(400).json('Something wrong.')
+    }
+
+}
+
+const refreshToken = (req, res) => {
+    const refreshToken = req.body.token
+    if (refreshToken == null) return res.sendStatus(401)
+    if (!refreshToken.includes(refreshToken)) return res.sendStatus(403)
+}
+
+function generateAccessToken(user) {
+    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
 }
 
 function ValidateEmail(req, res) {
@@ -93,4 +211,4 @@ function ValidateEmail(req, res) {
 }
 
 
-module.exports = { register, login, registerWithFirebase }
+module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken }

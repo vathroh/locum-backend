@@ -6,6 +6,7 @@ const {
     deleteBooking,
     upcomingBookingsByUserId,
     countUpcomingAssignmentsByUserId,
+    upcomingUnassignmentByUserId,
     upcomingAssignmentsByUserId,
     countCompletedJobsByUser,
     completedJobsByUser,
@@ -18,6 +19,7 @@ router.put('/delete/:id', deleteBooking);
 router.get('/upcoming-by-user/:userId', upcomingBookingsByUserId);
 router.get('/count/completed-by-user/:userId', countCompletedJobsByUser);
 router.get('/count/upcoming-by-user/:userId', countUpcomingAssignmentsByUserId);
+router.get('/unassignment/by-user/:userId', upcomingUnassignmentByUserId);
 router.get('/assignment/by-user/:userId', upcomingAssignmentsByUserId);
 router.get('/assignment/completed/:userId', completedJobsByUser);
 router.put('/assignment/create/:id', AssignTo);

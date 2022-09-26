@@ -2,12 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const {
+    loginWithEmail,
     registerWithFirebase,
-    register,
-    login
+    loginWithFirebase,
+    register
 } = require("../controllers/authController.js");
 
+router.post('/register-with-firebase', registerWithFirebase);
+router.post('/login-with-firebase', loginWithFirebase);
+router.post('/login', loginWithEmail);
 router.post('/register', register);
-router.post('/login', login);
 
 module.exports = router;
