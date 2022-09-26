@@ -58,6 +58,7 @@ const registerWithFirebase = async (req, res) => {
 
                 if (findUser) {
                     user._id = findUser._id
+                    user.email = findUser.email
                     user.full_name = findUser.full_name
                     user.role = findUser.role
                     user.phone_number = findUser.phone_number ?? ""
@@ -113,6 +114,7 @@ const loginWithFirebase = async (req, res) => {
 
                     if (findUser) {
                         user._id = findUser._id
+                        user.email = findUser.email
                         user.full_name = findUser.full_name
                         user.role = findUser.role
                         user.phone_number = findUser.phone_number ?? ""
@@ -134,17 +136,19 @@ const loginWithFirebase = async (req, res) => {
 }
 
 const register = async (req, res) => {
-    if (req.body.full_name == "") {
-        return res.status(400).json({ message: "Please enter your name!" })
-    } else if (req.body.email == "") {
+    // if (req.body.full_name == "") {
+    //     return res.status(400).json({ message: "Please enter your name!" })
+
+    if (req.body.email == "") {
         return res.status(400).json({ message: "Email is required!" })
     } else if (req.body.password == "") {
         return res.status(400).json({ message: "Password is required!" })
-    } else if (req.body.confirm_password == "") {
-        return res.status(400).json({ message: "Please confirm the password!" })
-    } else if (req.body.password !== req.body.confirm_password) {
-        return res.status(400).json({ message: 'The password are not match!' })
     }
+    // } else if (req.body.confirm_password == "") {
+    //     return res.status(400).json({ message: "Please confirm the password!" })
+    // } else if (req.body.password !== req.body.confirm_password) {
+    //     return res.status(400).json({ message: 'The password are not match!' })
+    // }
 
     try {
 
@@ -175,6 +179,7 @@ const loginWithEmail = async (req, res) => {
             const user = {}
             user._id = findUser._id
             user.full_name = findUser.full_name
+            user.email = findUser.email
             user.role = findUser.role
             user.phone_number = findUser.phone_number ?? ""
             user.profile_pict = findUser.profile_pict ?? ""
