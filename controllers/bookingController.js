@@ -91,7 +91,7 @@ const upcomingBookingsByUserId = async (req, res) => {
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -104,6 +104,29 @@ const upcomingBookingsByUserId = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -129,7 +152,7 @@ const upcomingUnassignmentByUserId = async (req, res) => {
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -142,6 +165,29 @@ const upcomingUnassignmentByUserId = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -165,7 +211,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -179,6 +225,30 @@ const upcomingAssignmentsByUserId = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -216,7 +286,7 @@ const completedJobsByUser = async (req, res) => {
             assigned_to: { $in: [req.params.userId] },
             completed: true
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -229,6 +299,30 @@ const completedJobsByUser = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -254,7 +348,7 @@ const countCompletedJobsByUser = async (req, res) => {
         res.status(200).json(jobs)
 
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -264,7 +358,7 @@ const upcomingBookingByClinic = async (req, res) => {
             assigned_to: { $in: [req.params.userId] },
             completed: true
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .populate({
                 path: 'clinic',
                 select: 'clinicName Address'
@@ -276,6 +370,30 @@ const upcomingBookingByClinic = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (data.booked_by !== [] && data.assigned_to === []) {
+
+                        if (data.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            data.status = "Booking Pending"
+                        } else {
+                            data.status = "Unbooked"
+                        }
+
+                    } else if (data.booked_by !== [] && data.assigned_to !== []) {
+
+                        if (data.booked_by.some((as) => as.equals(req.body.user_id)) && data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            data.status = "Booking Approved"
+                        } else if (data.booked_by.some((as) => as.equals(req.body.user_id)) && !data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            data.status = "Booking Pending"
+                        } else {
+                            data.status = "Unbooked"
+                        }
+
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+                    e.status = "Status"
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -289,7 +407,7 @@ const upcomingBookingByClinic = async (req, res) => {
         res.status(200).json(jobs)
 
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 }
 

@@ -1,12 +1,15 @@
+const { DateTime, Duration } = require('luxon');
+const { database } = require("firebase-admin");
 const Job = require("../models/Job.js");
 const moment = require('moment')
-const { DateTime, Duration } = require('luxon')
+const axios = require('axios')
+const mongoose = require("mongoose");
 
 const getAllJobs = async (req, res) => {
     try {
         await Job.find()
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -19,6 +22,29 @@ const getAllJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -37,7 +63,7 @@ const getAllJobs = async (req, res) => {
 const getNewJobs = async (req, res) => {
     try {
         await Job.find()
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .sort({ createdAt: -1 })
             .limit(5)
             .lean()
@@ -52,6 +78,29 @@ const getNewJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -79,7 +128,7 @@ const getUpcomingJobs = async (req, res) => {
             }
         )
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -92,6 +141,29 @@ const getUpcomingJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -125,7 +197,7 @@ const getUpcomingDoctorJobs = async (req, res) => {
                 path: 'clinic',
                 select: 'clinicName Address'
             })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .then((data) => {
                 data.map((e, index) => {
                     if (index === 0 || index === 1) {
@@ -133,6 +205,29 @@ const getUpcomingDoctorJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -166,7 +261,7 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                 path: 'clinic',
                 select: 'clinicName Address'
             })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .then((data) => {
                 data.map((e, index) => {
                     if (index === 0 || index === 1) {
@@ -174,6 +269,29 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -201,7 +319,7 @@ const getPastJobs = async (req, res) => {
             }
         )
             .sort({ date: -1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -214,6 +332,30 @@ const getPastJobs = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else {
+                        e.status = "Unbooked"
+                    }
+
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -232,13 +374,35 @@ const getPastJobs = async (req, res) => {
 const getJobById = async (req, res) => {
     try {
         let job = await Job.findById(req.params.id)
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
                 select: 'clinicName Address'
             })
-            .then((data) => {
+            .exec((err, data) => {
+
+                if (data.booked_by !== [] && data.assigned_to === []) {
+
+                    if (data.booked_by.some((as) => as.equals(req.body.user_id))) {
+                        data.status = "Booking Pending"
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+                } else if (data.booked_by !== [] && data.assigned_to !== []) {
+
+                    if (data.booked_by.some((as) => as.equals(req.body.user_id)) && data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                        data.status = "Booking Approved"
+                    } else if (data.booked_by.some((as) => as.equals(req.body.user_id)) && !data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                        data.status = "Booking Pending"
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+                } else {
+                    data.status = "Unbooked"
+                }
 
                 data.number = ""
                 data.duration = Duration.fromMillis(data.work_time_finish - data.work_time_start).shiftTo("hours").toObject()
@@ -249,7 +413,7 @@ const getJobById = async (req, res) => {
                 data.day = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('cccc')
                 res.json(data)
             })
-        res.json(job);
+        // res.json(data);
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
@@ -259,7 +423,7 @@ const getJobById = async (req, res) => {
 const getJobByClinicId = async (req, res) => {
     try {
         await Job.find({ "clinic": req.params.id })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -272,6 +436,30 @@ const getJobByClinicId = async (req, res) => {
                     } else {
                         e.number = ""
                     }
+
+                    if (data.booked_by !== [] && data.assigned_to === []) {
+
+                        if (data.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            data.status = "Booking Pending"
+                        } else {
+                            data.status = "Unbooked"
+                        }
+
+                    } else if (data.booked_by !== [] && data.assigned_to !== []) {
+
+                        if (data.booked_by.some((as) => as.equals(req.body.user_id)) && data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            data.status = "Booking Approved"
+                        } else if (data.booked_by.some((as) => as.equals(req.body.user_id)) && !data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            data.status = "Booking Pending"
+                        } else {
+                            data.status = "Unbooked"
+                        }
+
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -331,24 +519,159 @@ const deleteJob = async (req, res) => {
 //Searching Jobs
 const filteredJob = async (req, res) => {
 
-    let filters = {
-        gender: req.query.prefered_gender,
-        location: req.query.location,
-        work_time_start: req.query.timefrom,
-        work_time_finish: req.query.timeto,
-        price: { $gte: req.query.pricefrom, $lte: req.query.priceto },
-        date: { $gte: req.query.datefrom, $lte: req.query.dateto }
+
+
+    let filters = {}
+
+    // filters.prefered_gender = req.query.gender
+    // filters.price = { $gte: req.query.pricefrom, $lte: req.query.priceto }
+
+    // work_time_start: req.query.timefrom,
+    // work_time_finish: req.query.timeto,
+    // date: { $gte: req.query.datefrom, $lte: req.query.dateto }
+
+
+    if (req.query.gender == "both") {
+        delete filters.prefered_gender
     }
 
     await Job.find({ ...filters })
         .populate('clinic')
         .then((jobs) => {
-            const a = jobs.filter((e) => e.clinic.location == req.query.location)
+
+            // jobs.filter((e) => e.clinic.location == req.query.location)
+            a = jobs.filter((e) => e.clinic.clinicName.search(req.query.clinic) >= 0)
+            // for(let i=0; i<jobs.length; i++) {
+            //     for(let key in jobs[i]) {
+            //       if(jobs[i][key].indexOf(toSearch)!=-1) {
+            //         // if(!itemExists(results, objects[i])) results.push(objects[i]);
+            //       }
+            //     }
+            //   }
+            // jobs.filter((e) => e.match(/gem/))
             res.json(a)
         })
         .catch((error) => {
             res.status(500).json({ message: error.message })
         })
+}
+
+//Searching Jobs
+const searchJob = async (req, res) => {
+
+    await Job.find()
+        .populate('clinic')
+        .then((jobs) => {
+            let data = []
+            jobs.filter((e) => {
+                if (e.clinic.location.toLowerCase() == req.query.keyword.toLowerCase()) {
+                    data.push(e)
+                }
+            })
+
+            jobs.filter((e) => {
+                let clinic = e.clinic.clinicName.toLowerCase()
+                if (clinic.search(req.query.keyword.toLowerCase()) > -1) {
+                    data.push(e)
+                }
+            })
+
+            const unique = [...new Set(data.map(item => item))];
+            res.json(formatData(unique))
+        })
+        .catch((error) => {
+            res.status(500).json({ message: error.message })
+        })
+}
+
+
+const youMightLike = async (req, res) => {
+
+    const today = moment().startOf('day')
+
+
+    const user = await axios({
+        method: 'GET',
+        url: process.env.BASE_URL + "/user/" + req.body.user_id
+    })
+        .then((result) => {
+            console.log(result)
+            return res.json(result)
+        })
+        .catch((err) => {
+            console.log(err)
+            res.json(err)
+        })
+
+    const jobs = await Job.find(
+        {
+            date: {
+                $lte: today.toDate()
+            },
+            prefered_gender: "both"
+        }
+    )
+
+    const ranks = jobs.map(async (d) => {
+        let score = 0
+        const score1 = score
+        //Gender
+        if (genderPreference) {
+            if (d.gender == genderPreference) {
+                score += 20
+            }
+        }
+
+        const score2 = score
+
+        //Attendance
+        const now = new Date();
+        const aDayAgo = now.getTime() - 172800000;
+
+        const aDayAttendance = await Attendance.find({
+            "doctor_id": d._id, "clinic_id": clinic._id, date: { $gt: aDayAgo }
+        });
+
+        if (aDayAttendance.length > 0) {
+            score += 15
+        }
+
+        const score3 = score
+
+        return {
+            doctorId: d._id,
+            doctorName: d.doctorName,
+            score: score
+        }
+    })
+
+    promisedRanks = await Promise.all(ranks)
+
+    res.json(promisedRanks.sort((a, b) => {
+        return b.score - a.score
+    }))
+}
+
+const formatData = (data) => {
+    return data.map((e) => {
+        return {
+            _id: e._id,
+            clinic: e.clinic,
+            date: e.date,
+            work_time_start: e.work_time_start,
+            work_time_finish: e.work_time_finish,
+            price: e.price,
+            scope: e.scope,
+            job_description: e.job_description,
+            image: e.image,
+            number: e.number,
+            duration: e.duration,
+            priceDuration: e.priceDuration,
+            time_start_format: e.time_start_format,
+            date_format: e.date_format,
+            day: e.day
+        }
+    })
 }
 
 module.exports = {
@@ -363,5 +686,7 @@ module.exports = {
     getNewJobs,
     getUpcomingDoctorJobs,
     getUpcomingClinicalAssistantJobs,
-    filteredJob
+    youMightLike,
+    filteredJob,
+    searchJob
 }

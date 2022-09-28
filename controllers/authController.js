@@ -37,46 +37,16 @@ const registerWithFirebase = async (req, res) => {
         disabled: false
     })
         .then(async (result) => {
-            console.log(result)
-
-            // res.json(result)
-
-            const data = {}
-            data.firebaseUUID = result.uid
-            data.full_name = ""
-            data.email = result.email
-            data.phone_number = ""
-
-            // return res.json(userCred)
-
-            const newUser = new User(data);
-
-            try {
-                const savedUser = await newUser.save();
-                const user = {}
-                const findUser = await User.findOne({ firebaseUUID: result.uid })
-
-                if (findUser) {
-                    user._id = findUser._id
-                    user.email = findUser.email
-                    user.full_name = findUser.full_name
-                    user.role = findUser.role
-                    user.phone_number = findUser.phone_number ?? ""
-                    user.profile_pict = findUser.profile_pict ?? ""
-                }
-
-                return res.status(200).json({ user: user });
-            } catch (error) {
-                return res.status(400).json({ message: error.message });
-            }
-
-            // res.json(result)
+            await signInWithEmailAndPassword(auth, req.body.email, req.body.password)
+                .then(async (userCred) => {
+                    const createOrFindUser = await findOrCreateUser(userCred)
+                    res.json(createOrFindUser)
+                })
         })
         .catch((error) => {
             console.log(error)
             res.json(error.message)
         })
-    res.json(userResponse)
 }
 
 const loginWithFirebase = async (req, res) => {
@@ -84,55 +54,74 @@ const loginWithFirebase = async (req, res) => {
     const password = req.body.password
     await signInWithEmailAndPassword(auth, email, password)
         .then(async (userCred) => {
+            const createOrFindUser = await findOrCreateUser(userCred)
+            res.json(createOrFindUser)
+        })
+        .catch((err) => {
+            res.status(401).json({ message: "Invalid credentials!" })
+        })
+}
 
+const findOrCreateUser = async (userCred) => {
+    const user = {}
+    const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
+
+
+    if (findUser) {
+        user._id = findUser._id
+        user.full_name = findUser.full_name
+        user.role = findUser.role
+        user.phone_number = findUser.phone_number ?? ""
+        user.profile_pict = findUser.profile_pict ?? ""
+    } else {
+        const data = {}
+        data.firebaseUUID = userCred.user.uid
+        data.full_name = userCred._tokenResponse.displayName
+        data.email = userCred._tokenResponse.email
+        data.phone_number = userCred._tokenResponse.phoneNumber
+
+        const newUser = new User(data);
+
+        try {
+            const savedUser = await newUser.save();
             const user = {}
             const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
 
             if (findUser) {
                 user._id = findUser._id
+                user.email = findUser.email
                 user.full_name = findUser.full_name
                 user.role = findUser.role
                 user.phone_number = findUser.phone_number ?? ""
                 user.profile_pict = findUser.profile_pict ?? ""
-            } else {
-                console.log(userCred)
-
-                const data = {}
-                data.firebaseUUID = userCred.user.uid
-                data.full_name = userCred._tokenResponse.displayName
-                data.email = userCred._tokenResponse.email
-                data.phone_number = userCred._tokenResponse.phoneNumber
-
-                // return res.json(userCred)
-
-                const newUser = new User(data);
-
-                try {
-                    const savedUser = await newUser.save();
-                    const user = {}
-                    const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
-
-                    if (findUser) {
-                        user._id = findUser._id
-                        user.email = findUser.email
-                        user.full_name = findUser.full_name
-                        user.role = findUser.role
-                        user.phone_number = findUser.phone_number ?? ""
-                        user.profile_pict = findUser.profile_pict ?? ""
-                    }
-
-                    return res.status(200).json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
-                } catch (error) {
-                    return res.status(400).json({ message: error.message });
-                }
             }
+            return ({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
 
+        } catch (error) {
+            return ({ message: error.message });
+        }
+    }
+}
 
-            res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken })
-        })
-        .catch((err) => {
-            res.status(401).json({ message: "Invalid credentials!" })
-        })
+const verifyIdToken = (req, res) => {
+    const token = req.headers.authorization ? req.headers.authorization.split(" ") : null
+    if (!token) {
+        res.json("You are not logged in!")
+    } else {
+        admin.auth().verifyIdToken(token[1])
+            .then((decodedToken) => {
+                // const uid = decodedToken.uid;
+                console.log(decodedToken);
+                // console.log(uid)
+                // ...
+                res.json('good1')
+            })
+            .catch((error) => {
+                // Handle error
+                res.json(error)
+            });
+    }
+
 }
 
 const register = async (req, res) => {

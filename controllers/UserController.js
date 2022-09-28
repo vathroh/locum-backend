@@ -16,7 +16,7 @@ const getUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).populate('job.$*');;
+        const user = await User.findById(req.params.id);
         res.json(user);
     } catch (error) {
         res.status(404).json({ message: error.message });

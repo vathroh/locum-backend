@@ -39,7 +39,6 @@ const authFirebaseMiddleware = (req, res, next) => {
     } else {
         admin.auth().verifyIdToken(token[1])
             .then(async (decodedToken) => {
-
                 const findUser = await User.findOne({ firebaseUUID: decodedToken.user_id })
                 const user = {}
                 user._id = findUser._id
@@ -47,7 +46,6 @@ const authFirebaseMiddleware = (req, res, next) => {
                 user.role = findUser.role
                 user.phone_number = findUser.phone_number ?? ""
                 user.profile_pict = findUser.profile_pict ?? ""
-
                 req.user = user
                 next()
             })

@@ -55,6 +55,9 @@ const Job = mongoose.Schema(
             type: Boolean,
             default: false
         },
+        canceled_by: {
+            type: Array
+        },
         image: {
             type: String
         }
