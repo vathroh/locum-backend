@@ -46,6 +46,9 @@ const User = mongoose.Schema(
         },
         profile_pict: {
             type: String
+        },
+        verification_code: {
+            type: String
         }
     },
     {

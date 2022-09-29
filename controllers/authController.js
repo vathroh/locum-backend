@@ -37,11 +37,41 @@ const registerWithFirebase = async (req, res) => {
         disabled: false
     })
         .then(async (result) => {
-            await signInWithEmailAndPassword(auth, req.body.email, req.body.password)
-                .then(async (userCred) => {
-                    const createOrFindUser = await findOrCreateUser(userCred)
-                    res.json(createOrFindUser)
+
+            const data = {}
+            data.email = result.email
+            data.firebaseUUID = result.uid
+            data.verification_code = Math.random().toString().substr(2, 6)
+            const newUser = new User(data);
+
+            try {
+                const savedUser = await newUser.save();
+
+                axios({
+                    method: "POST",
+                    url: "http://localhost:5000/send/email",
+                    data: {
+                        "email": req.body.email,
+                        "subject": "Please verify your email address",
+                        "text": data.verification_code
+                    }
                 })
+
+                admin.auth()
+                    .updateUser(result.uid, {
+                        disabled: true,
+                    })
+                    .then(() => {
+                        res.json({ message: "Your verification code has been successfully sent to your email. Please verify before login." })
+                    })
+                    .catch((err) => {
+                        res.status(500).json({ message: err })
+                    })
+
+            } catch (error) {
+                res.status(500).json({ message: error })
+            }
+
         })
         .catch((error) => {
             console.log(error)
@@ -54,8 +84,46 @@ const loginWithFirebase = async (req, res) => {
     const password = req.body.password
     await signInWithEmailAndPassword(auth, email, password)
         .then(async (userCred) => {
-            const createOrFindUser = await findOrCreateUser(userCred)
-            res.json(createOrFindUser)
+            const user = {}
+            const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
+
+            if (findUser) {
+                user._id = findUser._id
+                user.full_name = findUser.full_name
+                user.role = findUser.role
+                user.phone_number = findUser.phone_number ?? ""
+                user.profile_pict = findUser.profile_pict ?? ""
+
+                res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
+            } else {
+                const data = {}
+                data.firebaseUUID = userCred.user.uid
+                data.full_name = userCred._tokenResponse.displayName
+                data.email = userCred._tokenResponse.email
+                data.phone_number = userCred._tokenResponse.phoneNumber
+
+                const newUser = new User(data);
+
+                try {
+                    const savedUser = await newUser.save();
+                    const user = {}
+                    const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
+
+                    if (findUser) {
+                        user._id = findUser._id
+                        user.email = findUser.email
+                        user.full_name = findUser.full_name
+                        user.role = findUser.role
+                        user.phone_number = findUser.phone_number ?? ""
+                        user.profile_pict = findUser.profile_pict ?? ""
+                    }
+
+                    res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
+
+                } catch (error) {
+                    res.status(500).json({ message: error.message });
+                }
+            }
         })
         .catch((err) => {
             res.status(401).json({ message: "Invalid credentials!" })
@@ -186,6 +254,31 @@ const loginWithEmail = async (req, res) => {
 
 }
 
+const verifyEmail = async (req, res) => {
+
+    const { email, verification_code } = req.body
+    const user = await User.findOne({ email: email })
+    user.status = "Activated"
+
+    if (verification_code == user.verification_code) {
+
+        await User.updateOne({ _id: user._id }, { $set: user });
+
+        admin.auth()
+            .updateUser(user.firebaseUUID, {
+                disabled: false,
+            })
+            .then(() => {
+                res.json({ message: "Your acoount has been verified." })
+            })
+            .catch((err) => {
+                res.status(500).json({ message: err })
+            })
+    } else {
+        res.status(500).json({ message: "Something wrong." })
+    }
+}
+
 const refreshToken = (req, res) => {
     const refreshToken = req.body.token
     if (refreshToken == null) return res.sendStatus(401)
@@ -205,4 +298,4 @@ function ValidateEmail(req, res) {
 }
 
 
-module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken }
+module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail }

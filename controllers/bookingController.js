@@ -88,6 +88,7 @@ const upcomingBookingsByUserId = async (req, res) => {
     try {
         await Job.find({
             booked_by: { $in: [req.params.userId] },
+            canceled_by: { $size: 0 },
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
@@ -122,6 +123,10 @@ const upcomingBookingsByUserId = async (req, res) => {
                         } else {
                             e.status = "Unbooked"
                         }
+
+                    } else if (e.completed == true) {
+
+                        e.status = "completed"
 
                     } else {
                         e.status = "Unbooked"
@@ -184,6 +189,11 @@ const upcomingUnassignmentByUserId = async (req, res) => {
                             e.status = "Unbooked"
                         }
 
+                    } else if (e.completed == true) {
+
+                        e.status = "completed"
+
+
                     } else {
                         e.status = "Unbooked"
                     }
@@ -208,6 +218,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
     try {
         const jobs = await Job.find({
             assigned_to: { $in: [req.params.userId] },
+            canceled_by: { $size: 0 },
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
@@ -243,6 +254,11 @@ const upcomingAssignmentsByUserId = async (req, res) => {
                         } else {
                             e.status = "Unbooked"
                         }
+
+                    } else if (e.completed == true) {
+
+                        e.status = "completed"
+
 
                     } else {
                         e.status = "Unbooked"
@@ -317,6 +333,74 @@ const completedJobsByUser = async (req, res) => {
                         } else {
                             e.status = "Unbooked"
                         }
+
+                    } else if (e.completed == true) {
+
+                        e.status = "completed"
+
+
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                    e.priceDuration = e.duration.hours * e.price
+                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
+                })
+                res.json(data)
+            })
+
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+const canceledJobsByUser = async (req, res) => {
+    try {
+        await Job.find({
+            booked_by: { $in: [req.params.userId] },
+            canceled_by: { $exists: true, $not: { $size: 0 } }
+        })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .lean()
+            .populate({
+                path: 'clinic',
+                select: 'clinicName Address'
+            })
+            .then((data) => {
+                data.map((e, index) => {
+                    if (index === 0 || index === 1) {
+                        e.number = index + 1
+                    } else {
+                        e.number = ""
+                    }
+
+                    if (e.booked_by !== [] && e.assigned_to === []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
+
+                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Approved"
+                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                            e.status = "Booking Pending"
+                        } else {
+                            e.status = "Unbooked"
+                        }
+
+                    } else if (e.completed == true) {
+
+                        e.status = "completed"
+
 
                     } else {
                         data.status = "Unbooked"
@@ -429,5 +513,6 @@ module.exports = {
     upcomingBookingByClinic,
     countCompletedJobsByUser,
     completedJobsByUser,
+    canceledJobsByUser,
     AssignTo
 }
