@@ -89,6 +89,7 @@ const upcomingBookingsByUserId = async (req, res) => {
         await Job.find({
             booked_by: { $in: [req.params.userId] },
             canceled_by: { $size: 0 },
+            completed: false,
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
@@ -154,7 +155,8 @@ const upcomingUnassignmentByUserId = async (req, res) => {
         await Job.find({
             booked_by: { $in: [req.params.userId] },
             assigned_to: { $nin: [req.params.userId] },
-            date: { $gte: today.toDate() }
+            date: { $gte: today.toDate() },
+            completed: false
         })
             .sort({ date: 1 })
             .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
@@ -190,7 +192,6 @@ const upcomingUnassignmentByUserId = async (req, res) => {
                         }
 
                     } else if (e.completed == true) {
-
                         e.status = "completed"
 
 
@@ -219,6 +220,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
         const jobs = await Job.find({
             assigned_to: { $in: [req.params.userId] },
             canceled_by: { $size: 0 },
+            completed: false,
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
@@ -285,6 +287,7 @@ const countUpcomingAssignmentsByUserId = async (req, res) => {
     try {
         const count = await Job.find({
             assigned_to: { $in: [req.params.userId] },
+            completed: false,
             date: { $gte: today.toDate() }
         }).count()
 
@@ -316,34 +319,7 @@ const completedJobsByUser = async (req, res) => {
                         e.number = ""
                     }
 
-                    if (e.booked_by !== [] && e.assigned_to === []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Approved"
-                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.completed == true) {
-
-                        e.status = "completed"
-
-
-                    } else {
-                        data.status = "Unbooked"
-                    }
-
-
+                    e.status = "Completed"
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
