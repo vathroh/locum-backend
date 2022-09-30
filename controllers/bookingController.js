@@ -379,34 +379,7 @@ const canceledJobsByUser = async (req, res) => {
                         e.number = ""
                     }
 
-                    if (e.booked_by !== [] && e.assigned_to === []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Approved"
-                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.completed == true) {
-
-                        e.status = "completed"
-
-
-                    } else {
-                        data.status = "Unbooked"
-                    }
-
-
+                    e.status = "Canceled"
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                     e.priceDuration = e.duration.hours * e.price
                     e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
