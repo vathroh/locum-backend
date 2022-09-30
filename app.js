@@ -1,4 +1,5 @@
 const express = require("express");
+const http = require('http')
 const mongoose = require("mongoose");
 const dotenv = require('dotenv').config();
 const doctorRoute = require("./routes/doctorRoutes.js");
@@ -13,9 +14,14 @@ const fcmRoute = require('./routes/fcmRoutes')
 const cors = require("cors");
 const port = process.env.PORT
 const path = require('path')
-// var io = require('socket.io')(server)
+const { Server } = require('socket.io')
 
 const app = express();
+
+
+
+const server = http.createServer(app)
+const io = new Server(server)
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
@@ -52,8 +58,18 @@ app.use('/', indexRoute)
 // app.use('/quee/send', require('./services/rabbitmq/producer.js')) 
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
-// io.on("connection", (socket) => {
-//     console.log("connected")
-// })
+
+let clients = {}
+
+
+io.on("connection", (socket) => {
+    console.log("connected");
+    console.log(socket.id, "has joined");
+    socket.on("signin", (id) => {
+        console.log(id);
+        clients[id] = id
+        console.log(clients)
+    })
+})
 
 app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));

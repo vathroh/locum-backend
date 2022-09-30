@@ -82,10 +82,26 @@ const registerWithFirebase = async (req, res) => {
 const loginWithFirebase = async (req, res) => {
     const email = req.body.email
     const password = req.body.password
+
+    const user = await User.findOne({ email: email })
+    if (user) {
+        await admin.auth().getUser(user.firebaseUUID)
+            .then((userRecord) => {
+                console.log(userRecord)
+                if (userRecord.emailVerified == false) {
+                    return res.status(401).json({ message: "Your email is not verified. Please check your email." })
+                }
+            })
+            .catch((error) => {
+                return res.status(500).json({ message: error.message })
+            });
+    }
+
     await signInWithEmailAndPassword(auth, email, password)
         .then(async (userCred) => {
             const user = {}
             const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
+
 
             if (findUser) {
                 user._id = findUser._id
@@ -94,7 +110,7 @@ const loginWithFirebase = async (req, res) => {
                 user.phone_number = findUser.phone_number ?? ""
                 user.profile_pict = findUser.profile_pict ?? ""
 
-                res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
+                return res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
             } else {
                 const data = {}
                 data.firebaseUUID = userCred.user.uid
@@ -116,19 +132,22 @@ const loginWithFirebase = async (req, res) => {
                         user.role = findUser.role
                         user.phone_number = findUser.phone_number ?? ""
                         user.profile_pict = findUser.profile_pict ?? ""
-                    }
 
-                    res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
+                    }
+                    return res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
 
                 } catch (error) {
-                    res.status(500).json({ message: error.message });
+                    return res.status(500).json({ message: error.message });
                 }
             }
+
         })
         .catch((err) => {
-            res.status(401).json({ message: "Invalid credentials!" })
+            return res.status(401).json({ message: "Invalid credentials!" })
         })
+
 }
+
 
 const findOrCreateUser = async (userCred) => {
     const user = {}
@@ -258,6 +277,7 @@ const verifyEmail = async (req, res) => {
 
     const { email, verification_code } = req.body
     const user = await User.findOne({ email: email })
+
     user.status = "Activated"
 
     if (verification_code == user.verification_code) {
@@ -267,6 +287,7 @@ const verifyEmail = async (req, res) => {
         admin.auth()
             .updateUser(user.firebaseUUID, {
                 disabled: false,
+                emailVerified: true
             })
             .then(() => {
                 res.json({ message: "Your acoount has been verified." })

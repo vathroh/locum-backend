@@ -43,6 +43,9 @@ const Job = mongoose.Schema(
             type: String,
             required: true
         }],
+        preferences: [{
+            type: String
+        }],
         booked_by: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',

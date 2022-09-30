@@ -27,7 +27,20 @@ const Clinic = mongoose.Schema(
             {
                 type: String
             }
-        ]
+        ],
+        comments: [{
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+                exists: true
+            },
+            text: {
+                type: String
+            },
+            datetime: {
+                type: Number
+            }
+        }]
     },
     {
         timestamps: true
