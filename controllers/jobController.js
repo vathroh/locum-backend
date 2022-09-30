@@ -378,7 +378,7 @@ const getJobById = async (req, res) => {
             .lean()
             .populate({
                 path: 'clinic',
-                select: 'clinicName clinicAddress description type'
+                select: 'clinicName Address description type'
             })
             .exec((err, data) => {
                 data.time_start_format = DateTime.fromMillis(data.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
