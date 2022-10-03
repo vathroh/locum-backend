@@ -20,8 +20,14 @@ const app = express();
 
 
 
+
 const server = http.createServer(app)
-const io = new Server(server)
+const io = new Server(server, {
+    cors: {
+      origin: "*"
+    }
+  });
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
@@ -39,11 +45,15 @@ const db = mongoose.connection;
 db.on('error', (error) => console.error(error));
 db.once('open', () => console.log('Database Connected'));
 
+app.get('/socket.io/socket.io.js', (req, res) => {
+    res.sendFile(__dirname + '/node_modules/socket.io/client-dist/socket.io.js');
+  });
 
 
 app.use('/booking', require('./routes/bookingRoutes'))
 
 app.use('/conversation', require('./routes/conversationRoutes'))
+app.use('/comment', require('./routes/commentRoutes'))
 app.use('/jobs', require('./routes/jobRoutes.js'))
 app.use('/doctor-ranks', doctorRanksRoute)
 app.use('/attendance', attendanceRoute)
@@ -58,18 +68,46 @@ app.use('/', indexRoute)
 // app.use('/quee/send', require('./services/rabbitmq/producer.js')) 
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
-
 let clients = {}
 
 
-io.on("connection", (socket) => {
-    console.log("connected");
-    console.log(socket.id, "has joined");
-    socket.on("signin", (id) => {
-        console.log(id);
-        clients[id] = id
-        console.log(clients)
-    })
+
+// io.on("connection", (socket) => {
+//     console.log("connected");
+//     console.log(socket.id, "has joined");
+
+//     socket.on("signin", (id) => {
+//         console.log(id);
+//         clients[id] = id
+//         console.log(clients)
+//     })
+
+//     socket.on("message", (msg) => {
+//         console.log(msg);
+//         let targetId = msg.targetId;
+//         if (clients[targetId]) clients[targetId].emit("message", msg)
+//     })
+// })
+
+
+const users = {}
+
+io.on('connection', socket => {
+  console.log("hai")
+  socket.on('new-user', name => {
+    users[socket.id] = name
+    console.log(users)
+    socket.broadcast.emit('user-connected', name)
+  })
+  socket.on('send-chat-message', message => {
+    console.log(message, users)
+    socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
+  })
+  socket.on('disconnect', () => {
+    socket.broadcast.emit('user-disconnected', users[socket.id])
+    delete users[socket.id]
+  })
 })
 
-app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
+
+server.listen(port, () => console.log(`Server is running on http://localhost:${port}`));

@@ -79,6 +79,29 @@ const registerWithFirebase = async (req, res) => {
         })
 }
 
+const sendingVerificationCode = async (req, res) => {
+    const user = User.findOne({ email: req.body.email })
+    user.verification_code = Math.random().toString().substr(2, 6)
+
+    user.updateOne({ email: req.body.email }, { $set: user })
+
+    axios({
+        method: "POST",
+        url: "http://localhost:5000/send/email",
+        data: {
+            "email": req.body.email,
+            "subject": "Please verify your email address",
+            "text": verification_code
+        }
+    })
+        .then(() => {
+            res.json({ message: "Verification code has been sent to your email. Please check your email" })
+        })
+        .catch((err) => {
+            res.status(500).json({ message: err })
+        })
+}
+
 const loginWithFirebase = async (req, res) => {
     const email = req.body.email
     const password = req.body.password
@@ -149,10 +172,63 @@ const loginWithFirebase = async (req, res) => {
 }
 
 
+const afterSignin = async (req, res) => {
+
+    const findUser = await User.findOne({ firebaseUUID: req.body.user.uid })
+
+    if (findUser) {
+        res.json({ user: findUser, idToken: req.body._tokenResponse.idToken, refreshToken: req.body._tokenResponse.refreshToken })
+    } else {
+        const data = {}
+        data.firebaseUUID = req.body.user.uid
+        data.full_name = req.body._tokenResponse.displayName
+        data.email = req.body._tokenResponse.email
+        data.phone_number = req.body._tokenResponse.phoneNumber
+
+        const newUser = new User(data);
+
+        try {
+            const savedUser = await newUser.save();
+            const findUseragain = savedUser
+
+            if (findUseragain) {
+                const user = {}
+
+                user._id = findUseragain._id
+                user.email = findUseragain.email
+                user.full_name = findUseragain.full_name
+                user.role = findUseragain.role
+                user.phone_number = findUseragain.phone_number ?? ""
+                user.profile_pict = findUseragain.profile_pict ?? ""
+
+                return res.json({ user: user, idToken: req.body._tokenResponse.idToken, refreshToken: req.body._tokenResponse.refreshToken });
+            } else {
+                return res.status(500).json({ message: "Server error!" })
+            }
+
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    }
+}
+
+const updatePhoneNumber = async (req, res) => {
+    const userId = await User.findById(req.params.userId);
+    if (!userId) return res.status(404).json({ message: "The user is not found." });
+    userId.phone_number = req.body.phone_number
+
+    try {
+        const updatedUser = await User.updateOne({ _id: req.params.userId }, { $set: userId });
+        res.json(updatedUser)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+
 const findOrCreateUser = async (userCred) => {
     const user = {}
     const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
-
 
     if (findUser) {
         user._id = findUser._id
@@ -160,6 +236,8 @@ const findOrCreateUser = async (userCred) => {
         user.role = findUser.role
         user.phone_number = findUser.phone_number ?? ""
         user.profile_pict = findUser.profile_pict ?? ""
+
+        return res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
     } else {
         const data = {}
         data.firebaseUUID = userCred.user.uid
@@ -181,13 +259,19 @@ const findOrCreateUser = async (userCred) => {
                 user.role = findUser.role
                 user.phone_number = findUser.phone_number ?? ""
                 user.profile_pict = findUser.profile_pict ?? ""
+
             }
-            return ({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
+            return res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
 
         } catch (error) {
-            return ({ message: error.message });
+            return res.status(500).json({ message: error.message });
         }
     }
+
+
+
+    //     .catch ((err) => {
+    // return res.status(401).json({ message: "Invalid credentials!" })
 }
 
 const verifyIdToken = (req, res) => {
@@ -319,4 +403,4 @@ function ValidateEmail(req, res) {
 }
 
 
-module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail }
+module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail, sendingVerificationCode, afterSignin, updatePhoneNumber }
