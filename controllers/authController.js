@@ -225,6 +225,19 @@ const updatePhoneNumber = async (req, res) => {
     }
 }
 
+const updateRoleUser = async (req, res) => {
+    const userId = await User.findById(req.params.userId);
+    if (!userId) return res.status(404).json({ message: "The user is not found." });
+    userId.role = req.body.role
+
+    try {
+        const updatedUser = await User.updateOne({ _id: req.params.userId }, { $set: userId });
+        res.json(updatedUser)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
 
 const findOrCreateUser = async (userCred) => {
     const user = {}
@@ -403,4 +416,4 @@ function ValidateEmail(req, res) {
 }
 
 
-module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail, sendingVerificationCode, afterSignin, updatePhoneNumber }
+module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail, sendingVerificationCode, afterSignin, updatePhoneNumber, updateRoleUser }
