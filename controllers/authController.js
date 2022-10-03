@@ -174,16 +174,16 @@ const loginWithFirebase = async (req, res) => {
 
 const afterSignin = async (req, res) => {
 
-    const findUser = await User.findOne({ firebaseUUID: req.body.user.uid })
+    const findUser = await User.findOne({ firebaseUUID: req.body.uid })
 
     if (findUser) {
-        res.json({ user: findUser, idToken: req.body._tokenResponse.idToken, refreshToken: req.body._tokenResponse.refreshToken })
+        res.json({ user: findUser, idToken: req.body.idToken, refreshToken: req.body.refreshToken })
     } else {
         const data = {}
-        data.firebaseUUID = req.body.user.uid
-        data.full_name = req.body._tokenResponse.displayName
-        data.email = req.body._tokenResponse.email
-        data.phone_number = req.body._tokenResponse.phoneNumber
+        data.firebaseUUID = req.body.uid
+        data.full_name = req.body.displayName
+        data.email = req.body.email
+        data.phone_number = req.body.phoneNumber
 
         const newUser = new User(data);
 

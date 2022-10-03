@@ -372,24 +372,52 @@ const getPastJobs = async (req, res) => {
 }
 
 const getJobById = async (req, res) => {
+
     try {
         let job = await Job.findById(req.params.id)
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, preferences: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, preferences: 1, booked_by: 1, assigned_to: 1, canceled_by: 1, completed: 1 })
             .lean()
             .populate({
                 path: 'clinic',
                 select: 'clinicName Address description type'
             })
             .exec((err, data) => {
-                data.time_start_format = DateTime.fromMillis(data.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                data.time_finish_format = DateTime.fromMillis(data.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                data.date_format = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+
+                if (data.canceled_by.length > 0) {
+                    data.status = "Canceled"
+                } else if (data.completed == true) {
+                    data.status = "Completed"
+                } else if (data.booked_by !== [] && data.assigned_to === []) {
+
+                    if (data.booked_by.some((as) => as.equals(req.body.user_id))) {
+                        data.status = "Booking Pending"
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+                } else if (data.booked_by !== [] && data.assigned_to !== []) {
+
+                    if (data.booked_by.some((as) => as.equals(req.body.user_id)) && data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                        data.status = "Booking Approved"
+                    } else if (data.booked_by.some((as) => as.equals(req.body.user_id)) && !data.assigned_to.some((as) => as.equals(req.body.user_id))) {
+                        data.status = "Booking Pending"
+                    } else {
+                        data.status = "Unbooked"
+                    }
+
+                } else {
+                    data.status = "Unbooked"
+                }
+
+                data.work_time_start = DateTime.fromMillis(data.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                data.work_time_finish = DateTime.fromMillis(data.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                 data.day = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('cccc')
+                data.date = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
                 res.json(data)
             })
         // res.json(data);
     } catch (error) {
-        res.status(404).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 
 }
