@@ -7,6 +7,9 @@ const Clinic = mongoose.Schema(
         logo: {
             type: String,
         },
+        group: {
+            type: String
+        },
         clinicName: {
             type: String,
             required: true

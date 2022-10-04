@@ -20,7 +20,7 @@ const getClinicById = async (req, res) => {
 
 }
 
-// function Create Clinic
+
 const saveClinic = async (req, res) => {
     const clinic = new Clinic(req.body);
     try {
@@ -31,7 +31,7 @@ const saveClinic = async (req, res) => {
     }
 }
 
-// function Update Clinic
+
 const updateClinic = async (req, res) => {
     const cekId = await Clinic.findById(req.params.id);
     if (!cekId) return res.status(404).json({ message: "Data tidak ditemukan" });
@@ -55,4 +55,15 @@ const deleteClinic = async (req, res) => {
     }
 }
 
-module.exports = { getClinics, getClinicById, saveClinic, updateClinic, deleteClinic }
+const getOtherOutlet = async (req, res) => {
+    try {
+        const clinic = await Clinic.findOne({ _id: req.params.clinicId })
+        const clinics = await Clinic.find({ _id: { $ne: clinic._id }, group: clinic.group })
+        res.json(clinics)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
+
+
+module.exports = { getClinics, getClinicById, saveClinic, updateClinic, deleteClinic, getOtherOutlet }

@@ -122,6 +122,7 @@ const loginWithFirebase = async (req, res) => {
 
     await signInWithEmailAndPassword(auth, email, password)
         .then(async (userCred) => {
+            console.log(userCred)
             const user = {}
             const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
 
@@ -183,7 +184,7 @@ const afterSignin = async (req, res) => {
         data.firebaseUUID = req.body.uid
         data.full_name = req.body.displayName
         data.email = req.body.email
-        data.phone_number = req.body.phoneNumber
+        data.phone_number = req.body.phoneNumber ?? ""
 
         const newUser = new User(data);
 
@@ -219,6 +220,15 @@ const updatePhoneNumber = async (req, res) => {
 
     try {
         const updatedUser = await User.updateOne({ _id: req.params.userId }, { $set: userId });
+
+        await admin.auth()
+            .updateUser(userId.firebaseUUID, {
+                phoneNumber: req.body.phone_number
+            })
+            .then(() => {
+            })
+            .catch((err) => {
+            })
         res.json(updatedUser)
     } catch (error) {
         res.status(500).json({ message: error.message })

@@ -1,6 +1,7 @@
 const Job = require("../models/Job.js");
 const moment = require('moment')
-const { DateTime, Duration } = require('luxon')
+const { DateTime, Duration } = require('luxon');
+const { saveEvent } = require("./calendarController.js");
 
 const createBooking = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
@@ -57,7 +58,6 @@ const AssignTo = async (req, res) => {
 
     let assignmentAmount = jobId.assigned_to?.length
 
-
     if (assignmentAmount < 1) {
         let hasAssignment = jobId.assigned_to.includes(req.body.user_id)
 
@@ -67,7 +67,18 @@ const AssignTo = async (req, res) => {
             updatedData.assigned_to.push(req.body.user_id)
 
             try {
+                const data = {}
+
+                data.user_id = req.body.user_id
+                data.job_id = jobId._id
+                data.clinic_id = jobId.clinic
+                data.start = jobId.work_time_start
+                data.finish = jobId.work_time_finish
+                data.event = "Working on Clinic"
+                console.log(jobId.clinic)
+
                 const assignment = await Job.updateOne({ _id: req.params.id }, { $set: updatedData });
+                await saveEvent(data)
                 res.json(assignment)
             } catch (error) {
                 res.status(400).json({ message: error.message });

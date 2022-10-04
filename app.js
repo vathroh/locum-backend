@@ -23,10 +23,10 @@ const app = express();
 
 const server = http.createServer(app)
 const io = new Server(server, {
-    cors: {
-      origin: "*"
-    }
-  });
+  cors: {
+    origin: "*"
+  }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -35,10 +35,10 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/public', express.static(path.join(__dirname, './public')))
 
 mongoose.connect(process.env.MONGOURI, {
-    autoIndex: false,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    maxPoolSize: 5
+  autoIndex: false,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  maxPoolSize: 5
 });
 
 const db = mongoose.connection;
@@ -46,13 +46,14 @@ db.on('error', (error) => console.error(error));
 db.once('open', () => console.log('Database Connected'));
 
 app.get('/socket.io/socket.io.js', (req, res) => {
-    res.sendFile(__dirname + '/node_modules/socket.io/client-dist/socket.io.js');
-  });
+  res.sendFile(__dirname + '/node_modules/socket.io/client-dist/socket.io.js');
+});
 
 
 app.use('/booking', require('./routes/bookingRoutes'))
-
+app.use('/calendar', require('./routes/calendarRoutes'))
 app.use('/conversation', require('./routes/conversationRoutes'))
+app.use('/clinic-group', require('./routes/clinicGroupRoutes'))
 app.use('/comment', require('./routes/commentRoutes'))
 app.use('/jobs', require('./routes/jobRoutes.js'))
 app.use('/doctor-ranks', doctorRanksRoute)
