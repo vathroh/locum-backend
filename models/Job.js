@@ -32,8 +32,7 @@ const Job = mongoose.Schema(
         },
         prefered_gender: {
             type: String,
-            enum: ["male", "female", "both"],
-            default: "both"
+            enum: ["male", "female"]
         },
         scope: [{
             type: String,
@@ -47,12 +46,10 @@ const Job = mongoose.Schema(
             type: String
         }],
         booked_by: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+            type: String
         }],
         assigned_to: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+            type: String
         }],
         completed: {
             type: Boolean,

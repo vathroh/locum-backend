@@ -26,7 +26,7 @@ router.post('/upload', upload.single('image'), (req, res) => {
 
 router.post('/jobs', upload.single('image'), async (req, res) => {
     let data = req.body
-    data.image = req.file?.destination + "/" + req.file?.filename;
+    data.image = "/" + req.file?.destination + "/" + req.file?.filename;
     // return res.json(data)
     console.log(req.file?.destination);
     data.work_time_start = DateTime.fromISO(req.body.date + "T" + req.body.work_time_start, { zone: "Asia/Singapore" }).toMillis()

@@ -9,13 +9,7 @@ const mongoose = require("mongoose");
 const getAllJobs = async (req, res) => {
     try {
         await Job.find()
-            .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
-            .lean()
-            .populate({
-                path: 'clinic',
-                select: 'clinicName Address'
-            })
+            .sort({ date: 1 }).lean().populate({ path: 'clinic', select: 'clinicName Address' })
             .then((data) => {
 
                 data.map((e, index) => {
@@ -36,15 +30,34 @@ const getAllJobs = async (req, res) => {
 
 const getNewJobs = async (req, res) => {
     try {
-        await Job.find()
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
-            .sort({ createdAt: -1 })
-            .limit(5)
-            .lean()
-            .populate({
-                path: 'clinic',
-                select: 'clinicName Address'
+        await Job.find().sort({ createdAt: -1 }).lean().populate({ path: 'clinic', select: 'clinicName Address' })
+            .then((data) => {
+
+                data.map((e, index) => {
+                    e.number = ""
+                    statusJob(e, req)
+                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                })
+
+                const OpenedStatus = data.filter(function (el) {
+                    return el.status == "Booking Opened"
+                }).slice(0, 5)
+
+                const output = formatData(OpenedStatus)
+
+                res.json(output)
             })
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+
+}
+
+const getUpcomingJobs = async (req, res) => {
+
+    try {
+        await Job.find({ work_time_start: { $gte: DateTime.now().toMillis() } })
+            .sort({ date: 1 }).lean().populate({ path: 'clinic', select: 'clinicName Address' })
             .then((data) => {
 
                 data.map((e, index) => {
@@ -59,42 +72,6 @@ const getNewJobs = async (req, res) => {
             })
     } catch (error) {
         res.status(500).json({ message: error.message });
-    }
-
-}
-
-const getUpcomingJobs = async (req, res) => {
-    const today = moment().startOf('day')
-
-    try {
-        await Job.find(
-            {
-                work_time_start: {
-                    $gte: DateTime.now().toMillis()
-                }
-            }
-        )
-            .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
-            .lean()
-            .populate({
-                path: 'clinic',
-                select: 'clinicName Address'
-            })
-            .then((data) => {
-
-                data.map((e, index) => {
-                    e.number = ""
-                    statusJob(e, req)
-                    e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                })
-
-                const output = formatData(data)
-
-                res.json(output)
-            })
-    } catch (error) {
-        res.status(404).json({ message: error.message });
     }
 
 }
@@ -166,7 +143,11 @@ const getUpcomingDoctorJobs = async (req, res) => {
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                 })
 
-                const output = formatData(data)
+                const upcoming = data.filter(function (el) {
+                    return el.status == "Booking Approved" || el.status == "Booking Pending"
+                })
+
+                const output = formatData(upcoming)
 
                 res.json(output)
             })
@@ -203,7 +184,11 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                 })
 
-                const output = formatData(data)
+                const upcoming = data.filter(function (el) {
+                    return el.status == "Booking Approved" || el.status == "Booking Pending"
+                })
+
+                const output = formatData(upcoming)
 
                 res.json(output)
             })
@@ -217,20 +202,8 @@ const getPastJobs = async (req, res) => {
     const today = moment().startOf('day')
 
     try {
-        const jobs = await Job.find(
-            {
-                date: {
-                    $lte: today.toDate()
-                }
-            }
-        )
-            .sort({ date: -1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
-            .lean()
-            .populate({
-                path: 'clinic',
-                select: 'clinicName Address'
-            })
+        const jobs = await Job.find({ date: { $lte: today.toDate() } })
+            .sort({ date: -1 }).lean().populate({ path: 'clinic', select: 'clinicName Address' })
             .then((data) => {
 
                 data.map((e, index) => {
@@ -244,7 +217,7 @@ const getPastJobs = async (req, res) => {
                 res.json(output)
             })
     } catch (error) {
-        res.status(404).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 
 }
@@ -271,7 +244,6 @@ const getJobById = async (req, res) => {
 
                 res.json(data)
             })
-        // res.json(data);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -281,12 +253,7 @@ const getJobById = async (req, res) => {
 const getJobByClinicId = async (req, res) => {
     try {
         await Job.find({ "clinic": req.params.id })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
-            .lean()
-            .populate({
-                path: 'clinic',
-                select: 'clinicName Address'
-            })
+            .lean().populate({ path: 'clinic', select: 'clinicName Address' })
             .then((data) => {
 
                 data.map((e, index) => {
@@ -486,18 +453,10 @@ const statusJob = (e, req) => {
         e.status = "Booking Completed"
     } else if (e.canceled_by?.length > 0) {
         e.status = "Booking Canceled"
-    } else if (e.booked_by !== [] && e.assigned_to === []) {
-        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
-            e.status = "Booking Pending"
-        } else {
-            e.status = "Booking Opened"
-        }
-    } else if (e.booked_by !== [] && e.assigned_to !== []) {
-        if (e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-            e.status = "Booking Approved"
-        } else {
-            e.status = "Booking Opened"
-        }
+    } else if (e.booked_by.includes(req.body.user_id) && !e.assigned_to.includes(req.body.user_id)) {
+        e.status = "Booking Pending"
+    } else if (e.assigned_to.includes(req.body.user_id)) {
+        e.status = "Booking Approved"
     } else {
         e.status = "Booking Opened"
     }
@@ -519,7 +478,7 @@ const formatData = (data) => {
             completed: e.completed,
             canceled_by: e.canceled_by,
             status: e.status,
-            image: e.image,
+            image: process.env.BASE_URL + e.image,
             number: e.number,
             duration: Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject(),
             priceDuration: e.duration.hours * e.price,
