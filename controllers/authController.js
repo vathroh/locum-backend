@@ -1,6 +1,6 @@
 const { initializeApp } = require("firebase/app");
 const admin = require("firebase-admin");
-const { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, sendSignInLinkToEmail } = require('firebase/auth')
+const { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, sendPasswordResetEmail, signOut, onAuthStateChanged, reauthenticateWithCredential } = require('firebase/auth')
 // const serviceAccount = require("../config/serviceAccountKey.json");
 const User = require("../models/User.js");
 // const { response } = require("express");
@@ -110,7 +110,6 @@ const loginWithFirebase = async (req, res) => {
     if (user) {
         await admin.auth().getUser(user.firebaseUUID)
             .then((userRecord) => {
-                console.log(userRecord)
                 if (userRecord.emailVerified == false) {
                     return res.status(401).json({ message: "Your email is not verified. Please check your email." })
                 }
@@ -122,7 +121,6 @@ const loginWithFirebase = async (req, res) => {
 
     await signInWithEmailAndPassword(auth, email, password)
         .then(async (userCred) => {
-            console.log(userCred)
             const user = {}
             const findUser = await User.findOne({ firebaseUUID: userCred.user.uid })
 
@@ -425,5 +423,38 @@ function ValidateEmail(req, res) {
     return (false)
 }
 
+const forgotEmailPassword = (req, res) => {
+    const auth = getAuth();
+    auth.languageCode = 'en'
+    sendPasswordResetEmail(auth, req.body.email)
+        .then(() => {
+            res.json({ message: "We have sent link to your email, Please check your email." })
+        })
+        .catch((error) => {
+            res.status(500).json({ message: error.message })
+        });
 
-module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail, sendingVerificationCode, afterSignin, updatePhoneNumber, updateRoleUser }
+}
+
+
+const changePassword = async (req, res) => {
+
+    updatePassword(user, newPassword).then(() => {
+        return res.json({ message: "Your password has been succeessfully changed." })
+    }).catch((error) => {
+        return res.status(500).json({ message: 'error.message1' })
+    });
+
+}
+
+const SignOut = (req, res) => {
+    const auth = getAuth();
+    signOut(auth).then(() => {
+        res.json({ message: "You have successfully logged out." })
+    }).catch((error) => {
+        res.status(500).json({ message: error.message })
+    });
+}
+
+
+module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail, sendingVerificationCode, afterSignin, updatePhoneNumber, updateRoleUser, forgotEmailPassword, SignOut, changePassword }

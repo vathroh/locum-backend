@@ -95,6 +95,11 @@ const users = {}
 
 io.on('connection', socket => {
   console.log("hai")
+
+  socket.on('join', data => {
+    console.log(data)
+  })
+
   socket.on('new-user', name => {
     users[socket.id] = name
     console.log(users)

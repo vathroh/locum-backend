@@ -2,6 +2,8 @@ const Job = require("../models/Job.js");
 const moment = require('moment')
 const { DateTime, Duration } = require('luxon');
 const { saveEvent } = require("./calendarController.js");
+const Clinic = require("../models/Clinic.js");
+const { statusJob, formatData } = require("./jobController")
 
 const createBooking = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
@@ -68,14 +70,15 @@ const AssignTo = async (req, res) => {
 
             try {
                 const data = {}
+                const clinic = await Clinic.findById(jobId.clinic)
 
                 data.user_id = req.body.user_id
                 data.job_id = jobId._id
                 data.clinic_id = jobId.clinic
                 data.start = jobId.work_time_start
                 data.finish = jobId.work_time_finish
-                data.event = "Working on Clinic"
-                console.log(jobId.clinic)
+                data.event = "Working on " + clinic.clinicName
+                console.log(clinic.clinicName)
 
                 const assignment = await Job.updateOne({ _id: req.params.id }, { $set: updatedData });
                 await saveEvent(data)
@@ -112,46 +115,14 @@ const upcomingBookingsByUserId = async (req, res) => {
             })
             .then((data) => {
                 data.map((e, index) => {
-                    if (index === 0 || index === 1) {
-                        e.number = index + 1
-                    } else {
-                        e.number = ""
-                    }
-
-                    if (e.booked_by !== [] && e.assigned_to === []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Approved"
-                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.completed == true) {
-
-                        e.status = "completed"
-
-                    } else {
-                        e.status = "Unbooked"
-                    }
-
+                    e.number = ""
+                    statusJob(e, req)
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                    e.priceDuration = e.duration.hours * e.price
-                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
-                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
                 })
-                res.json(data)
+
+                const output = formatData(data)
+                res.json(output)
+
             })
 
     } catch (error) {
@@ -177,47 +148,16 @@ const upcomingUnassignmentByUserId = async (req, res) => {
                 select: 'clinicName Address'
             })
             .then((data) => {
+
                 data.map((e, index) => {
-                    if (index === 0 || index === 1) {
-                        e.number = index + 1
-                    } else {
-                        e.number = ""
-                    }
-
-                    if (e.booked_by !== [] && e.assigned_to === []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Approved"
-                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.completed == true) {
-                        e.status = "completed"
-
-
-                    } else {
-                        e.status = "Unbooked"
-                    }
-
+                    e.number = ""
+                    statusJob(e, req)
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                    e.priceDuration = e.duration.hours * e.price
-                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
-                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
                 })
-                res.json(data)
+
+                const output = formatData(data)
+
+                res.json(output)
             })
 
     } catch (error) {
@@ -243,49 +183,16 @@ const upcomingAssignmentsByUserId = async (req, res) => {
             })
             .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1 })
             .then((data) => {
+
                 data.map((e, index) => {
-                    if (index === 0 || index === 1) {
-                        e.number = index + 1
-                    } else {
-                        e.number = ""
-                    }
-
-                    if (e.booked_by !== [] && e.assigned_to === []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.booked_by !== [] && e.assigned_to !== []) {
-
-                        if (e.booked_by.some((as) => as.equals(req.body.user_id)) && e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Approved"
-                        } else if (e.booked_by.some((as) => as.equals(req.body.user_id)) && !e.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            e.status = "Booking Pending"
-                        } else {
-                            e.status = "Unbooked"
-                        }
-
-                    } else if (e.completed == true) {
-
-                        e.status = "completed"
-
-
-                    } else {
-                        e.status = "Unbooked"
-                    }
-
-
+                    e.number = ""
+                    statusJob(e, req)
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                    e.priceDuration = e.duration.hours * e.price
-                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
-                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
                 })
-                res.json(data)
+
+                const output = formatData(data)
+
+                res.json(output)
             })
 
     } catch (error) {
@@ -316,7 +223,7 @@ const completedJobsByUser = async (req, res) => {
             assigned_to: { $in: [req.params.userId] },
             completed: true
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -324,21 +231,14 @@ const completedJobsByUser = async (req, res) => {
             })
             .then((data) => {
                 data.map((e, index) => {
-                    if (index === 0 || index === 1) {
-                        e.number = index + 1
-                    } else {
-                        e.number = ""
-                    }
-
-                    e.status = "Completed"
+                    e.number = ""
+                    statusJob(e, req)
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                    e.priceDuration = e.duration.hours * e.price
-                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
-                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
                 })
-                res.json(data)
+
+                const output = formatData(data)
+
+                res.json(output)
             })
 
     } catch (error) {
@@ -359,22 +259,16 @@ const canceledJobsByUser = async (req, res) => {
                 select: 'clinicName Address'
             })
             .then((data) => {
-                data.map((e, index) => {
-                    if (index === 0 || index === 1) {
-                        e.number = index + 1
-                    } else {
-                        e.number = ""
-                    }
 
-                    e.status = "Canceled"
+                data.map((e, index) => {
+                    e.number = ""
+                    statusJob(e, req)
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                    e.priceDuration = e.duration.hours * e.price
-                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
-                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
                 })
-                res.json(data)
+
+                const output = formatData(data)
+
+                res.json(output)
             })
 
     } catch (error) {
@@ -408,44 +302,16 @@ const upcomingBookingByClinic = async (req, res) => {
                 select: 'clinicName Address'
             })
             .then((data) => {
+
                 data.map((e, index) => {
-                    if (index === 0 || index === 1) {
-                        e.number = index + 1
-                    } else {
-                        e.number = ""
-                    }
-
-                    if (data.booked_by !== [] && data.assigned_to === []) {
-
-                        if (data.booked_by.some((as) => as.equals(req.body.user_id))) {
-                            data.status = "Booking Pending"
-                        } else {
-                            data.status = "Unbooked"
-                        }
-
-                    } else if (data.booked_by !== [] && data.assigned_to !== []) {
-
-                        if (data.booked_by.some((as) => as.equals(req.body.user_id)) && data.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            data.status = "Booking Approved"
-                        } else if (data.booked_by.some((as) => as.equals(req.body.user_id)) && !data.assigned_to.some((as) => as.equals(req.body.user_id))) {
-                            data.status = "Booking Pending"
-                        } else {
-                            data.status = "Unbooked"
-                        }
-
-                    } else {
-                        data.status = "Unbooked"
-                    }
-
-                    e.status = "Status"
+                    e.number = ""
+                    statusJob(e, req)
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
-                    e.priceDuration = e.duration.hours * e.price
-                    e.time_start_format = DateTime.fromMillis(e.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.time_finish_format = DateTime.fromMillis(e.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
-                    e.date_format = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
-                    e.day = DateTime.fromMillis(e.date).setZone("Asia/Singapore").toFormat('cccc')
                 })
-                res.json(data)
+
+                const output = formatData(data)
+
+                res.json(output)
             })
 
         res.status(200).json(jobs)

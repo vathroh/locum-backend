@@ -6,6 +6,7 @@ const {
     getUpcomingJobs,
     getPastJobs, getJobById, getJobByClinicId, saveJob, updateJob, deleteJob, getNewJobs, getUpcomingDoctorJobs,
     getUpcomingClinicalAssistantJobs,
+    getExploreJobs,
     youMightLike,
     filteredJob,
     searchJob
@@ -20,6 +21,7 @@ router.get('/filter', filteredJob);
 router.get('/past', getPastJobs);
 router.get('/search', searchJob);
 router.get('/new', getNewJobs);
+router.get('/explore', getExploreJobs);
 router.get('/:id', getJobById);
 router.get('/', getAllJobs);
 // router.post('/', saveJob);

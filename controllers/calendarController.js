@@ -45,8 +45,6 @@ const get3DaysEventByUserId = async (req, res) => {
 
             })
 
-
-
         data.push(item)
     }
 
