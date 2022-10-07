@@ -107,12 +107,6 @@ const getExploreJobs = async (req, res) => {
             {
                 work_time_start: {
                     $gte: DateTime.now().toMillis()
-                },
-                booked_by: {
-                    $nin: req.body.user_id
-                },
-                assigned_to: {
-                    $nin: req.body.user_id
                 }
             }
         )
@@ -129,6 +123,10 @@ const getExploreJobs = async (req, res) => {
                     e.number = ""
                     statusJob(e, req)
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+                })
+
+                data.filter((e) => {
+                    return e.status == "Book Opened"
                 })
 
                 const output = formatData(data)
