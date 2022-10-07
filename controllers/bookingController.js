@@ -107,7 +107,7 @@ const upcomingBookingsByUserId = async (req, res) => {
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -141,7 +141,7 @@ const upcomingUnassignmentByUserId = async (req, res) => {
             completed: false
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -175,7 +175,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
             date: { $gte: today.toDate() }
         })
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -223,7 +223,7 @@ const completedJobsByUser = async (req, res) => {
             assigned_to: { $in: [req.params.userId] },
             completed: true
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -252,7 +252,7 @@ const canceledJobsByUser = async (req, res) => {
             booked_by: { $in: [req.params.userId] },
             canceled_by: { $exists: true, $not: { $size: 0 } }
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -296,7 +296,7 @@ const upcomingBookingByClinic = async (req, res) => {
             assigned_to: { $in: [req.params.userId] },
             completed: true
         })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .populate({
                 path: 'clinic',
                 select: 'clinicName Address'
