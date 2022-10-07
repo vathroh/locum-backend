@@ -10,7 +10,7 @@ const getAllJobs = async (req, res) => {
     try {
         await Job.find()
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -37,7 +37,7 @@ const getAllJobs = async (req, res) => {
 const getNewJobs = async (req, res) => {
     try {
         await Job.find()
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled: 1 })
             .sort({ createdAt: -1 })
             .limit(5)
             .lean()
@@ -75,7 +75,7 @@ const getUpcomingJobs = async (req, res) => {
             }
         )
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job, _scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -111,7 +111,7 @@ const getExploreJobs = async (req, res) => {
             }
         )
             .sort({ date: 1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled_by: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -125,11 +125,11 @@ const getExploreJobs = async (req, res) => {
                     e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
                 })
 
-                data.filter((e) => {
-                    return e.status == "Book Opened"
+                const OpenedStatus = data.filter(function (el) {
+                    return el.status == "Booking Opened"
                 })
 
-                const output = formatData(data)
+                const output = formatData(OpenedStatus)
 
                 res.json(output)
             })
@@ -157,7 +157,7 @@ const getUpcomingDoctorJobs = async (req, res) => {
                 path: 'clinic',
                 select: 'clinicName Address'
             })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled: 1 })
             .then((data) => {
 
                 data.map((e, index) => {
@@ -194,7 +194,7 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                 path: 'clinic',
                 select: 'clinicName Address'
             })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled: 1 })
             .then((data) => {
 
                 data.map((e, index) => {
@@ -225,7 +225,7 @@ const getPastJobs = async (req, res) => {
             }
         )
             .sort({ date: -1 })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -253,7 +253,7 @@ const getJobById = async (req, res) => {
 
     try {
         let job = await Job.findById(req.params.id)
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, preferences: 1, booked_by: 1, assigned_to: 1, canceled_by: 1, completed: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, preferences: 1, booked_by: 1, assigned_to: 1, canceled_by: 1, completed: 1, canceled: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -281,7 +281,7 @@ const getJobById = async (req, res) => {
 const getJobByClinicId = async (req, res) => {
     try {
         await Job.find({ "clinic": req.params.id })
-            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1 })
+            .select({ _id: 1, clinic: 1, price: 1, job_scope: 1, date: 1, work_time_start: 1, work_time_finish: 1, scope: 1, job_description: 1, image: 1, booked_by: 1, assigned_to: 1, completed: 1, canceled: 1 })
             .lean()
             .populate({
                 path: 'clinic',
@@ -516,6 +516,8 @@ const formatData = (data) => {
             job_description: e.job_description,
             booked_by: e.booked_by,
             assigned_to: e.assigned_to,
+            completed: e.completed,
+            canceled_by: e.canceled_by,
             status: e.status,
             image: e.image,
             number: e.number,
