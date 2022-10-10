@@ -69,48 +69,24 @@ app.use('/', indexRoute)
 // app.use('/quee/send', require('./services/rabbitmq/producer.js')) 
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
-let clients = {}
-
-
-
-// io.on("connection", (socket) => {
-//     console.log("connected");
-//     console.log(socket.id, "has joined");
-
-//     socket.on("signin", (id) => {
-//         console.log(id);
-//         clients[id] = id
-//         console.log(clients)
-//     })
-
-//     socket.on("message", (msg) => {
-//         console.log(msg);
-//         let targetId = msg.targetId;
-//         if (clients[targetId]) clients[targetId].emit("message", msg)
-//     })
-// })
-
-
-const users = {}
+const users = []
 
 io.on('connection', socket => {
-  console.log("hai")
+  console.log(`User ${socket.id} has Joined`)
+  users.push(socket.id)
 
   socket.on('join', data => {
     console.log(data)
   })
 
-  socket.on('new-user', name => {
-    users[socket.id] = name
-    console.log(users)
-    socket.broadcast.emit('user-connected', name)
+  socket.on('message', data => {
+    socket.broadcast.emit('message', data)
+    console.log(data)
   })
-  socket.on('send-chat-message', message => {
-    console.log(message, users)
-    socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
-  })
+
   socket.on('disconnect', () => {
-    socket.broadcast.emit('user-disconnected', users[socket.id])
+    socket.broadcast.emit('user-disconnected', `${socket.id} has disconnected`)
+    console.log(`${socket.id} has disconnected`)
     delete users[socket.id]
   })
 })
