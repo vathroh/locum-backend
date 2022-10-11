@@ -240,8 +240,6 @@ const getJobById = async (req, res) => {
                 data.day = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('cccc')
                 data.date = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
 
-
-
                 res.json(data)
             })
     } catch (error) {
@@ -355,7 +353,6 @@ const filteredJob = async (req, res) => {
 
 //Searching Jobs
 const searchJob = async (req, res) => {
-
     await Job.find()
         .populate('clinic')
         .then((jobs) => {
@@ -365,7 +362,6 @@ const searchJob = async (req, res) => {
                     data.push(e)
                 }
             })
-
             jobs.filter((e) => {
                 let clinic = e.clinic.clinicName.toLowerCase()
                 if (clinic.search(req.query.keyword.toLowerCase()) > -1) {
@@ -374,7 +370,16 @@ const searchJob = async (req, res) => {
             })
 
             const unique = [...new Set(data.map(item => item))];
-            res.json(formatData(unique))
+
+            unique.map((e, index) => {
+                e.number = ""
+                statusJob(e, req)
+                e.duration = Duration.fromMillis(e.work_time_finish - e.work_time_start).shiftTo("hours").toObject()
+            })
+
+            const output = formatData(unique)
+
+            res.json(output)
         })
         .catch((error) => {
             res.status(500).json({ message: error.message })

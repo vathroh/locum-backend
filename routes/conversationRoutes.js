@@ -21,21 +21,36 @@ router.get('/:userId', async (req, res) => {
                 $in: [req.params.userId]
             }
         }).lean()
+            .then(async (data) => {
+                let userIds = []
+                data.map((e) => {
+                    e.members.map((l) => {
+                        if (l !== req.params.userId) {
 
-        const ea = conversation.map(async (item) => {
-            await item.members.map(async (e) => {
-                if (e != req.params.userId) {
-                    item.sender = await User.findById(e)
+                            userIds.push({
+                                _id: e._id,
+                                user_id: l
+                            })
+                        }
+                    })
+                })
 
-                }
+                const conv = userIds.map(async (d) => {
+                    const user = await User.findById(d.user_id).select({ full_name: 1, _id: 0, profile_pict: 1 });
+                    return {
+                        _id: d._id,
+                        user: user
+                    }
+                })
+
+                promisedConv = await Promise.all(conv)
+                res.json(promisedConv)
             })
-            return item
-        })
 
-        res.status(200).json(await promise.all(ea))
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
 })
+
 
 module.exports = router

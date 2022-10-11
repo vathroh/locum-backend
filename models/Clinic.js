@@ -43,6 +43,9 @@ const Clinic = mongoose.Schema(
             datetime: {
                 type: Number
             }
+        }],
+        favorites: [{
+            type: String
         }]
     },
     {

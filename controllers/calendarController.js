@@ -14,8 +14,17 @@ const getEvents = async (req, res) => {
 
 const getEventByUserId = async (req, res) => {
     try {
-        const events = await Calendar.find({ user_id: req.params.userId }).sort({ start: 1 });
-        res.json(events);
+        const events = await Calendar.find({ user_id: req.params.userId }).lean().select({ user_id: 0, clinic_id: 0, job_id: 0 })
+            .then((data) => {
+                data.map((item) => {
+                    item.date = DateTime.fromMillis(item.start).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
+                    item.start = DateTime.fromMillis(item.start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    item.finish = DateTime.fromMillis(item.finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
+                    return item
+                })
+
+                res.json(data);
+            });
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
@@ -49,31 +58,6 @@ const get3DaysEventByUserId = async (req, res) => {
     }
 
     return res.json(data)
-
-    const day = DateTime.now().startOf('day').toMillis()
-
-    try {
-        await Calendar
-            .find({
-                user_id: req.params.userId, start: {
-                    $gte: day, $lte: ThreeDay
-                }
-            })
-            .sort({ start: 1 }).lean()
-            .then((data) => {
-                // res.json(DateTime.fromMillis(events));
-                const de = data.map((item) => {
-
-                    return item.date = DateTime.now().startOf('day').toMillis()
-                    return item.date = DateTime.now({ zone: "Asia/Singapore" }).toMillis()
-                    return item.date = DateTime.fromMillis(item.start).toFormat("y/M/dd")
-                })
-                res.json(data)
-
-            })
-    } catch (error) {
-        res.status(404).json({ message: error.message });
-    }
 }
 
 const getEventById = async (req, res) => {

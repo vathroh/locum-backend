@@ -6,7 +6,6 @@ const doctorRoute = require("./routes/doctorRoutes.js");
 const clinicRoute = require("./routes/clinicRoutes.js");
 const authRoutes = require('./routes/authRoutes.js');
 const userRoute = require('./routes/userRoutes.js');
-const userRoleRoute = require('./routes/userRoleRoutes.js');
 const attendanceRoute = require('./routes/attendanceRecordRoutes.js');
 const doctorRanksRoute = require('./routes/doctorRanksRoutes.js');
 const indexRoute = require('./routes/indexRoutes.js')
@@ -58,7 +57,6 @@ app.use('/comment', require('./routes/commentRoutes'))
 app.use('/jobs', require('./routes/jobRoutes.js'))
 app.use('/doctor-ranks', doctorRanksRoute)
 app.use('/attendance', attendanceRoute)
-app.use('/user-role', userRoleRoute)
 app.use('/doctor', doctorRoute);
 app.use('/clinic', clinicRoute);
 app.use('/send', fcmRoute);

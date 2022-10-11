@@ -26,6 +26,10 @@ const CalendarSchema = mongoose.Schema(
         },
         finish: {
             type: Number
+        },
+        type: {
+            type: String,
+            enum: ["appointment", "interview"]
         }
     },
     {
