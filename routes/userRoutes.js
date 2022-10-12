@@ -9,7 +9,9 @@ const {
     deleteUser
 } = require("../controllers/UserController.js");
 
+const { updateUserModel } = require('../services/updateModels/user');
 
+router.post('/update-model', updateUserModel)
 router.get('/', getUsers);
 router.get('/:id', getUserById);
 router.post('/', saveUser);

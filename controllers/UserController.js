@@ -14,7 +14,8 @@ const getUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id)
+            .select({ full_name: 1, profile_pict: 1, phone_number: 1, email: 1, role: 1, about_me: 1, certification: 1, preferences: 1, resume: 1, achievement: 1 });
         res.json(user);
     } catch (error) {
         res.status(404).json({ message: error.message });

@@ -7,6 +7,9 @@ const User = mongoose.Schema(
         full_name: {
             type: String
         },
+        code: {
+            type: String
+        },
         about_me: {
             type: String
         },
@@ -52,6 +55,28 @@ const User = mongoose.Schema(
         },
         verification_code: {
             type: String
+        },
+        certification: [{
+            item: {
+                type: String
+            },
+            file: {
+                type: String
+            }
+        }],
+        achievement: [{
+            item: {
+                type: String
+            },
+            file: {
+                type: String
+            }
+        }],
+        resume: {
+            type: String
+        },
+        preferences: {
+            type: Array
         }
     },
     {

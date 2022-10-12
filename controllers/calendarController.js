@@ -14,7 +14,7 @@ const getEvents = async (req, res) => {
 
 const getEventByUserId = async (req, res) => {
     try {
-        const events = await Calendar.find({ user_id: req.params.userId }).lean().select({ user_id: 0, clinic_id: 0, job_id: 0 })
+        const events = await Calendar.find({ user_id: req.params.userId }).lean().sort({ start: 1 }).select({ user_id: 0, clinic_id: 0, job_id: 0 })
             .then((data) => {
                 data.map((item) => {
                     item.date = DateTime.fromMillis(item.start).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
