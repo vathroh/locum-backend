@@ -43,12 +43,13 @@ const authFirebaseMiddleware = (req, res, next) => {
             .then(async (decodedToken) => {
                 const findUser = await User.findOne({ firebaseUUID: decodedToken.user_id })
                 const user = {}
-                user._id = findUser._id
+                user._id = findUser._id.toString()
                 user.full_name = findUser.full_name
                 user.role = findUser.role
                 user.phone_number = findUser.phone_number ?? ""
                 user.profile_pict = findUser.profile_pict ?? ""
                 req.user = user
+                console.log(req.user)
                 next()
             })
             .catch(async (error) => {
