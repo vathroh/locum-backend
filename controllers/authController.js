@@ -40,6 +40,7 @@ const registerWithFirebase = async (req, res) => {
 
             const data = {}
             data.email = result.email
+            data.password = await bcrypt.hash(req.body.password, 10)
             data.firebaseUUID = result.uid
             data.verification_code = Math.random().toString().substr(2, 6)
             const newUser = new User(data);
@@ -49,7 +50,7 @@ const registerWithFirebase = async (req, res) => {
 
                 axios({
                     method: "POST",
-                    url: "http://localhost:5000/send/email",
+                    url: process.env.BASE_URL + "/send/email",
                     data: {
                         "email": req.body.email,
                         "subject": "Please verify your email address",
@@ -132,10 +133,14 @@ const loginWithFirebase = async (req, res) => {
                 user.phone_number = findUser.phone_number ?? ""
                 user.profile_pict = findUser.profile_pict ?? ""
 
+                findUser.password = await bcrypt.hash(req.body.password, 10)
+                await User.updateOne({ _id: findUser._id }, { $set: findUser });
+
                 return res.json({ user: user, idToken: userCred._tokenResponse.idToken, refreshToken: userCred._tokenResponse.refreshToken });
             } else {
                 const data = {}
                 data.firebaseUUID = userCred.user.uid
+                data.password = await bcrypt.hash(req.body.password, 10)
                 data.full_name = userCred._tokenResponse.displayName
                 data.email = userCred._tokenResponse.email
                 data.phone_number = userCred._tokenResponse.phoneNumber
@@ -210,6 +215,62 @@ const afterSignin = async (req, res) => {
         }
     }
 }
+
+
+const changeFirebasePasswordByUser = async (req, res) => {
+    const user = await User.findById(req.user._id)
+
+    if (await bcrypt.compare(req.body.current_password, user.password)) {
+        user.password = await bcrypt.hash(req.body.new_password, 10)
+        await admin.auth().updateUser(user.firebaseUUID, {
+            password: req.body.new_password
+        })
+            .then(async (userRecord) => {
+                await User.updateOne({ _id: user._id }, { $set: user });
+                res.json({ message: 'Successfully changed the password.' });
+            })
+            .catch((error) => {
+                res.status(500).json({ message: error.message });
+            });
+
+    } else {
+        return res.status(400).json({ message: 'Please insert the correct current password!' })
+    }
+}
+
+const changeFirebasePasswordByAdmin = async (req, res) => {
+    if (req.user.role === "system admin") {
+        const user = await User.findById(req.body.user_id)
+        user.password = await bcrypt.hash(req.body.new_password, 10)
+
+        await admin.auth().updateUser(user.firebaseUUID, {
+            password: req.body.new_password
+        })
+            .then(async (userRecord) => {
+                await User.updateOne({ _id: user._id }, { $set: user });
+                res.json({ message: 'Successfully changed the password.' });
+            })
+            .catch((error) => {
+                res.status(500).json({ message: error.message });
+            });
+    } else {
+        res.status(403).json({ message: "You are not allowed to change the user password." })
+    }
+}
+
+const changePasswordByUser = async (req, res) => {
+    const user = await User.findById(req.user._id)
+
+    if (await bcrypt.compare(req.body.current_password, user.password)) {
+        user.password = await bcrypt.hash(req.body.new_password, 10)
+
+        res.json({ message: 'Successfully changed the password.' });
+
+    } else {
+        return res.status(400).json({ message: 'Please insert the correct current password!' })
+    }
+}
+
 
 const updatePhoneNumber = async (req, res) => {
     const userId = await User.findById(req.params.userId);
@@ -373,7 +434,7 @@ const loginWithEmail = async (req, res) => {
             return res.status(400).json({ message: "Invalid credentials!" })
         }
     } catch (error) {
-        return res.status(400).json('Something wrong.')
+        return res.status(500).json({ message: 'Something wrong.' })
     }
 
 }
@@ -437,16 +498,6 @@ const forgotEmailPassword = (req, res) => {
 }
 
 
-const changePassword = async (req, res) => {
-
-    updatePassword(user, newPassword).then(() => {
-        return res.json({ message: "Your password has been succeessfully changed." })
-    }).catch((error) => {
-        return res.status(500).json({ message: 'error.message1' })
-    });
-
-}
-
 const SignOut = (req, res) => {
     const auth = getAuth();
     signOut(auth).then(() => {
@@ -457,4 +508,4 @@ const SignOut = (req, res) => {
 }
 
 
-module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail, sendingVerificationCode, afterSignin, updatePhoneNumber, updateRoleUser, forgotEmailPassword, SignOut, changePassword }
+module.exports = { register, loginWithFirebase, registerWithFirebase, loginWithEmail, refreshToken, verifyEmail, sendingVerificationCode, afterSignin, updatePhoneNumber, updateRoleUser, forgotEmailPassword, SignOut, changeFirebasePasswordByUser }

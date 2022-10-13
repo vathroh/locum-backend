@@ -6,26 +6,24 @@ const {
     verifyEmail,
     loginWithEmail,
     registerWithFirebase,
+    changeFirebasePasswordByUser,
     forgotEmailPassword,
     loginWithFirebase,
     updatePhoneNumber,
     updateRoleUser,
-    changePassword,
     afterSignin,
-    register,
-    SignOut
+    register
 } = require("../controllers/authController.js");
 
-router.post('/update-phone-number/:userId', updatePhoneNumber);
+router.post('/change-password-by-user', authFirebaseMiddleware, changeFirebasePasswordByUser);
+router.post('/update-phone-number/:userId', authFirebaseMiddleware, updatePhoneNumber);
+router.post('/update-role/:userId', authFirebaseMiddleware, updateRoleUser);
+router.post('/after-google-signin', authFirebaseMiddleware, afterSignin);
 router.post('/register-with-firebase', registerWithFirebase);
 router.post('/email-forgot-password', forgotEmailPassword);
 router.post('/login-with-firebase', loginWithFirebase);
-router.post('/update-role/:userId', updateRoleUser);
-router.post('/after-google-signin', afterSignin);
-router.post('/change-password', changePassword);
 router.post('/verify-email', verifyEmail);
 router.post('/login', loginWithEmail);
 router.post('/register', register);
-router.post('/signout', authFirebaseMiddleware, SignOut);
 
 module.exports = router;

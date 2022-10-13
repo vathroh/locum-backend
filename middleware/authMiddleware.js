@@ -3,6 +3,8 @@ const serviceAccount = require("../config/serviceAccountKey.json")
 const { getAuth } = require('firebase/auth')
 const User = require("../models/User.js");
 const jwt = require('jsonwebtoken')
+const axios = require('axios');
+const { post } = require("../routes/clinicRoutes");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
@@ -49,8 +51,8 @@ const authFirebaseMiddleware = (req, res, next) => {
                 req.user = user
                 next()
             })
-            .catch((error) => {
-                res.status(401).json("The Token has been expired. Please login.")
+            .catch(async (error) => {
+                res.status(401).json("The Token has been expired. Please relogin.")
             });
 
     }

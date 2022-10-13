@@ -458,9 +458,9 @@ const statusJob = (e, req) => {
         e.status = "Booking Completed"
     } else if (e.canceled_by?.length > 0) {
         e.status = "Booking Canceled"
-    } else if (e.booked_by.includes(req.body.user_id) && !e.assigned_to.includes(req.body.user_id)) {
+    } else if (e.booked_by.includes(req.user._id) && !e.assigned_to.includes(req.user._id)) {
         e.status = "Booking Pending"
-    } else if (e.assigned_to.includes(req.body.user_id)) {
+    } else if (e.assigned_to.includes(req.user._id)) {
         e.status = "Booking Approved"
     } else {
         e.status = "Booking Opened"

@@ -10,12 +10,12 @@ const createBooking = async (req, res) => {
 
     if (!jobId) return res.status(404).json({ message: "The job is not found." });
 
-    let hasUserBooked = jobId.booked_by.includes(req.body.user_id)
+    let hasUserBooked = jobId.booked_by.includes(req.user._id)
 
     if (!hasUserBooked) {
         let updatedData = jobId
 
-        updatedData.booked_by.push(req.body.user_id)
+        updatedData.booked_by.push(req.user._id)
 
         try {
             const bookedJob = await Job.updateOne({ _id: req.params.id }, { $set: updatedData });
@@ -35,12 +35,12 @@ const deleteBooking = async (req, res) => {
 
     if (!jobId) return res.status(404).json({ message: "The job is not found." });
 
-    let hasUserBooked = jobId.booked_by.includes(req.body.user_id)
+    let hasUserBooked = jobId.booked_by.includes(req.user._id)
 
     if (hasUserBooked) {
         let updatedData = jobId
 
-        updatedData.booked_by.pop(req.body.user_id)
+        updatedData.booked_by.pop(req.user._id)
 
         try {
             const bookedJob = await Job.updateOne({ _id: req.params.id }, { $set: updatedData });

@@ -15,7 +15,7 @@ const getEvents = async (req, res) => {
 const getEventByUserId = async (req, res) => {
     try {
         const events = await Calendar.find({ user_id: req.params.userId }).lean().sort({ start: 1 }).select({ user_id: 0, clinic_id: 0, job_id: 0 })
-            .then((data) => {
+            .then(async (data) => {
                 data.map((item) => {
                     item.date = DateTime.fromMillis(item.start).setZone("Asia/Singapore").toFormat('dd LLLL yyyy')
                     item.start = DateTime.fromMillis(item.start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
@@ -23,7 +23,39 @@ const getEventByUserId = async (req, res) => {
                     return item
                 })
 
-                res.json(data);
+                const events = []
+
+                for (i = 0; i < 16; i++) {
+                    const item = {}
+                    const date = DateTime.now().plus({ days: i })
+                    item.date = date.toFormat("dd LLL")
+                    item.event = ""
+                    item.start = ""
+                    item.finish = ""
+                    item.type = ""
+
+                    const cal = await Calendar
+                        .find({
+                            user_id: req.params.userId, start: {
+                                $gte: date.startOf('day').toMillis(), $lte: date.endOf('day').toMillis()
+                            }
+                        })
+                        .sort({ start: 1 }).lean()
+                        .then((el) => {
+                            el.map((j) => {
+                                item.event = j.event ?? ""
+                                item.start = DateTime.fromMillis(j.start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE) ?? ""
+                                item.finish = DateTime.fromMillis(j.finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE) ?? ""
+                                item.type = j.type ?? ""
+
+                            })
+
+                        })
+
+                    events.push(item)
+                }
+
+                res.json(events);
             });
     } catch (error) {
         res.status(404).json({ message: error.message });

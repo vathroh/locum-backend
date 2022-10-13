@@ -7,6 +7,7 @@ const clinicRoute = require("./routes/clinicRoutes.js");
 const authRoutes = require('./routes/authRoutes.js');
 const userRoute = require('./routes/userRoutes.js');
 const attendanceRoute = require('./routes/attendanceRecordRoutes.js');
+const { authFirebaseMiddleware } = require('./middleware/authMiddleware')
 const doctorRanksRoute = require('./routes/doctorRanksRoutes.js');
 const indexRoute = require('./routes/indexRoutes.js')
 const fcmRoute = require('./routes/fcmRoutes')
@@ -49,20 +50,20 @@ app.get('/socket.io/socket.io.js', (req, res) => {
 });
 
 
-app.use('/booking', require('./routes/bookingRoutes'))
-app.use('/calendar', require('./routes/calendarRoutes'))
-app.use('/conversation', require('./routes/conversationRoutes'))
-app.use('/clinic-group', require('./routes/clinicGroupRoutes'))
-app.use('/messages', require('./routes/messageRoutes'))
-app.use('/comment', require('./routes/commentRoutes'))
-app.use('/jobs', require('./routes/jobRoutes.js'))
+app.use('/booking', authFirebaseMiddleware, require('./routes/bookingRoutes'))
+app.use('/calendar', authFirebaseMiddleware, require('./routes/calendarRoutes'))
+app.use('/conversation', authFirebaseMiddleware, require('./routes/conversationRoutes'))
+app.use('/clinic-group', authFirebaseMiddleware, require('./routes/clinicGroupRoutes'))
+app.use('/messages', authFirebaseMiddleware, require('./routes/messageRoutes'))
+app.use('/comment', authFirebaseMiddleware, require('./routes/commentRoutes'))
+app.use('/jobs', authFirebaseMiddleware, require('./routes/jobRoutes.js'))
+app.use('/attendance', authFirebaseMiddleware, attendanceRoute)
+app.use('/clinic', authFirebaseMiddleware, clinicRoute);
+app.use('/send', authFirebaseMiddleware, fcmRoute);
+app.use('/user', authFirebaseMiddleware, userRoute)
 app.use('/doctor-ranks', doctorRanksRoute)
-app.use('/attendance', attendanceRoute)
 app.use('/doctor', doctorRoute);
-app.use('/clinic', clinicRoute);
-app.use('/send', fcmRoute);
 app.use('/auth', authRoutes)
-app.use('/user', userRoute)
 app.use('/', indexRoute)
 
 // app.use('/quee/send', require('./services/rabbitmq/producer.js')) 
