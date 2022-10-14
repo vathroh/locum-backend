@@ -59,11 +59,11 @@ app.use('/comment', authFirebaseMiddleware, require('./routes/commentRoutes'))
 app.use('/jobs', authFirebaseMiddleware, require('./routes/jobRoutes.js'))
 app.use('/attendance', authFirebaseMiddleware, attendanceRoute)
 app.use('/clinic', authFirebaseMiddleware, clinicRoute);
-app.use('/send', authFirebaseMiddleware, fcmRoute);
 app.use('/user', authFirebaseMiddleware, userRoute)
 app.use('/doctor-ranks', doctorRanksRoute)
 app.use('/doctor', doctorRoute);
 app.use('/auth', authRoutes)
+app.use('/send', fcmRoute);
 app.use('/', indexRoute)
 
 // app.use('/quee/send', require('./services/rabbitmq/producer.js')) 

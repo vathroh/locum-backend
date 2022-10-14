@@ -235,6 +235,7 @@ const getJobById = async (req, res) => {
             .exec((err, data) => {
 
                 statusJob(data, req)
+                data.image = process.env.BASE_URL + data.image
                 data.work_time_start = DateTime.fromMillis(data.work_time_start).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                 data.work_time_finish = DateTime.fromMillis(data.work_time_finish).setZone("Asia/Singapore").toLocaleString(DateTime.TIME_SIMPLE)
                 data.day = DateTime.fromMillis(data.date).setZone("Asia/Singapore").toFormat('cccc')
