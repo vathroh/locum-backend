@@ -1,90 +1,108 @@
 const mongoose = require("mongoose");
 const { array } = require("mongoose/lib/utils");
-var uniqueValidator = require('mongoose-unique-validator');
+var uniqueValidator = require("mongoose-unique-validator");
 
 const User = mongoose.Schema(
     {
         full_name: {
-            type: String
-        },
-        code: {
-            type: String
+            type: String,
+            required: true,
+            default: "",
         },
         about_me: {
-            type: String
+            type: String,
+            required: true,
+            default: "",
         },
         password: {
-            type: String
+            type: String,
         },
         email: {
             type: String,
+            required: false,
+            unique: true,
+        },
+        email_verified: {
+            type: Boolean,
             required: true,
-            unique: true
+            default: false,
+        },
+        email_verification_code: {
+            type: String,
         },
         phone_number: {
             type: String,
-            required: false
+            required: true,
+            default: "",
         },
-        firebaseUUID: {
+        phone_number_verified: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
+        phone_verification_code: {
             type: String,
-            required: false
+            default: "",
         },
         role: {
             type: String,
-            enum: ["user", "super admin", "system admin", "clinic_admin", "doctor", "clinic_assistants"],
-            default: "user"
+            enum: [
+                "user",
+                "super admin",
+                "system admin",
+                "clinic_admin",
+                "doctor",
+                "clinic_assistants",
+            ],
+            default: "user",
         },
-        job: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Doctor',
-                exists: true,
-                required: false
-            }
-        ],
         status: {
             type: String,
-            default: "created"
+            default: "created",
         },
         blacklist: {
             type: Boolean,
-            default: false
+            default: false,
         },
         profile_pict: {
-            type: String
+            type: String,
+            default: "",
         },
-        verification_code: {
-            type: String
-        },
-        certification: [{
-            item: {
-                type: String
+        certification: [
+            {
+                item: {
+                    type: String,
+                },
+                file: {
+                    type: String,
+                },
             },
-            file: {
-                type: String
-            }
-        }],
-        achievement: [{
-            item: {
-                type: String
+        ],
+        achievement: [
+            {
+                item: {
+                    type: String,
+                },
+                file: {
+                    type: String,
+                },
             },
-            file: {
-                type: String
-            }
-        }],
+        ],
         resume: {
-            type: String
+            type: String,
+            default: "",
         },
         preferences: {
-            type: Array
-        }
+            type: Array,
+            default: [],
+        },
     },
     {
-        timestamps: true
+        timestamps: true,
     }
 );
 
 User.plugin(uniqueValidator);
 
 // export model
-module.exports = mongoose.model('User', User);
+module.exports = mongoose.model("User", User);
