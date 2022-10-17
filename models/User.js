@@ -6,12 +6,10 @@ const User = mongoose.Schema(
     {
         full_name: {
             type: String,
-            required: true,
             default: "",
         },
         about_me: {
             type: String,
-            required: true,
             default: "",
         },
         password: {
@@ -19,7 +17,7 @@ const User = mongoose.Schema(
         },
         email: {
             type: String,
-            required: false,
+            required: true,
             unique: true,
         },
         email_verified: {
@@ -32,7 +30,6 @@ const User = mongoose.Schema(
         },
         phone_number: {
             type: String,
-            required: true,
             default: "",
         },
         phone_number_verified: {
