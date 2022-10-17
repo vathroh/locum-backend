@@ -1,29 +1,44 @@
-const { authFirebaseMiddleware } = require('../middleware/authMiddleware')
+const { authJwtMiddleware } = require("../middleware/authMiddleware");
 const express = require("express");
 const router = express.Router();
 
 const {
-    verifyEmail,
-    loginWithEmail,
-    registerWithFirebase,
     changeFirebasePasswordByUser,
+    sendPhoneVerificationCode,
     forgotEmailPassword,
-    loginWithFirebase,
+    verifyPhoneNumber,
     updatePhoneNumber,
     updateRoleUser,
+    verifyEmail,
     afterSignin,
-    register
+    register,
+    login,
 } = require("../controllers/authController.js");
 
-router.post('/change-password-by-user', authFirebaseMiddleware, changeFirebasePasswordByUser);
-router.post('/update-phone-number/:userId', authFirebaseMiddleware, updatePhoneNumber);
-router.post('/update-role/:userId', authFirebaseMiddleware, updateRoleUser);
-router.post('/after-google-signin', authFirebaseMiddleware, afterSignin);
-router.post('/register-with-firebase', registerWithFirebase);
-router.post('/email-forgot-password', forgotEmailPassword);
-router.post('/login-with-firebase', loginWithFirebase);
-router.post('/verify-email', verifyEmail);
-router.post('/login', loginWithEmail);
-router.post('/register', register);
+router.post(
+    "/change-password-by-user",
+    authJwtMiddleware,
+    changeFirebasePasswordByUser
+);
+
+router.post(
+    "/update-phone-number/:userId",
+    authJwtMiddleware,
+    updatePhoneNumber
+);
+
+router.post(
+    "/send-phone-verification/:userId",
+    authJwtMiddleware,
+    sendPhoneVerificationCode
+);
+
+router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
+router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
+router.post("/after-google-signin", authJwtMiddleware, afterSignin);
+router.post("/email-forgot-password", forgotEmailPassword);
+router.post("/verify-email", verifyEmail);
+router.post("/register", register);
+router.post("/login", login);
 
 module.exports = router;
