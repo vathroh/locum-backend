@@ -33,60 +33,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 auth.languageCode = "it";
 
-const registerWithFirebase = async (req, res) => {
-    const userResponse = await admin
-        .auth()
-        .createUser({
-            email: req.body.email,
-            password: req.body.password,
-            emailVerified: false,
-            disabled: false,
-        })
-        .then(async (result) => {
-            const data = {};
-            data.email = result.email;
-            data.password = await bcrypt.hash(req.body.password, 10);
-            data.firebaseUUID = result.uid;
-            data.verification_code = Math.random().toString().substr(2, 6);
-            const newUser = new User(data);
-
-            try {
-                const savedUser = await newUser.save();
-
-                axios({
-                    method: "POST",
-                    url: process.env.BASE_URL + "/send/email",
-                    data: {
-                        email: req.body.email,
-                        subject: "Please verify your email address",
-                        text: data.verification_code,
-                    },
-                });
-
-                admin
-                    .auth()
-                    .updateUser(result.uid, {
-                        disabled: true,
-                    })
-                    .then(() => {
-                        res.json({
-                            message:
-                                "Your verification code has been successfully sent to your email. Please verify before login.",
-                        });
-                    })
-                    .catch((err) => {
-                        res.status(500).json({ message: err });
-                    });
-            } catch (error) {
-                res.status(500).json({ message: error });
-            }
-        })
-        .catch((error) => {
-            console.log(error);
-            res.json(error.message);
-        });
-};
-
 const sendingVerificationCode = async (req, res) => {
     const user = User.findOne({ email: req.body.email });
     user.verification_code = Math.random().toString().substr(2, 6);
@@ -110,90 +56,6 @@ const sendingVerificationCode = async (req, res) => {
         })
         .catch((err) => {
             res.status(500).json({ message: err });
-        });
-};
-
-const loginWithFirebase = async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-
-    const user = await User.findOne({ email: email });
-    if (user) {
-        await admin
-            .auth()
-            .getUser(user.firebaseUUID)
-            .then((userRecord) => {
-                if (userRecord.emailVerified == false) {
-                    return res.status(401).json({
-                        message:
-                            "Your email is not verified. Please check your email.",
-                    });
-                }
-            })
-            .catch((error) => {
-                return res.status(500).json({ message: error.message });
-            });
-    }
-
-    await signInWithEmailAndPassword(auth, email, password)
-        .then(async (userCred) => {
-            const user = {};
-            const findUser = await User.findOne({
-                firebaseUUID: userCred.user.uid,
-            });
-
-            if (findUser) {
-                user._id = findUser._id;
-                user.full_name = findUser.full_name;
-                user.role = findUser.role;
-                user.phone_number = findUser.phone_number ?? "";
-                user.profile_pict = findUser.profile_pict ?? "";
-
-                findUser.password = await bcrypt.hash(req.body.password, 10);
-                await User.updateOne({ _id: findUser._id }, { $set: findUser });
-
-                return res.json({
-                    user: user,
-                    idToken: userCred._tokenResponse.idToken,
-                    refreshToken: userCred._tokenResponse.refreshToken,
-                });
-            } else {
-                const data = {};
-                data.firebaseUUID = userCred.user.uid;
-                data.password = await bcrypt.hash(req.body.password, 10);
-                data.full_name = userCred._tokenResponse.displayName;
-                data.email = userCred._tokenResponse.email;
-                data.phone_number = userCred._tokenResponse.phoneNumber;
-
-                const newUser = new User(data);
-
-                try {
-                    const savedUser = await newUser.save();
-                    const user = {};
-                    const findUser = await User.findOne({
-                        firebaseUUID: userCred.user.uid,
-                    });
-
-                    if (findUser) {
-                        user._id = findUser._id;
-                        user.email = findUser.email;
-                        user.full_name = findUser.full_name;
-                        user.role = findUser.role;
-                        user.phone_number = findUser.phone_number ?? "";
-                        user.profile_pict = findUser.profile_pict ?? "";
-                    }
-                    return res.json({
-                        user: user,
-                        idToken: userCred._tokenResponse.idToken,
-                        refreshToken: userCred._tokenResponse.refreshToken,
-                    });
-                } catch (error) {
-                    return res.status(500).json({ message: error.message });
-                }
-            }
-        })
-        .catch((err) => {
-            return res.status(401).json({ message: "Invalid credentials!" });
         });
 };
 
@@ -614,22 +476,9 @@ const forgotEmailPassword = (req, res) => {
         });
 };
 
-const SignOut = (req, res) => {
-    const auth = getAuth();
-    signOut(auth)
-        .then(() => {
-            res.json({ message: "You have successfully logged out." });
-        })
-        .catch((error) => {
-            res.status(500).json({ message: error.message });
-        });
-};
-
 module.exports = {
     login,
     register,
-    loginWithFirebase,
-    registerWithFirebase,
     refreshToken,
     verifyEmail,
     sendingVerificationCode,
@@ -637,7 +486,6 @@ module.exports = {
     updatePhoneNumber,
     updateRoleUser,
     forgotEmailPassword,
-    SignOut,
     changeFirebasePasswordByUser,
     sendPhoneVerificationCode,
     verifyPhoneNumber,
