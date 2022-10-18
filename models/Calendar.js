@@ -1,40 +1,43 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const CalendarSchema = mongoose.Schema(
     {
         user_id: {
             type: String,
-            required: true
+            required: true,
         },
         clinic_id: {
             type: String,
-            required: true
+            required: true,
         },
         job_id: {
             type: String,
-            required: true
+            required: true,
         },
         event: {
             type: String,
-            required: true
+            required: true,
         },
         date: {
-            type: Number
+            type: Number,
         },
         start: {
-            type: Number
+            type: Number,
         },
         finish: {
-            type: Number
+            type: Number,
         },
         type: {
             type: String,
-            enum: ["appointment", "interview"]
-        }
+            enum: ["appointment", "interview"],
+        },
+        link: {
+            type: String,
+        },
     },
     {
-        timestamp: true
+        timestamp: true,
     }
-)
+);
 
-module.exports = mongoose.model("Calendar", CalendarSchema)
+module.exports = mongoose.model("Calendar", CalendarSchema);
