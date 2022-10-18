@@ -8,6 +8,12 @@ const User = mongoose.Schema(
             type: String,
             default: "",
         },
+        firebaseUUID: {
+            type: String,
+        },
+        provider: {
+            type: String,
+        },
         about_me: {
             type: String,
             default: "",
