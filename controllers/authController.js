@@ -327,7 +327,7 @@ const verifyEmail = async (req, res) => {
 
 const sendPhoneVerificationCode = async (req, res) => {
     try {
-        const user = await User.findById(req.params.userId);
+        const user = await User.findById(req.user._id);
         code = Math.random().toString().substr(2, 6);
         user.phone_verification_code = code;
         await User.updateOne({ _id: user._id }, { $set: user });
