@@ -1,6 +1,10 @@
 const { sendingSMS } = require("../services/sendSMS");
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const client = require("twilio")(accountSid, authToken);
 const { sendingEmail } = require("../services/sendingEmail");
 const { initializeApp } = require("firebase/app");
+
 const admin = require("firebase-admin");
 const {
     getAuth,
@@ -331,17 +335,33 @@ const sendPhoneVerificationCode = async (req, res) => {
         code = Math.random().toString().substr(2, 6);
         user.phone_verification_code = code;
         await User.updateOne({ _id: user._id }, { $set: user });
-        const text = `${code} is your verification code. please input to verify your phone number!`;
+        const text = `LOCUM. ${code} is your verification code. please input to verify your phone number!`;
 
-        sendingSMS(text, req.body.phone_number);
-
-        res.status(200).json({
-            message:
-                "We have sent verification code to your phone. please verify to add your phone number!",
-        });
+        client.messages
+            .create({
+                body: text,
+                from: "+13608001799",
+                to: req.body.phone_number,
+            })
+            .then((message) => {
+                console.log(message.sid);
+                res.json(message);
+            });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+
+    // try {
+
+    //     sendingSMS(text, req.body.phone_number);
+
+    //     res.status(200).json({
+    //         message:
+    //             "We have sent verification code to your phone. please verify to add your phone number!",
+    //     });
+    // } catch (error) {
+    //     res.status(500).json({ message: error.message });
+    // }
 };
 
 const verifyPhoneNumber = async (req, res) => {

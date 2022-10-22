@@ -372,21 +372,41 @@ const getCalendarJobByClinicId = async (req, res) => {
         parseFloat(req.params.month)
     ).daysInMonth;
 
-    const data = [];
+    const jobsInMonth = [];
 
     for (i = 0; i < amontOfDays; i++) {
-        data.push(i);
-    }
-
-    return res.json(data);
-
-    try {
-        await Job.find({ clinic: req.params.clinicId }).then((data) => {
-            res.json(data);
+        date = DateTime.fromISO(req.params.year + req.params.month).plus({
+            days: i,
         });
-    } catch (error) {
-        res.status(404).json({ message: error.message });
+        await Job.find({
+            clinic: req.params.clinicId,
+            profession: req.user.role,
+            work_time_start: {
+                $gte: date.startOf("day").toMillis(),
+                $lte: date.endOf("day").toMillis(),
+            },
+        })
+            .select({ clinic: 1, work_time_start: 1, work_time_finish: 1 })
+            .lean()
+            .then((data) => {
+                const jobInDay = {};
+                jobInDay.date = i + 1;
+                data.map((e) => {
+                    e.work_time_start =
+                        DateTime.fromMillis(e.work_time_start)
+                            .setZone("Asia/Singapore")
+                            .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
+                    e.work_time_finish =
+                        DateTime.fromMillis(e.work_time_finish)
+                            .setZone("Asia/Singapore")
+                            .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
+                });
+                jobInDay.data = data;
+                jobsInMonth.push(jobInDay);
+            });
     }
+
+    return res.json(jobsInMonth);
 };
 
 const saveJob = async (req, res) => {
