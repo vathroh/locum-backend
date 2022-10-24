@@ -625,6 +625,12 @@ const statusJob = (e, req) => {
     } else {
         e.status = "Booking Opened";
     }
+
+    if (e.favorites.includes(req.user._id)) {
+        e.isFavorite = "true";
+    } else {
+        e.isFavorite = "false";
+    }
 };
 
 const formatData = (data) => {
@@ -643,6 +649,7 @@ const formatData = (data) => {
             completed: e.completed,
             canceled_by: e.canceled_by,
             status: e.status,
+            isFavorite: e.isFavorite,
             image: process.env.BASE_URL + e.image,
             number: e.number,
             duration: Duration.fromMillis(
@@ -698,6 +705,7 @@ const setFavorite = async (req, res) => {
         if (job.favorites.includes(req.user._id)) {
             const filter = job.favorites.filter((el) => el !== req.user._id);
             job.favorites = filter;
+            job.isFavorite;
             await Job.updateOne({ _id: req.params.jobId }, { $set: job }).then(
                 () => {
                     res.json({

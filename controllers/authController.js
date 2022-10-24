@@ -305,7 +305,9 @@ function validatePhoneNumber(input_str) {
     return re.test(input_str);
 }
 
-const forgotPassword = (req, res) => {};
+const forgotPassword = (req, res) => {
+    res.json("halo");
+};
 
 module.exports = {
     login,
