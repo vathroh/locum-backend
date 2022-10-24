@@ -1,4 +1,4 @@
-// import mongoose 
+// import mongoose
 const mongoose = require("mongoose");
 
 // Buat Schema
@@ -6,66 +6,79 @@ const Job = mongoose.Schema(
     {
         clinic: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Clinic',
-            exists: true
+            ref: "Clinic",
+            exists: true,
         },
         date: {
             type: Number,
-            required: true
+            required: true,
         },
         work_time_start: {
             type: Number,
-            required: true
+            required: true,
         },
         work_time_finish: {
             type: Number,
-            required: true
+            required: true,
         },
         profession: {
             type: String,
             required: true,
-            enum: ["doctor", "clinical assistant"]
+            enum: ["doctor", "clinical assistant"],
         },
         price: {
             type: Number,
-            requiered: true
+            requiered: true,
         },
         prefered_gender: {
             type: String,
-            enum: ["male", "female"]
+            enum: ["male", "female"],
         },
-        scope: [{
-            type: String,
-            required: true
-        }],
-        job_description: [{
-            type: String,
-            required: true
-        }],
-        preferences: [{
-            type: String
-        }],
-        booked_by: [{
-            type: String
-        }],
-        assigned_to: [{
-            type: String
-        }],
+        scope: [
+            {
+                type: String,
+                required: true,
+            },
+        ],
+        job_description: [
+            {
+                type: String,
+                required: true,
+            },
+        ],
+        preferences: [
+            {
+                type: String,
+            },
+        ],
+        booked_by: [
+            {
+                type: String,
+            },
+        ],
+        assigned_to: [
+            {
+                type: String,
+            },
+        ],
         completed: {
             type: Boolean,
-            default: false
+            default: false,
         },
         canceled_by: {
-            type: Array
+            type: Array,
         },
         image: {
-            type: String
-        }
+            type: String,
+        },
+        favorites: {
+            type: Array,
+        },
     },
     {
-        timestamps: true
+        timestamps: true,
     }
 );
 
 // export model
-module.exports = mongoose.model('Job', Job);
+module.exports = mongoose.model("Job", Job);

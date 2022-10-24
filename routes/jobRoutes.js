@@ -14,14 +14,19 @@ const {
     youMightLike,
     getExploreJobs,
     getUpcomingJobs,
+    favoritesByUser,
     getJobByClinicId,
     getUpcomingDoctorJobs,
     getCalendarJobByClinicId,
     getUpcomingClinicalAssistantJobs,
 } = require("../controllers/jobController.js");
+const { updateJobModel } = require("../services/updateModels/job.js");
+
+router.get("/update-model", updateJobModel);
 
 router.get("/calendar/:clinicId/:year/:month", getCalendarJobByClinicId);
 router.get("/clinical-assistant", getUpcomingClinicalAssistantJobs);
+router.get("/favorites-by-user/:userId", favoritesByUser);
 router.get("/doctor", getUpcomingDoctorJobs);
 router.get("/you-might-like", youMightLike);
 router.get("/clinic/:id", getJobByClinicId);

@@ -450,10 +450,10 @@ const updateJob = async (req, res) => {
 };
 
 const deleteJob = async (req, res) => {
-    const jobId = await Job.findById(req.params.id);
-    if (!jobId)
-        return res.status(404).json({ message: "The job is not found." });
     try {
+        const jobId = await Job.findById(req.params.id);
+        if (!jobId)
+            return res.status(404).json({ message: "The job is not found." });
         const deletedJob = await Job.updateOne(
             { _id: req.params.id },
             { $set: req.body }
@@ -667,6 +667,31 @@ const formatData = (data) => {
     });
 };
 
+const favoritesByUser = async (req, res) => {
+    try {
+        const favorites = await Job.find({
+            favorites: { $in: [req.params.userId] },
+        })
+            .lean()
+            .populate({ path: "clinic", select: "clinicName Address" })
+            .then((data) => {
+                data.map((e, index) => {
+                    e.number = "";
+                    statusJob(e, req);
+                    e.duration = Duration.fromMillis(
+                        e.work_time_finish - e.work_time_start
+                    )
+                        .shiftTo("hours")
+                        .toObject();
+                });
+                res.json(formatData(data));
+            })
+            .catch((error) => {
+                res.status(500).json({ message: error.message });
+            });
+    } catch (error) {}
+};
+
 module.exports = {
     getAllJobs,
     getUpcomingJobs,
@@ -686,4 +711,5 @@ module.exports = {
     statusJob,
     formatData,
     getExploreJobs,
+    favoritesByUser,
 };

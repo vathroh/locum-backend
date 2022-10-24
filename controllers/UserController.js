@@ -98,13 +98,20 @@ const deleteUser = async (req, res) => {
 
 const preferences = async (req, res) => {
     try {
-        const preferences = await User.findById(req.params.id).select({
-            prefrences: 1,
-        });
-        if (!preferences) {
-            return res.status(404).json({ message: "The data not found" });
-        }
-        res.status(200).json(preferences);
+        const preferences = await User.findById(req.params.userId)
+            .select({
+                prefrences: 1,
+            })
+            .lean()
+            .then((data) => {
+                const user = {};
+                user._id = data._id ?? "";
+                user.preferences = data.preferences ?? [];
+                res.json(user);
+            })
+            .catch((error) => {
+                res.status(500).json({ message: error.message });
+            });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

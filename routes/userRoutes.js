@@ -12,7 +12,7 @@ const {
 
 const { updateUserModel } = require("../services/updateModels/user");
 
-router.get("/preferences/:userId", getUserById);
+router.get("/preferences/:userId", preferences);
 router.post("/update-model", updateUserModel);
 router.get("/", getUsers);
 router.get("/:id", getUserById);
