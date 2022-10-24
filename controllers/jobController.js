@@ -649,7 +649,7 @@ const formatData = (data) => {
             completed: e.completed,
             canceled_by: e.canceled_by,
             status: e.status,
-            isFavorite: e.isFavorite,
+            isFavorite: e.isFavorite ?? "false",
             image: process.env.BASE_URL + e.image,
             number: e.number,
             duration: Duration.fromMillis(
