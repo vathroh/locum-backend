@@ -692,6 +692,36 @@ const favoritesByUser = async (req, res) => {
     } catch (error) {}
 };
 
+const setFavorite = async (req, res) => {
+    try {
+        const job = await Job.findById(req.params.jobId).lean();
+        if (job.favorites.includes(req.user._id)) {
+            const filter = job.favorites.filter((el) => el !== req.user._id);
+            job.favorites = filter;
+            await Job.updateOne({ _id: req.params.jobId }, { $set: job }).then(
+                () => {
+                    res.json({
+                        message:
+                            "You successfully remove this job from your favorites.",
+                    });
+                }
+            );
+        } else {
+            job.favorites.push(req.user._id);
+            await Job.updateOne({ _id: req.params.jobId }, { $set: job }).then(
+                () => {
+                    res.json({
+                        message:
+                            "You successfully tags this job as your favorites.",
+                    });
+                }
+            );
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getAllJobs,
     getUpcomingJobs,
@@ -712,4 +742,5 @@ module.exports = {
     formatData,
     getExploreJobs,
     favoritesByUser,
+    setFavorite,
 };

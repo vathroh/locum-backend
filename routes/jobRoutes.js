@@ -9,6 +9,7 @@ const {
     getNewJobs,
     getJobById,
     getAllJobs,
+    setFavorite,
     getPastJobs,
     filteredJob,
     youMightLike,
@@ -27,6 +28,7 @@ router.get("/update-model", updateJobModel);
 router.get("/calendar/:clinicId/:year/:month", getCalendarJobByClinicId);
 router.get("/clinical-assistant", getUpcomingClinicalAssistantJobs);
 router.get("/favorites-by-user/:userId", favoritesByUser);
+router.post("/set-favorite/:jobId", setFavorite);
 router.get("/doctor", getUpcomingDoctorJobs);
 router.get("/you-might-like", youMightLike);
 router.get("/clinic/:id", getJobByClinicId);
