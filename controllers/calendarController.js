@@ -42,6 +42,12 @@ const getEventByUserId = async (req, res) => {
                     item.type = "";
                     item.link = "";
 
+                    if (i == 0) {
+                        item.currentDate = "true";
+                    } else {
+                        item.currentDate = "false";
+                    }
+
                     const cal = await Calendar.find({
                         user_id: req.params.userId,
                         start: {

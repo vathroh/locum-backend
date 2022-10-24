@@ -22,6 +22,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "*",
+        allowedHeaders: ["Access-Control-Allow-Credentials"],
+        credentials: false,
     },
 });
 
@@ -79,15 +81,20 @@ const users = [];
 
 io.on("connection", (socket) => {
     console.log(`User ${socket.id} has Joined`);
-    users.push(socket.id);
 
     socket.on("join", (data) => {
-        console.log(data);
+        const user = {
+            socket_id: socket.id,
+            user_id: data._id,
+            full_name: data.full_name,
+        };
+        users.push(user);
+        // console.log(socket);
     });
 
     socket.on("message", (data) => {
         socket.broadcast.emit("message", data);
-        console.log(data);
+        // console.log(data);
     });
 
     socket.on("disconnect", () => {
@@ -95,8 +102,8 @@ io.on("connection", (socket) => {
             "user-disconnected",
             `${socket.id} has disconnected`
         );
-        console.log(`${socket.id} has disconnected`);
-        delete users[socket.id];
+        const user = users.findIndex((user) => user.socket_id == socket.id);
+        // console.log(`${socket.id} has disconnected`);
     });
 });
 

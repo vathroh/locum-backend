@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 const sendingEmail = (email, subject, text, html) => {
     const sendEmail = (email, subject, text, html) => {
         const options = {
-            from: "'LOCUM' <noreplay@locum.com>",
+            from: "'WORKWIZ' <noreplay@locum.com>",
             to: email,
             subject: subject,
             text: text,

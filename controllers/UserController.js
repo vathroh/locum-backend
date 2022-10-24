@@ -84,9 +84,11 @@ const updateUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-    const cekId = await User.findById(req.params.id);
-    if (!cekId) return res.status(404).json({ message: "The data not found" });
     try {
+        const cekId = await User.findById(req.params.id);
+        if (!cekId) {
+            return res.status(404).json({ message: "The data not found" });
+        }
         const deletedUser = await User.deleteOne({ _id: req.params.id });
         res.status(200).json(deletedUser);
     } catch (error) {
@@ -94,4 +96,24 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = { getUsers, getUserById, saveUser, updateUser, deleteUser };
+const preferences = async (req, res) => {
+    try {
+        const preferences = await User.findById(req.params.id).select({
+            prefrences: 1,
+        });
+        if (!preferences) {
+            return res.status(404).json({ message: "The data not found" });
+        }
+        res.status(200).json(preferences);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+module.exports = {
+    getUsers,
+    getUserById,
+    saveUser,
+    updateUser,
+    deleteUser,
+    preferences,
+};

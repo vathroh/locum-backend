@@ -1,173 +1,56 @@
-const { sendingSMS } = require("../services/sendSMS");
+const axios = require("axios");
+const bcrypt = require("bcrypt");
+const { json } = require("express");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User.js");
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const { sendingSMS } = require("../services/sendSMS");
 const client = require("twilio")(accountSid, authToken);
 const { sendingEmail } = require("../services/sendingEmail");
-const { initializeApp } = require("firebase/app");
 
-const admin = require("firebase-admin");
-const {
-    getAuth,
-    signInWithEmailAndPassword,
-    GoogleAuthProvider,
-    sendPasswordResetEmail,
-    signOut,
-    onAuthStateChanged,
-    reauthenticateWithCredential,
-} = require("firebase/auth");
-const User = require("../models/User.js");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const axios = require("axios");
-const { json } = require("express");
-
-const firebaseConfig = {
-    apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
-    authDomain: "locumsg-82094.firebaseapp.com",
-    projectId: "locumsg-82094",
-    storageBucket: "locumsg-82094.appspot.com",
-    messagingSenderId: "868654243090",
-    appId: "1:868654243090:web:4dbde59e391fb6d82a67cb",
-    measurementId: "G-BMJF0EBZ33",
-};
-
-const provider = new GoogleAuthProvider();
-provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-auth.languageCode = "it";
-
-const sendingVerificationCode = async (req, res) => {
+const sendEmailVerificationCode = async (req, res) => {
     const user = User.findOne({ email: req.body.email });
-    user.verification_code = Math.random().toString().substr(2, 6);
+    code = Math.random().toString().substr(2, 6);
+    user.verification_code = code;
 
     user.updateOne({ email: req.body.email }, { $set: user });
 
-    axios({
-        method: "POST",
-        url: "http://localhost:5000/send/email",
-        data: {
-            email: req.body.email,
-            subject: "Please verify your email address",
-            text: verification_code,
-        },
-    })
-        .then(() => {
-            res.json({
-                message:
-                    "Verification code has been sent to your email. Please check your email",
-            });
-        })
-        .catch((err) => {
-            res.status(500).json({ message: err });
-        });
+    subject = "Please verify your email address.";
+    text = `${code} is your email verification code. Please input the code to the form to activate your account!`;
+    html = null;
+
+    sendingEmail(req.body.email, subject, text, html);
 };
 
-const afterSignin = async (req, res) => {
-    const findUser = await User.findOne({ firebaseUUID: req.body.uid });
+const sendEmailForgotPasswordCode = async (req, res) => {
+    const user = User.findOne({ email: req.body.email });
+    code = Math.random().toString().substr(2, 6);
+    user.forgot_password_code = code;
 
-    if (findUser) {
-        res.json({
-            user: findUser,
-            idToken: req.body.idToken,
-            refreshToken: req.body.refreshToken,
-        });
-    } else {
-        const data = {};
-        data.firebaseUUID = req.body.uid;
-        data.full_name = req.body.displayName;
-        data.email = req.body.email;
-        data.phone_number = req.body.phoneNumber ?? "";
+    user.updateOne({ email: req.body.email }, { $set: user });
 
-        const newUser = new User(data);
+    subject = "Please verify your email address.";
+    text = `${code} is your email verification code. Please input the code to the form to activate your account!`;
+    html = null;
 
-        try {
-            const savedUser = await newUser.save();
-            const findUseragain = savedUser;
-
-            if (findUseragain) {
-                const user = {};
-
-                user._id = findUseragain._id;
-                user.email = findUseragain.email;
-                user.full_name = findUseragain.full_name;
-                user.role = findUseragain.role;
-                user.phone_number = findUseragain.phone_number ?? "";
-                user.profile_pict = findUseragain.profile_pict ?? "";
-
-                return res.json({
-                    user: user,
-                    idToken: req.body._tokenResponse.idToken,
-                    refreshToken: req.body._tokenResponse.refreshToken,
-                });
-            } else {
-                return res.status(500).json({ message: "Server error!" });
-            }
-        } catch (error) {
-            return res.status(500).json({ message: error.message });
-        }
-    }
-};
-
-const changeFirebasePasswordByUser = async (req, res) => {
-    const user = await User.findById(req.user._id);
-
-    if (await bcrypt.compare(req.body.current_password, user.password)) {
-        user.password = await bcrypt.hash(req.body.new_password, 10);
-        await admin
-            .auth()
-            .updateUser(user.firebaseUUID, {
-                password: req.body.new_password,
-            })
-            .then(async (userRecord) => {
-                await User.updateOne({ _id: user._id }, { $set: user });
-                res.json({ message: "Successfully changed the password." });
-            })
-            .catch((error) => {
-                res.status(500).json({ message: error.message });
-            });
-    } else {
-        return res
-            .status(400)
-            .json({ message: "Please insert the correct current password!" });
-    }
-};
-
-const changeFirebasePasswordByAdmin = async (req, res) => {
-    if (req.user.role === "system admin") {
-        const user = await User.findById(req.body.user_id);
-        user.password = await bcrypt.hash(req.body.new_password, 10);
-
-        await admin
-            .auth()
-            .updateUser(user.firebaseUUID, {
-                password: req.body.new_password,
-            })
-            .then(async (userRecord) => {
-                await User.updateOne({ _id: user._id }, { $set: user });
-                res.json({ message: "Successfully changed the password." });
-            })
-            .catch((error) => {
-                res.status(500).json({ message: error.message });
-            });
-    } else {
-        res.status(403).json({
-            message: "You are not allowed to change the user password.",
-        });
-    }
+    sendingEmail(req.body.email, subject, text, html);
 };
 
 const changePasswordByUser = async (req, res) => {
-    const user = await User.findById(req.user._id);
-
-    if (await bcrypt.compare(req.body.current_password, user.password)) {
-        user.password = await bcrypt.hash(req.body.new_password, 10);
-
-        res.json({ message: "Successfully changed the password." });
-    } else {
-        return res
-            .status(400)
-            .json({ message: "Please insert the correct current password!" });
+    try {
+        const user = await User.findById(req.user._id);
+        if (await bcrypt.compare(req.body.current_password, user.password)) {
+            user.password = await bcrypt.hash(req.body.new_password, 10);
+            await User.updateOne({ _id: user._id }, { $set: user });
+            res.json({ message: "Successfully changed the password." });
+        } else {
+            return res.status(400).json({
+                message: "Please insert the correct current password!",
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.nessage });
     }
 };
 
@@ -182,14 +65,6 @@ const updatePhoneNumber = async (req, res) => {
             { _id: req.params.userId },
             { $set: userId }
         );
-
-        await admin
-            .auth()
-            .updateUser(userId.firebaseUUID, {
-                phoneNumber: req.body.phone_number,
-            })
-            .then(() => {})
-            .catch((err) => {});
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -210,57 +85,6 @@ const updateRoleUser = async (req, res) => {
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ message: error.message });
-    }
-};
-
-const findOrCreateUser = async (userCred) => {
-    const user = {};
-    const findUser = await User.findOne({ firebaseUUID: userCred.user.uid });
-
-    if (findUser) {
-        user._id = findUser._id;
-        user.full_name = findUser.full_name;
-        user.role = findUser.role;
-        user.phone_number = findUser.phone_number ?? "";
-        user.profile_pict = findUser.profile_pict ?? "";
-
-        return res.json({
-            user: user,
-            idToken: userCred._tokenResponse.idToken,
-            refreshToken: userCred._tokenResponse.refreshToken,
-        });
-    } else {
-        const data = {};
-        data.firebaseUUID = userCred.user.uid;
-        data.full_name = userCred._tokenResponse.displayName;
-        data.email = userCred._tokenResponse.email;
-        data.phone_number = userCred._tokenResponse.phoneNumber;
-
-        const newUser = new User(data);
-
-        try {
-            const savedUser = await newUser.save();
-            const user = {};
-            const findUser = await User.findOne({
-                firebaseUUID: userCred.user.uid,
-            });
-
-            if (findUser) {
-                user._id = findUser._id;
-                user.email = findUser.email;
-                user.full_name = findUser.full_name;
-                user.role = findUser.role;
-                user.phone_number = findUser.phone_number ?? "";
-                user.profile_pict = findUser.profile_pict ?? "";
-            }
-            return res.json({
-                user: user,
-                idToken: userCred._tokenResponse.idToken,
-                refreshToken: userCred._tokenResponse.refreshToken,
-            });
-        } catch (error) {
-            return res.status(500).json({ message: error.message });
-        }
     }
 };
 
@@ -481,32 +305,18 @@ function validatePhoneNumber(input_str) {
     return re.test(input_str);
 }
 
-const forgotEmailPassword = (req, res) => {
-    const auth = getAuth();
-    auth.languageCode = "en";
-    sendPasswordResetEmail(auth, req.body.email)
-        .then(() => {
-            res.json({
-                message:
-                    "We have sent link to your email, Please check your email.",
-            });
-        })
-        .catch((error) => {
-            res.status(500).json({ message: error.message });
-        });
-};
+const forgotPassword = (req, res) => {};
 
 module.exports = {
     login,
     register,
     refreshToken,
     verifyEmail,
-    sendingVerificationCode,
-    afterSignin,
+    sendEmailVerificationCode,
     updatePhoneNumber,
+    changePasswordByUser,
     updateRoleUser,
-    forgotEmailPassword,
-    changeFirebasePasswordByUser,
+    forgotPassword,
     sendPhoneVerificationCode,
     verifyPhoneNumber,
 };
