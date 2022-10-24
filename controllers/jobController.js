@@ -626,11 +626,11 @@ const statusJob = (e, req) => {
         e.status = "Booking Opened";
     }
 
-    if (e.favorites.includes(req.user._id)) {
-        e.isFavorite = "true";
-    } else {
-        e.isFavorite = "false";
-    }
+    // if (e.favorites.includes(req.user._id)) {
+    //     e.isFavorite = "true";
+    // } else {
+    //     e.isFavorite = "false";
+    // }
 };
 
 const formatData = (data) => {
@@ -649,7 +649,7 @@ const formatData = (data) => {
             completed: e.completed,
             canceled_by: e.canceled_by,
             status: e.status,
-            isFavorite: e.isFavorite ?? "false",
+            // isFavorite: e.isFavorite ?? "false",
             image: process.env.BASE_URL + e.image,
             number: e.number,
             duration: Duration.fromMillis(
