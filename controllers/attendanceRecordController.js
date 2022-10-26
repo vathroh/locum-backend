@@ -80,16 +80,20 @@ const deleteAttendance = async (req, res) => {
     }
 };
 
+//==========================================================================================================================
+
 const getNewAttendance = async (req, res) => {
     try {
-        const job = await Job.findById(req.params.jobId).populate("clinic");
+        const job = await Job.findById(req.params.jobId)
+            .populate("clinic")
+            .lean();
         const attendance = await Record.find({ job_id: req.params.jobId });
 
         const data = {
             image: job.image ? process.env.BASE_URL + job.image : "",
             clinic_name: job.clinic.clinicName ?? "",
-            job_description: job.job_description ?? "",
-            address: job.clinic.Address ?? "",
+            scope: job.scope ?? "",
+            address: job.clinic.Address,
             price: job.price ?? "",
             date: job.date
                 ? DateTime.fromMillis(job.date)
@@ -130,6 +134,10 @@ const getNewAttendance = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+};
+
+const checkin = async (req, res) => {
+    res.json("haol");
 };
 
 module.exports = {

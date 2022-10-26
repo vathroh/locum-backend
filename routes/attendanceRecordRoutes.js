@@ -11,6 +11,7 @@ const {
 } = require("../controllers/attendanceRecordController.js");
 
 router.get("/new/:jobId", getNewAttendance);
+
 router.get("/", getAttendances);
 router.get("/:id", getAttendanceById);
 router.post("/", saveAttendance);
