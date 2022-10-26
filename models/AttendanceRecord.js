@@ -1,29 +1,24 @@
-// import mongoose 
 const mongoose = require("mongoose");
 
-// Buat Schema
-const Attendance = mongoose.Schema(
-    {
-        date: {
-            type: Number,
-            required: true
-        },
-        time_start: {
-            type: Number,
-            required: true
-        },
-        time_end: {
-            type: Number
-        },
-        doctor_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Doctor'
-        },
-        clinic_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Clinic'
-        }
-    }
-);
+const Attendance = mongoose.Schema({
+    job_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Job",
+    },
+    user_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Doctor",
+    },
+    clinic_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Clinic",
+    },
+    check_in: {
+        type: Number,
+    },
+    check_out: {
+        type: Number,
+    },
+});
 
-module.exports = mongoose.model('Attendance', Attendance);
+module.exports = mongoose.model("Attendance", Attendance);

@@ -62,7 +62,13 @@ app.use(
     authJwtMiddleware,
     require("./routes/clinicGroupRoutes")
 );
+app.use(
+    "/attendance",
+    authJwtMiddleware,
+    require("./routes/attendanceRecordRoutes")
+);
 app.use("/messages", authJwtMiddleware, require("./routes/messageRoutes"));
+app.use("/settings", authJwtMiddleware, require("./routes/settingRoutes"));
 app.use("/comment", authJwtMiddleware, require("./routes/commentRoutes"));
 app.use("/jobs", authJwtMiddleware, require("./routes/jobRoutes.js"));
 app.use("/attendance", authJwtMiddleware, attendanceRoute);

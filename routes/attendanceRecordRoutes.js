@@ -6,13 +6,15 @@ const {
     getAttendanceById,
     saveAttendance,
     updateAttendance,
-    deleteAttendance
+    deleteAttendance,
+    getNewAttendance,
 } = require("../controllers/attendanceRecordController.js");
 
-router.get('/', getAttendances);
-router.get('/:id', getAttendanceById);
-router.post('/', saveAttendance);
-router.patch('/:id', updateAttendance);
-router.delete('/:id', deleteAttendance);
+router.get("/new/:jobId", getNewAttendance);
+router.get("/", getAttendances);
+router.get("/:id", getAttendanceById);
+router.post("/", saveAttendance);
+router.patch("/:id", updateAttendance);
+router.delete("/:id", deleteAttendance);
 
 module.exports = router;
