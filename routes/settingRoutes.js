@@ -1,6 +1,6 @@
 const router = require("express").Router();
-const { setSyncGoogleCalendar } = require("../controllers/settingController");
+const { syncGoogleCalendar } = require("../controllers/settingController");
 
-router.get("/set-sync-google-calendar", setSyncGoogleCalendar);
+router.get("/set-sync-google-calendar", syncGoogleCalendar);
 
 module.exports = router;

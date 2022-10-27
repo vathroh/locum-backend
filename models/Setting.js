@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
 
 const SettingSchema = mongoose.Schema({
-    userId: {
+    user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         exists: true,

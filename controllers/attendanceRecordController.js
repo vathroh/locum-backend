@@ -133,6 +133,7 @@ const checkout = async (req, res) => {
                 },
                 { check_out: DateTime.now().toMillis() }
             );
+            await Job.updateOne({ _id: req.params.jobId }, { completed: true });
             return res.json({ message: "You are successfully check-out" });
         } else {
             res.status(403).json({

@@ -1,8 +1,44 @@
 const Setting = require("../models/Setting");
 
-const setSyncGoogleCalendar = async (req, res) => {
-    const isexists = exists();
-    res.json(isexists);
+const syncGoogleCalendar = async (req, res) => {
+    const setting = await Setting.findOne({ user_id: req.user._id });
+    const hal = Setting.updateOne(
+        { _id: setting._id },
+        { sync_google_calendar: false }
+    );
+    return res.json(setting);
+    if (!setting) {
+        try {
+            const setting = new Setting({
+                user_id: req.user._id,
+                sync_google_calendar: true,
+            });
+            const savedSetting = await setting.save();
+            res.json(savedSetting);
+        } catch (error) {
+            res.status(500).json(error.message);
+        }
+    } else {
+        Setting.updateOne(
+            { userId: req.user._id },
+            { sync_google_calendar: false }
+        );
+        // if (setting.sync_google_calendar) {
+        //     Setting.updateOne(
+        //         { userId: req.user._id },
+        //         { sync_google_calendar: false }
+        //     );
+        // } else {
+        //     Setting.updateOne(
+        //         { userId: req.user._id },
+        //         { sync_google_calendar: true }
+        //     );
+        // }
+    }
+
+    const newSetting = await Setting.findOne({ userId: req.user._id });
+
+    res.json(newSetting);
 };
 
 const insertUser = async (req, res) => {
@@ -17,18 +53,4 @@ const insertUser = async (req, res) => {
     }
 };
 
-const exists = async (req, res) => {
-    try {
-        const setting = await Setting.find({ userId: req.user._id });
-        return setting.length;
-        if (setting.length > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        return error.message;
-    }
-};
-
-module.exports = { setSyncGoogleCalendar };
+module.exports = { syncGoogleCalendar };
