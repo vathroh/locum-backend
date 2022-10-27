@@ -10,6 +10,7 @@ const {
     updateRoleUser,
     verifyPhoneNumber,
     updatePhoneNumber,
+    afterGoogleSignin,
     changePasswordByUser,
     sendPhoneVerificationCode,
     sendEmailVerificationCode,
@@ -41,6 +42,7 @@ router.post(
 
 router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
 router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
+router.post("/after-google-signin", afterGoogleSignin);
 router.post("/email-forgot-password", forgotPassword);
 router.post("/verify-email", verifyEmail);
 router.post("/register", register);

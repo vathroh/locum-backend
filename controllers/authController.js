@@ -309,6 +309,70 @@ const forgotPassword = (req, res) => {
     res.json("halo");
 };
 
+const afterGoogleSignin = async (req, res) => {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (user) {
+        const auth = {};
+        auth._id = user._id;
+        auth.full_name = user.full_name;
+        auth.email = user.email;
+        auth.role = user.role;
+        auth.phone_number = user.phone_number ?? "";
+        auth.profile_pict = user.profile_pict ?? "";
+
+        const accessToken = generateAccessToken(JSON.stringify(user));
+        const refreshToken = jwt.sign(
+            JSON.stringify(user),
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+        return res.status(200).json({
+            user: auth,
+            idToken: accessToken,
+            refreshToken: refreshToken,
+        });
+    } else {
+        const data = {};
+        data.full_name = req.body.displayName;
+        data.email = req.body.email;
+        data.phone_number = req.body.phoneNumber ?? "";
+
+        const newUser = new User(data);
+
+        try {
+            const savedUser = await newUser.save();
+            const user = savedUser;
+
+            if (user) {
+                const auth = {};
+                auth._id = user._id;
+                auth.full_name = user.full_name;
+                auth.email = user.email;
+                auth.role = user.role;
+                auth.phone_number = user.phone_number ?? "";
+                auth.profile_pict = user.profile_pict ?? "";
+
+                const accessToken = generateAccessToken(JSON.stringify(user));
+                const refreshToken = jwt.sign(
+                    JSON.stringify(user),
+                    process.env.REFRESH_TOKEN_SECRET
+                );
+
+                return res.status(200).json({
+                    user: auth,
+                    idToken: accessToken,
+                    refreshToken: refreshToken,
+                });
+            } else {
+                return res.status(500).json({ message: "Server error!" });
+            }
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    }
+};
+
 module.exports = {
     login,
     register,
@@ -321,4 +385,5 @@ module.exports = {
     forgotPassword,
     sendPhoneVerificationCode,
     verifyPhoneNumber,
+    afterGoogleSignin,
 };
