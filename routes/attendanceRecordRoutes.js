@@ -2,20 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    getAttendances,
-    getAttendanceById,
-    saveAttendance,
-    updateAttendance,
-    deleteAttendance,
+    checkin,
+    checkout,
     getNewAttendance,
 } = require("../controllers/attendanceRecordController.js");
 
 router.get("/new/:jobId", getNewAttendance);
-
-router.get("/", getAttendances);
-router.get("/:id", getAttendanceById);
-router.post("/", saveAttendance);
-router.patch("/:id", updateAttendance);
-router.delete("/:id", deleteAttendance);
+router.post("/checkout/:jobId", checkout);
+router.post("/checkin/:jobId", checkin);
 
 module.exports = router;

@@ -7,7 +7,7 @@ const Attendance = mongoose.Schema({
     },
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Doctor",
+        ref: "User",
     },
     clinic_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,9 +15,11 @@ const Attendance = mongoose.Schema({
     },
     check_in: {
         type: Number,
+        default: null,
     },
     check_out: {
         type: Number,
+        default: null,
     },
 });
 
