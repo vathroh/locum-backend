@@ -74,6 +74,7 @@ app.use("/jobs", authJwtMiddleware, require("./routes/jobRoutes.js"));
 app.use("/attendance", authJwtMiddleware, attendanceRoute);
 app.use("/clinic", authJwtMiddleware, clinicRoute);
 app.use("/user", authJwtMiddleware, userRoute);
+app.use("/google-calendar", require("./routes/googleCalendarRoutes"));
 app.use("/doctor-ranks", doctorRanksRoute);
 app.use("/doctor", doctorRoute);
 app.use("/auth", authRoutes);
