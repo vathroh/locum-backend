@@ -21,6 +21,18 @@ const Attendance = mongoose.Schema({
         type: Number,
         default: null,
     },
+    overtime: {
+        type: Number,
+        default: 0,
+    },
+    totalWorkHour: {
+        type: Number,
+        default: 0,
+    },
+    Remarks: {
+        type: String,
+        default: "",
+    },
 });
 
 module.exports = mongoose.model("Attendance", Attendance);

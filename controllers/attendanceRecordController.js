@@ -146,6 +146,20 @@ const checkout = async (req, res) => {
     }
 };
 
+const afterCheckout = async (req, res) => {
+    const job = await Job.findById(req.params.jobId).lean();
+    const comment = {
+        userId: req.user._id,
+        text: req.body.text,
+        datetime: DateTime.now().toMillis(),
+    };
+    await Clinic.updateOne({ _id: job.clinic }, { comment: comment });
+    await Record.updateOne(
+        { job_id: req.params.jobId, user_id: req.user._id },
+        { overtime: req.body.overtime, totalWorkHour: req.body.overtime }
+    );
+};
+
 module.exports = {
     checkin,
     checkout,
