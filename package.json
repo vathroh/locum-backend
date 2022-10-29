@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@vonage/server-sdk": "^2.11.2",
     "agenda": "^4.4.0",
     "amqplib": "^0.10.3",
@@ -33,6 +34,7 @@
     "mongoose-unique-validator": "^3.1.0",
     "multer": "^1.4.5-lts.1",
     "node-calendar": "^0.1.5",
+    "node-cron": "^3.0.2",
     "node-fetch": "^3.2.10",
     "nodemailer": "^6.7.8",
     "nodemon": "^2.0.19",

@@ -147,21 +147,36 @@ const checkout = async (req, res) => {
 };
 
 const afterCheckout = async (req, res) => {
-    const job = await Job.findById(req.params.jobId).lean();
-    const comment = {
-        userId: req.user._id,
-        text: req.body.text,
-        datetime: DateTime.now().toMillis(),
-    };
-    await Clinic.updateOne({ _id: job.clinic }, { comment: comment });
-    await Record.updateOne(
-        { job_id: req.params.jobId, user_id: req.user._id },
-        { overtime: req.body.overtime, totalWorkHour: req.body.overtime }
-    );
+    try {
+        const job = await Job.findById(req.params.jobId).lean();
+        const workHour = job.work_time_finish - job.work_time_start;
+        let clinic = await Clinic.findById(job.clinic).lean();
+        const comments = clinic.comments;
+        comments.push({
+            userId: req.user._id,
+            text: req.body.text,
+            datetime: DateTime.now().toMillis(),
+        });
+
+        await Clinic.updateOne({ _id: job.clinic }, { comments: comments });
+        await Record.updateOne(
+            { job_id: req.params.jobId, user_id: req.user._id },
+            {
+                overtime: req.body.overtime,
+                totalWorkHour: (req.body.overtime * 60000 + workHour) / 3600000,
+            },
+            { remarks: req.body.remarks }
+        );
+
+        res.json({ message: "Thank You. Have a nice day." });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 module.exports = {
     checkin,
     checkout,
+    afterCheckout,
     getNewAttendance,
 };

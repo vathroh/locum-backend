@@ -1,0 +1,55 @@
+const { DateTime, Duration } = require("luxon");
+const Job = require("../models/Job.js");
+const Clinic = require("../models/Clinic.js");
+const { faker } = require("@faker-js/faker");
+
+const seedJobs = async () => {
+    // return res.json(faker.image.business());
+    const clinics = await Clinic.find().select({ _id: 1 });
+    const data = [];
+    clinics.map((e) => {
+        const date = DateTime.now().plus({ days: 6 }).toISODate();
+
+        data.push({
+            image: faker.helpers.arrayElement([
+                "/public/images/1663816528905-istockphoto-138205019-612x612.jpg",
+                "/public/images/jobs/1665109795766-doctors-standing.jpg",
+                "/public/images/jobs/1666583021884-doctor-advice.jpg",
+                "/public/images/1663759550407-Doctors-540x280.jpg",
+                "/public/images/jobs/1665108887730-doctors.png",
+                "/public/images/jobs/1665110426541-doctor1.jpg",
+                "/public/images/jobs/1665983566437-doctor2.jpg",
+                "/public/images/jobs/1667017975942-doctor3.jpg",
+            ]),
+            clinic: e._id,
+            date:
+                DateTime.fromISO(date, {
+                    zone: "Asia/Singapore",
+                }).toMillis() ?? 0,
+            work_time_start:
+                DateTime.fromISO(date + "T" + "08:00", {
+                    zone: "Asia/Singapore",
+                }).toMillis() ?? 0,
+            work_time_finish:
+                DateTime.fromISO(date + "T" + "15:00", {
+                    zone: "Asia/Singapore",
+                }).toMillis() ?? 0,
+            price: 200,
+            profession: faker.helpers.arrayElement([
+                "doctor",
+                "clinical assistant",
+            ]),
+            prefered_gender: faker.helpers.arrayElement(["male", "female"]),
+            scope: ["Family Medicine"],
+            job_description: ["Able to see 7 years old."],
+        });
+    });
+
+    // return res.json(data);
+    data.map(async (el) => {
+        const job = new Job(el);
+        const savedJob = await job.save();
+    });
+};
+
+module.exports = { seedJobs };

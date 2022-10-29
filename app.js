@@ -80,6 +80,7 @@ app.use("/doctor", doctorRoute);
 app.use("/auth", authRoutes);
 app.use("/send", fcmRoute);
 app.use("/", indexRoute);
+app.use("/faker", require("./routes/fakerRoutes"));
 
 // app.use('/quee/send', require('./services/rabbitmq/producer.js'))
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
@@ -112,6 +113,15 @@ io.on("connection", (socket) => {
         const user = users.findIndex((user) => user.socket_id == socket.id);
         // console.log(`${socket.id} has disconnected`);
     });
+});
+
+const CronJob = require("node-cron");
+const { DateTime } = require("luxon");
+const { seedJobs } = require("./faker/job");
+CronJob.schedule("0 0 0 * * *", () => {
+    const now = DateTime.now().toFormat("HH:mm:ss");
+    console.log(now);
+    seedJobs();
 });
 
 server.listen(port, () =>
