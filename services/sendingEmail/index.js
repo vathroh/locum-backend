@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const env = require("dotenv");
+const logger = require("../logger/emailLogger");
 env.config();
 
 const transporter = nodemailer.createTransport({
@@ -21,8 +22,16 @@ const sendingEmail = (email, subject, text, html) => {
         };
 
         transporter.sendMail(options, (err, info) => {
-            if (err) res.json(err);
-            res.json("The email has been sent.");
+            if (err)
+                logger.emailLogger.log(
+                    "error",
+                    `${err}, Data: { to: ${email}, subject: ${subject}, body: ${text}, ${html} }`
+                );
+            console.log("The email has been sent.");
+            logger.emailLogger.log(
+                "info",
+                `successfully sent email. Data: { to: ${email}, subject: ${subject}, body: ${text}, ${html} }`
+            );
         });
     };
 

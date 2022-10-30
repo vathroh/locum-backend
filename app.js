@@ -115,14 +115,7 @@ io.on("connection", (socket) => {
     });
 });
 
-const CronJob = require("node-cron");
-const { DateTime } = require("luxon");
-const { seedJobs } = require("./faker/job");
-CronJob.schedule("0 0 0 * * *", () => {
-    const now = DateTime.now().toFormat("HH:mm:ss");
-    console.log(now);
-    seedJobs();
-});
+require("./services/cronJob");
 
 server.listen(port, () =>
     console.log(`Server is running on http://localhost:${port}`)
