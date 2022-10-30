@@ -4,6 +4,8 @@ const Job = require("../models/Job.js");
 const moment = require("moment");
 const axios = require("axios");
 const mongoose = require("mongoose");
+const { jobLogger } = require("../services/logger/jobLogger");
+const { errorMonitor } = require("nodemailer/lib/xoauth2/index.js");
 
 const getAllJobs = async (req, res) => {
     try {
@@ -23,10 +25,16 @@ const getAllJobs = async (req, res) => {
                 });
 
                 const output = formatData(data);
+                jobLogger.info(req.originalUrl);
 
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(500).json({ message: error.message });
     }
 };
@@ -56,9 +64,16 @@ const getNewJobs = async (req, res) => {
 
                 const output = formatData(OpenedStatus);
 
+                jobLogger.info(req.originalUrl);
+
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(500).json({ message: error.message });
     }
 };
@@ -81,10 +96,16 @@ const getUpcomingJobs = async (req, res) => {
                 });
 
                 const output = formatData(data);
+                jobLogger.info(req.originalUrl);
 
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(500).json({ message: error.message });
     }
 };
@@ -136,10 +157,16 @@ const getExploreJobs = async (req, res) => {
                 });
 
                 const output = formatData(OpenedStatus);
+                jobLogger.info(req.originalUrl);
 
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(404).json({ message: error.message });
     }
 };
@@ -195,10 +222,16 @@ const getUpcomingDoctorJobs = async (req, res) => {
                 });
 
                 const output = formatData(upcoming);
+                jobLogger.info(req.originalUrl);
 
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(404).json({ message: error.message });
     }
 };
@@ -254,10 +287,16 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                 });
 
                 const output = formatData(upcoming);
+                jobLogger.info(req.originalUrl);
 
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(404).json({ message: error.message });
     }
 };
@@ -282,10 +321,16 @@ const getPastJobs = async (req, res) => {
                 });
 
                 const output = formatData(data);
+                jobLogger.info(req.originalUrl);
 
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(500).json({ message: error.message });
     }
 };
@@ -334,9 +379,15 @@ const getJobById = async (req, res) => {
                     .setZone("Asia/Singapore")
                     .toFormat("dd LLLL yyyy");
 
+                jobLogger.info(req.originalUrl);
                 res.json(data);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(500).json({ message: error.message });
     }
 };
@@ -358,55 +409,69 @@ const getJobByClinicId = async (req, res) => {
                 });
 
                 const output = formatData(data);
-
+                jobLogger.info(req.originalUrl);
                 res.json(output);
             });
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(404).json({ message: error.message });
     }
 };
 
 const getCalendarJobByClinicId = async (req, res) => {
-    const amontOfDays = DateTime.local(
-        parseFloat(req.params.year),
-        parseFloat(req.params.month)
-    ).daysInMonth;
+    try {
+        const amontOfDays = DateTime.local(
+            parseFloat(req.params.year),
+            parseFloat(req.params.month)
+        ).daysInMonth;
 
-    const jobsInMonth = [];
+        const jobsInMonth = [];
 
-    for (i = 0; i < amontOfDays; i++) {
-        date = DateTime.fromISO(req.params.year + req.params.month).plus({
-            days: i,
-        });
-        await Job.find({
-            clinic: req.params.clinicId,
-            profession: req.user.role,
-            work_time_start: {
-                $gte: date.startOf("day").toMillis(),
-                $lte: date.endOf("day").toMillis(),
-            },
-        })
-            .select({ clinic: 1, work_time_start: 1, work_time_finish: 1 })
-            .lean()
-            .then((data) => {
-                const jobInDay = {};
-                jobInDay.date = i + 1;
-                data.map((e) => {
-                    e.work_time_start =
-                        DateTime.fromMillis(e.work_time_start)
-                            .setZone("Asia/Singapore")
-                            .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
-                    e.work_time_finish =
-                        DateTime.fromMillis(e.work_time_finish)
-                            .setZone("Asia/Singapore")
-                            .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
-                });
-                jobInDay.data = data;
-                jobsInMonth.push(jobInDay);
+        for (i = 0; i < amontOfDays; i++) {
+            date = DateTime.fromISO(req.params.year + req.params.month).plus({
+                days: i,
             });
-    }
+            await Job.find({
+                clinic: req.params.clinicId,
+                profession: req.user.role,
+                work_time_start: {
+                    $gte: date.startOf("day").toMillis(),
+                    $lte: date.endOf("day").toMillis(),
+                },
+            })
+                .select({ clinic: 1, work_time_start: 1, work_time_finish: 1 })
+                .lean()
+                .then((data) => {
+                    const jobInDay = {};
+                    jobInDay.date = i + 1;
+                    data.map((e) => {
+                        e.work_time_start =
+                            DateTime.fromMillis(e.work_time_start)
+                                .setZone("Asia/Singapore")
+                                .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
+                        e.work_time_finish =
+                            DateTime.fromMillis(e.work_time_finish)
+                                .setZone("Asia/Singapore")
+                                .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
+                    });
+                    jobInDay.data = data;
+                    jobsInMonth.push(jobInDay);
+                });
+        }
 
-    return res.json(jobsInMonth);
+        jobLogger.info(req.originalUrl);
+        return res.json(jobsInMonth);
+    } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
+    }
 };
 
 const saveJob = async (req, res) => {
@@ -428,8 +493,14 @@ const saveJob = async (req, res) => {
 
     try {
         const savedJob = await job.save();
+        jobLogger.info(req.originalUrl);
         res.status(200).json(savedJob);
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(400).json({ message: error.message });
     }
 };
@@ -443,8 +514,14 @@ const updateJob = async (req, res) => {
             { _id: req.params.id },
             { $set: req.body }
         );
+        jobLogger.info(req.originalUrl);
         res.status(200).json(updatedJob);
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(400).json({ message: error.message });
     }
 };
@@ -458,8 +535,14 @@ const deleteJob = async (req, res) => {
             { _id: req.params.id },
             { $set: req.body }
         );
+        jobLogger.info(req.originalUrl);
         res.status(200).json(deletedJob);
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(400).json({ message: error.message });
     }
 };
@@ -494,9 +577,16 @@ const filteredJob = async (req, res) => {
             //     }
             //   }
             // jobs.filter((e) => e.match(/gem/))
+
+            jobLogger.info(req.originalUrl);
             res.json(a);
         })
         .catch((error) => {
+            jobLogger.error(
+                `url: ${req.originalUrl}, error: ${error.message}, user:${
+                    req.user._id
+                }, data : ${JSON.stringify(req.body)}`
+            );
             res.status(500).json({ message: error.message });
         });
 };
@@ -535,10 +625,15 @@ const searchJob = async (req, res) => {
             });
 
             const output = formatData(unique);
-
+            jobLogger.info(req.originalUrl);
             res.json(output);
         })
         .catch((error) => {
+            jobLogger.error(
+                `url: ${req.originalUrl}, error: ${error.message}, user:${
+                    req.user._id
+                }, data : ${JSON.stringify(req.body)}`
+            );
             res.status(500).json({ message: error.message });
         });
 };
@@ -602,7 +697,7 @@ const youMightLike = async (req, res) => {
     });
 
     promisedRanks = await Promise.all(ranks);
-
+    jobLogger.info(req.originalUrl);
     res.json(
         promisedRanks.sort((a, b) => {
             return b.score - a.score;
@@ -695,12 +790,24 @@ const favoritesByUser = async (req, res) => {
                         .shiftTo("hours")
                         .toObject();
                 });
+                jobLogger.info(req.originalUrl);
                 res.json(formatData(data));
             })
             .catch((error) => {
+                jobLogger.error(
+                    `url: ${req.originalUrl}, error: ${error.message}, user:${
+                        req.user._id
+                    }, data : ${JSON.stringify(req.body)}`
+                );
                 res.status(500).json({ message: error.message });
             });
-    } catch (error) {}
+    } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
+    }
 };
 
 const setFavorite = async (req, res) => {
@@ -722,6 +829,7 @@ const setFavorite = async (req, res) => {
             job.favorites.push(req.user._id);
             await Job.updateOne({ _id: req.params.jobId }, { $set: job }).then(
                 () => {
+                    jobLogger.info(req.originalUrl);
                     res.json({
                         message:
                             "You successfully tags this job as your favorites.",
@@ -730,6 +838,11 @@ const setFavorite = async (req, res) => {
             );
         }
     } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
         res.status(500).json({ message: error.message });
     }
 };

@@ -11,5 +11,5 @@ cronJob.schedule("0 0 0 * * *", () => {
 cronJob.schedule("* * * * * *", () => {
     const now = DateTime.now().setZone("Asia/Jakarta").toFormat("HH:mm:ss");
 
-    console.log(now);
+    // console.log(now);
 });
