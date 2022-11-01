@@ -13,6 +13,8 @@ const getData = async (req, res) => {
 
     const job = await Job.findById(req.params.jobId).populate("clinic").lean();
 
+    const now = DateTime.now().toMillis();
+
     const data = {
         image: job.image ? process.env.BASE_URL + job.image : "",
         clinic_name: job.clinic.clinicName ?? "",
@@ -38,7 +40,12 @@ const getData = async (req, res) => {
 
     if (job.assigned_to.includes(req.user._id)) {
         if (attendance) {
-            if (attendance.check_in == null) {
+            if (
+                Math.abs(job.work_time_start - now) > 3600000 &&
+                attendance.check_in == null
+            ) {
+                data.status = "Not Yet";
+            } else if (attendance.check_in == null) {
                 data.status = "Ready";
             } else if (
                 attendance.check_in != null &&

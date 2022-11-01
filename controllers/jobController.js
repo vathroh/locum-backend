@@ -821,7 +821,7 @@ const setFavorite = async (req, res) => {
                 () => {
                     res.json({
                         message:
-                            "You successfully remove this job from your favorites.",
+                            " You have successfully removed this job from your favorites",
                     });
                 }
             );
@@ -832,7 +832,7 @@ const setFavorite = async (req, res) => {
                     jobLogger.info(req.originalUrl);
                     res.json({
                         message:
-                            "You successfully tags this job as your favorites.",
+                            'You have successfully saved this listing under "Favorites".',
                     });
                 }
             );

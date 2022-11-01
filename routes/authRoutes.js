@@ -10,11 +10,15 @@ const {
     updateRoleUser,
     verifyPhoneNumber,
     updatePhoneNumber,
-    afterGoogleSignin,
     changePasswordByUser,
     sendPhoneVerificationCode,
     sendEmailVerificationCode,
 } = require("../controllers/authController.js");
+
+const {
+    afterGoogleSignin,
+    registerWithFirebase,
+} = require("../controllers/firebaseController");
 
 router.post(
     "/change-password-by-user",
@@ -42,6 +46,7 @@ router.post(
 
 router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
 router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
+router.post("/register-with-firebase", registerWithFirebase);
 router.post("/after-google-signin", afterGoogleSignin);
 router.post("/email-forgot-password", forgotPassword);
 router.post("/verify-email", verifyEmail);

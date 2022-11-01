@@ -3,6 +3,7 @@ const Job = require("../models/Job.js");
 const Clinic = require("../models/Clinic.js");
 const { faker } = require("@faker-js/faker");
 const logger = require("../services/logger/jobSeederLogger");
+const { sendingEmail } = require("../services/sendingEmail");
 
 const seedJobs = async () => {
     try {

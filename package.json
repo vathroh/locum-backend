@@ -40,7 +40,7 @@
     "nodemailer": "^6.7.8",
     "nodemon": "^2.0.19",
     "socket.io": "^4.5.2",
-    "twilio": "^3.82.2",
+    "twilio": "^3.83.0",
     "winston": "^3.8.2",
     "winston-mongodb": "^5.1.0"
   }
