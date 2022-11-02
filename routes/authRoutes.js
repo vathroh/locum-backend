@@ -3,19 +3,17 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    login,
-    register,
     forgotPassword,
-    updateRoleUser,
     verifyPhoneNumber,
-    updatePhoneNumber,
     changePasswordByUser,
     sendPhoneVerificationCode,
 } = require("../controllers/authController.js");
 
 const {
     verifyEmail,
+    updateRoleUser,
     afterGoogleSignin,
+    updatePhoneNumber,
     loginWithFirebase,
     registerWithFirebase,
     sendingEmailVerificationCode,

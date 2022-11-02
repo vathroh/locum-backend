@@ -270,11 +270,17 @@ const afterGoogleSignin = async (req, res) => {
     const findUser = await User.findOne({ firebaseUUID: req.body.uid });
 
     if (findUser) {
-        res.json({
-            user: findUser,
-            idToken: req.body.idToken,
-            refreshToken: req.body.refreshToken,
-        });
+        const user = {};
+        user._id = findUser._id;
+        user.email = findUser.email;
+        user.full_name = findUser.full_name;
+        user.role = findUser.role;
+        user.phone_number = findUser.phone_number ?? "";
+        user.profile_pict = findUser.profile_pict ?? "";
+
+        const jwt = jwtObject(user);
+        authLogger.info(`url: ${req.originalUrl}, ${user._id} is logging in.`);
+        return res.json(jwt);
     } else {
         const data = {};
         data.firebaseUUID = req.body.uid;
@@ -299,12 +305,16 @@ const afterGoogleSignin = async (req, res) => {
                 user.profile_pict = findUseragain.profile_pict ?? "";
 
                 const jwt = jwtObject(user);
-
+                authLogger.info(
+                    `url: ${req.originalUrl}, ${user._id} is logging in.`
+                );
                 return res.json(jwt);
             } else {
+                authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
                 return res.status(500).json({ message: "Server error!" });
             }
         } catch (error) {
+            authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
             return res.status(500).json({ message: error.message });
         }
     }
@@ -425,84 +435,6 @@ const updateRoleUser = async (req, res) => {
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ message: error.message });
-    }
-};
-
-const findOrCreateUser = async (userCred) => {
-    const user = {};
-    const findUser = await User.findOne({ firebaseUUID: userCred.user.uid });
-
-    if (findUser) {
-        user._id = findUser._id;
-        user.full_name = findUser.full_name;
-        user.role = findUser.role;
-        user.phone_number = findUser.phone_number ?? "";
-        user.profile_pict = findUser.profile_pict ?? "";
-
-        return res.json({
-            user: user,
-            idToken: userCred._tokenResponse.idToken,
-            refreshToken: userCred._tokenResponse.refreshToken,
-        });
-    } else {
-        const data = {};
-        data.firebaseUUID = userCred.user.uid;
-        data.full_name = userCred._tokenResponse.displayName;
-        data.email = userCred._tokenResponse.email;
-        data.phone_number = userCred._tokenResponse.phoneNumber;
-
-        const newUser = new User(data);
-
-        try {
-            const savedUser = await newUser.save();
-            const user = {};
-            const findUser = await User.findOne({
-                firebaseUUID: userCred.user.uid,
-            });
-
-            if (findUser) {
-                user._id = findUser._id;
-                user.email = findUser.email;
-                user.full_name = findUser.full_name;
-                user.role = findUser.role;
-                user.phone_number = findUser.phone_number ?? "";
-                user.profile_pict = findUser.profile_pict ?? "";
-            }
-            return res.json({
-                user: user,
-                idToken: userCred._tokenResponse.idToken,
-                refreshToken: userCred._tokenResponse.refreshToken,
-            });
-        } catch (error) {
-            return res.status(500).json({ message: error.message });
-        }
-    }
-
-    //     .catch ((err) => {
-    // return res.status(401).json({ message: "Invalid credentials!" })
-};
-
-const verifyIdToken = (req, res) => {
-    const token = req.headers.authorization
-        ? req.headers.authorization.split(" ")
-        : null;
-    if (!token) {
-        res.json("You are not logged in!");
-    } else {
-        admin
-            .auth()
-            .verifyIdToken(token[1])
-            .then((decodedToken) => {
-                // const uid = decodedToken.uid;
-                console.log(decodedToken);
-                // console.log(uid)
-                // ...
-                res.json("good1");
-            })
-            .catch((error) => {
-                // Handle error
-                res.json(error);
-            });
     }
 };
 
