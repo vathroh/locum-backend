@@ -1,4 +1,5 @@
 const { initializeApp } = require("firebase/app");
+const { sendingEmail } = require("../services/sendingEmail");
 const admin = require("firebase-admin");
 const {
     getAuth,
@@ -11,6 +12,7 @@ const User = require("../models/User.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
+const { authLogger } = require("../services/logger/authLogger");
 
 const firebaseConfig = {
     apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
@@ -26,7 +28,7 @@ const provider = new GoogleAuthProvider();
 provider.addScope("https://www.googleapis.com/auth/contacts.readonly");
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-auth.languageCode = "it";
+// auth.languageCode = "it";
 
 const registerWithFirebase = async (req, res) => {
     const userResponse = await admin
@@ -42,21 +44,20 @@ const registerWithFirebase = async (req, res) => {
             data.email = result.email;
             data.password = await bcrypt.hash(req.body.password, 10);
             data.firebaseUUID = result.uid;
-            data.verification_code = Math.random().toString().substr(2, 6);
+            data.email_verification_code = Math.random()
+                .toString()
+                .substr(2, 6);
             const newUser = new User(data);
 
             try {
                 const savedUser = await newUser.save();
 
-                axios({
-                    method: "POST",
-                    url: process.env.BASE_URL + "/send/email",
-                    data: {
-                        email: req.body.email,
-                        subject: "Please verify your email address",
-                        text: data.verification_code,
-                    },
-                });
+                sendingEmail(
+                    req.body.email,
+                    "Please verify your email address",
+                    `${data.email_verification_code} is your email verification code. Please input the code to the form to activate your account!`,
+                    null
+                );
 
                 admin
                     .auth()
@@ -64,53 +65,117 @@ const registerWithFirebase = async (req, res) => {
                         disabled: true,
                     })
                     .then(() => {
+                        authLogger.info(
+                            `url: ${req.originalUrl}, ${req.body.email} has been registered.`
+                        );
                         res.json({
                             message:
                                 "Your verification code has been successfully sent to your email. Please verify before login.",
                         });
                     })
                     .catch((err) => {
-                        res.status(500).json({ message: err });
+                        authLogger.error(
+                            `url: ${req.originalUrl}, ${err.message}, email: ${req.body.email}`
+                        );
+                        res.status(500).json({ message: err.message });
                     });
             } catch (error) {
-                res.status(500).json({ message: error });
+                authLogger.error(
+                    `url: ${req.originalUrl}, ${error.message}, email: ${req.body.email}`
+                );
+                res.status(500).json({ message: error.message });
             }
         })
         .catch((error) => {
-            console.log(error);
+            authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
             res.json(error.message);
         });
 };
 
-const sendingVerificationCode = async (req, res) => {
-    const user = User.findOne({ email: req.body.email });
-    user.verification_code = Math.random().toString().substr(2, 6);
+const sendingEmailVerificationCode = async (req, res) => {
+    if (!req.body.email)
+        return res.status(500).json({ message: "The email must not empty." });
 
-    user.updateOne({ email: req.body.email }, { $set: user });
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        const email_verification_code = Math.random().toString().substr(2, 6);
 
-    axios({
-        method: "POST",
-        url: "http://localhost:5000/send/email",
-        data: {
-            email: req.body.email,
-            subject: "Please verify your email address",
-            text: verification_code,
-        },
-    })
-        .then(() => {
-            res.json({
-                message:
-                    "Verification code has been sent to your email. Please check your email",
-            });
-        })
-        .catch((err) => {
-            res.status(500).json({ message: err });
+        await User.updateOne(
+            { email: req.body.email },
+            { $set: { email_verification_code: email_verification_code } }
+        );
+
+        sendingEmail(
+            req.body.email,
+            "Please verify your email address",
+            `${email_verification_code} is your email verification code. Please input the code to the form to activate your account!`,
+            null
+        );
+
+        authLogger.info(
+            `url: ${req.originalUrl}, Email verification has been sent to ${req.body.email}.`
+        );
+
+        res.json({
+            message:
+                "Verification code has been sent to your email. Please check your email",
         });
+    } catch (error) {
+        authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
+        res.status(500).json({ message: "There is something wrong." });
+    }
+};
+
+const verifyEmail = async (req, res) => {
+    const { email, email_verification_code } = req.body;
+    const user = await User.findOne({ email: email });
+
+    user.status = "Activated";
+    user.email_verified = true;
+
+    if (email_verification_code === user.email_verification_code) {
+        await User.updateOne({ _id: user._id }, { $set: user });
+
+        admin
+            .auth()
+            .updateUser(user.firebaseUUID, {
+                disabled: false,
+                emailVerified: true,
+            })
+            .then(async () => {
+                authLogger.info(
+                    `url: ${req.originalUrl}, Email verification has been sent to ${req.body.email}.`
+                );
+                const currentUser = {};
+                currentUser._id = user._id ?? "";
+                currentUser.email = user.email ?? "";
+                currentUser.full_name = user.full_name ?? "";
+                currentUser.role = user.role ?? "";
+                currentUser.phone_number = user.phone_number ?? "";
+                currentUser.profile_pict = user.profile_pict ?? "";
+
+                const jwt = jwtObject(currentUser);
+                authLogger.info(
+                    `url: ${req.originalUrl}, ${user._id} is logging in.`
+                );
+                res.json(jwt);
+            })
+            .catch((error) => {
+                authLogger.info(`url: ${req.originalUrl}, ${error.message}`);
+                res.status(500).json({
+                    message: "There is omething wrong.",
+                });
+            });
+    } else {
+        authLogger.error(`url: ${req.originalUrl}, wrong verification code `);
+        res.status(500).json({
+            message: "You input wrong verification code.",
+        });
+    }
 };
 
 const loginWithFirebase = async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
+    const { email, password } = req.body;
 
     const user = await User.findOne({ email: email });
     if (user) {
@@ -119,6 +184,9 @@ const loginWithFirebase = async (req, res) => {
             .getUser(user.firebaseUUID)
             .then((userRecord) => {
                 if (userRecord.emailVerified == false) {
+                    authLogger.info(
+                        `url: ${req.originalUrl}, Email is not verified.`
+                    );
                     return res.status(401).json({
                         message:
                             "Your email is not verified. Please check your email.",
@@ -126,12 +194,53 @@ const loginWithFirebase = async (req, res) => {
                 }
             })
             .catch((error) => {
+                authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
                 return res.status(500).json({ message: error.message });
             });
     }
 
     await signInWithEmailAndPassword(auth, email, password)
         .then(async (userCred) => {
+            const cred = await getUser(userCred, req);
+            res.json(cred);
+        })
+        .catch((error) => {
+            authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
+            res.status(401).json({ message: "Invalid credentials!" });
+        });
+};
+
+const getUser = async (userCred, req) => {
+    const user = {};
+    const findUser = await User.findOne({
+        firebaseUUID: userCred.user.uid,
+    });
+
+    if (findUser) {
+        user._id = findUser._id;
+        user.full_name = findUser.full_name;
+        user.role = findUser.role;
+        user.phone_number = findUser.phone_number ?? "";
+        user.profile_pict = findUser.profile_pict ?? "";
+
+        findUser.password = await bcrypt.hash(req.body.password, 10);
+        await User.updateOne({ _id: findUser._id }, { $set: findUser });
+
+        const jwt = jwtObject(user);
+        authLogger.info(`url: ${req.originalUrl}, ${user._id} is logging in.`);
+        return jwt;
+    } else {
+        const data = {};
+        data.firebaseUUID = userCred.user.uid;
+        data.password = await bcrypt.hash(req.body.password, 10);
+        data.full_name = userCred._tokenResponse.displayName;
+        data.email = userCred._tokenResponse.email;
+        data.phone_number = userCred._tokenResponse.phoneNumber;
+
+        const newUser = new User(data);
+
+        try {
+            const savedUser = await newUser.save();
             const user = {};
             const findUser = await User.findOne({
                 firebaseUUID: userCred.user.uid,
@@ -139,57 +248,22 @@ const loginWithFirebase = async (req, res) => {
 
             if (findUser) {
                 user._id = findUser._id;
+                user.email = findUser.email;
                 user.full_name = findUser.full_name;
                 user.role = findUser.role;
                 user.phone_number = findUser.phone_number ?? "";
                 user.profile_pict = findUser.profile_pict ?? "";
-
-                findUser.password = await bcrypt.hash(req.body.password, 10);
-                await User.updateOne({ _id: findUser._id }, { $set: findUser });
-
-                return res.json({
-                    user: user,
-                    idToken: userCred._tokenResponse.idToken,
-                    refreshToken: userCred._tokenResponse.refreshToken,
-                });
-            } else {
-                const data = {};
-                data.firebaseUUID = userCred.user.uid;
-                data.password = await bcrypt.hash(req.body.password, 10);
-                data.full_name = userCred._tokenResponse.displayName;
-                data.email = userCred._tokenResponse.email;
-                data.phone_number = userCred._tokenResponse.phoneNumber;
-
-                const newUser = new User(data);
-
-                try {
-                    const savedUser = await newUser.save();
-                    const user = {};
-                    const findUser = await User.findOne({
-                        firebaseUUID: userCred.user.uid,
-                    });
-
-                    if (findUser) {
-                        user._id = findUser._id;
-                        user.email = findUser.email;
-                        user.full_name = findUser.full_name;
-                        user.role = findUser.role;
-                        user.phone_number = findUser.phone_number ?? "";
-                        user.profile_pict = findUser.profile_pict ?? "";
-                    }
-                    return res.json({
-                        user: user,
-                        idToken: userCred._tokenResponse.idToken,
-                        refreshToken: userCred._tokenResponse.refreshToken,
-                    });
-                } catch (error) {
-                    return res.status(500).json({ message: error.message });
-                }
             }
-        })
-        .catch((err) => {
-            return res.status(401).json({ message: "Invalid credentials!" });
-        });
+
+            const jwt = jwtObject(user);
+            authLogger.info(
+                `url: ${req.originalUrl}, ${user._id} is logging in.`
+            );
+            return jwt;
+        } catch (error) {
+            authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
+        }
+    }
 };
 
 const afterGoogleSignin = async (req, res) => {
@@ -244,7 +318,7 @@ const jwtObject = (user) => {
     );
 
     return {
-        user: auth,
+        user: user,
         idToken: accessToken,
         refreshToken: refreshToken,
     };
@@ -432,97 +506,6 @@ const verifyIdToken = (req, res) => {
     }
 };
 
-const register = async (req, res) => {
-    // if (req.body.full_name == "") {
-    //     return res.status(400).json({ message: "Please enter your name!" })
-
-    if (req.body.email == "") {
-        return res.status(400).json({ message: "Email is required!" });
-    } else if (req.body.password == "") {
-        return res.status(400).json({ message: "Password is required!" });
-    }
-    // } else if (req.body.confirm_password == "") {
-    //     return res.status(400).json({ message: "Please confirm the password!" })
-    // } else if (req.body.password !== req.body.confirm_password) {
-    //     return res.status(400).json({ message: 'The password are not match!' })
-    // }
-
-    try {
-        ValidateEmail(req, res);
-        const encryptedPassword = await bcrypt.hash(req.body.password, 10);
-        req.body.password = encryptedPassword;
-
-        const user = new User(req.body);
-
-        const savedUser = await user.save();
-        res.status(200).json(savedUser);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-};
-
-const loginWithEmail = async (req, res) => {
-    const findUser = await User.findOne({ email: req.body.email }).lean();
-
-    if (!findUser) {
-        return res.status(400).json("Wrong email or please register!");
-    }
-
-    try {
-        if (await bcrypt.compare(req.body.password, findUser.password)) {
-            const user = {};
-            user._id = findUser._id;
-            user.full_name = findUser.full_name;
-            user.email = findUser.email;
-            user.role = findUser.role;
-            user.phone_number = findUser.phone_number ?? "";
-            user.profile_pict = findUser.profile_pict ?? "";
-
-            const accessToken = generateAccessToken(user);
-            const refreshToken = jwt.sign(
-                user,
-                process.env.REFRESH_TOKEN_SECRET
-            );
-
-            return res.status(200).json({
-                user: user,
-                idToken: accessToken,
-                refreshToken: refreshToken,
-            });
-        } else {
-            return res.status(400).json({ message: "Invalid credentials!" });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: "Something wrong." });
-    }
-};
-
-const verifyEmail = async (req, res) => {
-    const { email, verification_code } = req.body;
-    const user = await User.findOne({ email: email });
-
-    user.status = "Activated";
-
-    if (verification_code == user.verification_code) {
-        await User.updateOne({ _id: user._id }, { $set: user });
-
-        admin
-            .auth()
-            .updateUser(user.firebaseUUID, {
-                disabled: false,
-                emailVerified: true,
-            })
-            .then(() => {
-                res.json({ message: "Your acoount has been verified." });
-            })
-            .catch((err) => {
-                res.status(500).json({ message: err });
-            });
-    } else {
-        res.status(500).json({ message: "Something wrong." });
-    }
-};
-
 const refreshToken = (req, res) => {
     const refreshToken = req.body.token;
     if (refreshToken == null) return res.sendStatus(401);
@@ -568,13 +551,11 @@ const SignOut = (req, res) => {
 };
 
 module.exports = {
-    register,
     loginWithFirebase,
     registerWithFirebase,
-    loginWithEmail,
     refreshToken,
     verifyEmail,
-    sendingVerificationCode,
+    sendingEmailVerificationCode,
     afterGoogleSignin,
     updatePhoneNumber,
     updateRoleUser,

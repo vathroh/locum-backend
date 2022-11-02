@@ -5,19 +5,20 @@ const router = express.Router();
 const {
     login,
     register,
-    verifyEmail,
     forgotPassword,
     updateRoleUser,
     verifyPhoneNumber,
     updatePhoneNumber,
     changePasswordByUser,
     sendPhoneVerificationCode,
-    sendEmailVerificationCode,
 } = require("../controllers/authController.js");
 
 const {
+    verifyEmail,
     afterGoogleSignin,
+    loginWithFirebase,
     registerWithFirebase,
+    sendingEmailVerificationCode,
 } = require("../controllers/firebaseController");
 
 router.post(
@@ -38,15 +39,12 @@ router.post(
     sendPhoneVerificationCode
 );
 
-router.post(
-    "/send-email-verification/:userId",
-    authJwtMiddleware,
-    sendEmailVerificationCode
-);
+router.post("/send-email-verification/:userId", sendingEmailVerificationCode);
 
 router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
 router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
 router.post("/register-with-firebase", registerWithFirebase);
+router.post("/login-with-firebase", loginWithFirebase);
 router.post("/after-google-signin", afterGoogleSignin);
 router.post("/email-forgot-password", forgotPassword);
 router.post("/verify-email", verifyEmail);

@@ -53,6 +53,7 @@ const seedJobs = async () => {
             const savedJob = await job.save();
         });
 
+        const now = DateTime.now().toISO();
         sendingEmail(
             "romfatur@gmail.com",
             "Seed Job collection",
