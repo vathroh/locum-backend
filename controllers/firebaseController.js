@@ -382,20 +382,6 @@ const changeFirebasePasswordByAdmin = async (req, res) => {
     }
 };
 
-const changePasswordByUser = async (req, res) => {
-    const user = await User.findById(req.user._id);
-
-    if (await bcrypt.compare(req.body.current_password, user.password)) {
-        user.password = await bcrypt.hash(req.body.new_password, 10);
-
-        res.json({ message: "Successfully changed the password." });
-    } else {
-        return res
-            .status(400)
-            .json({ message: "Please insert the correct current password!" });
-    }
-};
-
 const updatePhoneNumber = async (req, res) => {
     const userId = await User.findById(req.params.userId);
     if (!userId)
@@ -471,27 +457,15 @@ const forgotEmailPassword = (req, res) => {
         });
 };
 
-const SignOut = (req, res) => {
-    const auth = getAuth();
-    signOut(auth)
-        .then(() => {
-            res.json({ message: "You have successfully logged out." });
-        })
-        .catch((error) => {
-            res.status(500).json({ message: error.message });
-        });
-};
-
 module.exports = {
-    loginWithFirebase,
-    registerWithFirebase,
-    refreshToken,
-    verifyEmail,
+    changeFirebasePasswordByUser,
     sendingEmailVerificationCode,
+    registerWithFirebase,
+    forgotEmailPassword,
     afterGoogleSignin,
+    loginWithFirebase,
     updatePhoneNumber,
     updateRoleUser,
-    forgotEmailPassword,
-    SignOut,
-    changeFirebasePasswordByUser,
+    refreshToken,
+    verifyEmail,
 };

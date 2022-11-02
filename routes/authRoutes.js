@@ -2,12 +2,9 @@ const { authJwtMiddleware } = require("../middleware/authMiddleware");
 const express = require("express");
 const router = express.Router();
 
-const {
-    forgotPassword,
-    verifyPhoneNumber,
-    changePasswordByUser,
-    sendPhoneVerificationCode,
-} = require("../controllers/authController.js");
+const { verifyPhoneNumber } = require("../controllers/authController.js");
+// forgotPassword,
+// sendPhoneVerificationCode,
 
 const {
     verifyEmail,
@@ -15,14 +12,16 @@ const {
     afterGoogleSignin,
     updatePhoneNumber,
     loginWithFirebase,
+    forgotEmailPassword,
     registerWithFirebase,
+    changeFirebasePasswordByUser,
     sendingEmailVerificationCode,
 } = require("../controllers/firebaseController");
 
 router.post(
     "/change-password-by-user",
     authJwtMiddleware,
-    changePasswordByUser
+    changeFirebasePasswordByUser
 );
 
 router.post(
@@ -31,18 +30,18 @@ router.post(
     updatePhoneNumber
 );
 
-router.post(
-    "/send-phone-verification/:userId",
-    authJwtMiddleware,
-    sendPhoneVerificationCode
-);
+// router.post(
+//     "/send-phone-verification/:userId",
+//     authJwtMiddleware,
+//     sendPhoneVerificationCode
+// );
 
 router.post("/send-email-verification/:userId", sendingEmailVerificationCode);
 
 router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
 router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
+router.post("/email-forgot-password", forgotEmailPassword);
 router.post("/after-google-signin", afterGoogleSignin);
-router.post("/email-forgot-password", forgotPassword);
 router.post("/register", registerWithFirebase);
 router.post("/verify-email", verifyEmail);
 router.post("/login", loginWithFirebase);
