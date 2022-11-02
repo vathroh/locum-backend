@@ -43,12 +43,12 @@ router.post("/send-email-verification/:userId", sendingEmailVerificationCode);
 
 router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
 router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
-router.post("/register-with-firebase", registerWithFirebase);
-router.post("/login-with-firebase", loginWithFirebase);
 router.post("/after-google-signin", afterGoogleSignin);
 router.post("/email-forgot-password", forgotPassword);
+router.post("/register", registerWithFirebase);
 router.post("/verify-email", verifyEmail);
-router.post("/register", register);
-router.post("/login", login);
+router.post("/login", loginWithFirebase);
+// router.post("/register", register);
+// router.post("/login", login);
 
 module.exports = router;
