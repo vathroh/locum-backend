@@ -217,7 +217,9 @@ const personalDocument = async (req, res) => {
             const doc = new Document(data);
             const saveDoc = await doc.save();
         });
-        userLogger.info(`url: ${req.originalUrl}, data: ${req.files}`);
+        userLogger.info(
+            `url: ${req.originalUrl}, data: ${JSON.stringify(req.files)}`
+        );
         res.json({ message: "files have been uploaded successfully." });
     } catch (error) {
         userLogger.error(
