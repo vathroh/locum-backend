@@ -74,6 +74,10 @@ const Job = mongoose.Schema(
         favorites: {
             type: Array,
         },
+        isUrgent: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

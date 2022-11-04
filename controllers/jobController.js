@@ -6,6 +6,11 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 const { jobLogger } = require("../services/logger/jobLogger");
 const { errorMonitor } = require("nodemailer/lib/xoauth2/index.js");
+const User = require("../models/User");
+const personal = require("../models/personalInormation");
+const personalInormation = require("../models/personalInormation");
+const Attendance = require("../models/AttendanceRecord");
+const Clinic = require("../models/Clinic");
 
 const getAllJobs = async (req, res) => {
     try {
@@ -641,59 +646,38 @@ const searchJob = async (req, res) => {
 const youMightLike = async (req, res) => {
     const today = moment().startOf("day");
 
-    const user = await axios({
-        method: "GET",
-        url: process.env.BASE_URL + "/user/" + req.body.user_id,
-    })
-        .then((result) => {
-            console.log(result);
-            return res.json(result);
+    const personal = await personalInormation
+        .findOne({
+            user_id: req.user._id,
         })
-        .catch((err) => {
-            console.log(err);
-            res.json(err);
+        .populate("user_id");
+
+    const blaclistedClinics = [];
+    const bClinics = await Clinic.find({
+        blacklist: { $in: [req.user._id] },
+    }).then((data) => {
+        data.map((d) => {
+            blaclistedClinics.push(d._id);
         });
+    });
 
     const jobs = await Job.find({
         date: {
             $lte: today.toDate(),
         },
-        prefered_gender: "both",
+        prefered_gender: personal.gender,
+        clinic: {
+            $nin: blaclistedClinics,
+        },
     });
 
     const ranks = jobs.map(async (d) => {
-        let score = 0;
-        const score1 = score;
-
-        if (genderPreference) {
-            if (d.gender == genderPreference) {
-                score += 20;
-            }
+        score = 0;
+        if (d.isUrgent == true) {
+            score += 20;
         }
-
-        const score2 = score;
-
-        //Attendance
-        const now = new Date();
-        const aDayAgo = now.getTime() - 172800000;
-
-        const aDayAttendance = await Attendance.find({
-            doctor_id: d._id,
-            clinic_id: clinic._id,
-            date: { $gt: aDayAgo },
-        });
-
-        if (aDayAttendance.length > 0) {
-            score += 15;
-        }
-
-        const score3 = score;
-
-        return {
-            doctorId: d._id,
-            doctorName: d.doctorName,
-            score: score,
-        };
+        d.score = score;
+        return d;
     });
 
     promisedRanks = await Promise.all(ranks);
@@ -847,6 +831,46 @@ const setFavorite = async (req, res) => {
     }
 };
 
+const getCurrentJob = async (req, res) => {
+    try {
+        const now = DateTime.now().toMillis();
+
+        const jobs = await Job.find({
+            assign_to: {
+                $in: [req.user._id],
+            },
+            work_time_start: {
+                $lte: now,
+            },
+            work_time_finish: {
+                $gte: now,
+            },
+        })
+            .lean()
+            .populate({ path: "clinic", select: "clinicName Address" })
+            .then((data) => {
+                data.map((e, index) => {
+                    e.number = "";
+                    statusJob(e, req);
+                    e.duration = Duration.fromMillis(
+                        e.work_time_finish - e.work_time_start
+                    )
+                        .shiftTo("hours")
+                        .toObject();
+                });
+
+                const output = formatData(data);
+                jobLogger.info(req.originalUrl);
+                res.json(output);
+            });
+    } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+        );
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getAllJobs,
     getUpcomingJobs,
@@ -866,6 +890,7 @@ module.exports = {
     statusJob,
     formatData,
     getExploreJobs,
+    getCurrentJob,
     favoritesByUser,
     setFavorite,
 };

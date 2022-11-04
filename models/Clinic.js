@@ -1,57 +1,67 @@
-// import mongoose 
 const mongoose = require("mongoose");
+const exists = require("mongoose-exists");
 
-// Buat Schema
 const Clinic = mongoose.Schema(
     {
         logo: {
             type: String,
         },
         group: {
-            type: String
+            type: String,
         },
         clinicName: {
             type: String,
-            required: true
+            required: true,
         },
         description: {
             type: String,
-            required: true
+            required: true,
         },
         clinicAddress: {
             type: String,
-            required: true
+            required: true,
         },
         location: {
             type: String,
-            required: true
+            required: true,
         },
         type: [
             {
-                type: String
-            }
+                type: String,
+            },
         ],
-        comments: [{
-            userId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User',
-                exists: true
+        comments: [
+            {
+                userId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User",
+                    exists: true,
+                },
+                text: {
+                    type: String,
+                },
+                datetime: {
+                    type: Number,
+                },
             },
-            text: {
-                type: String
+        ],
+        favorites: [
+            {
+                type: String,
             },
-            datetime: {
-                type: Number
-            }
-        }],
-        favorites: [{
-            type: String
-        }]
+        ],
+        blacklist: [
+            {
+                type: String,
+                refer: "User",
+                exists: true,
+            },
+        ],
     },
     {
-        timestamps: true
+        timestamps: true,
     }
 );
 
-// export model
-module.exports = mongoose.model('Clinic', Clinic);
+mongoose.plugin(exists);
+module.exports = mongoose.model("Clinic", Clinic);
