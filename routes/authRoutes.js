@@ -10,6 +10,7 @@ const {
     verifyEmail,
     updateRoleUser,
     afterGoogleSignin,
+    afterGoogleSignup,
     updatePhoneNumber,
     loginWithFirebase,
     forgotEmailPassword,
@@ -42,6 +43,7 @@ router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
 router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
 router.post("/email-forgot-password", forgotEmailPassword);
 router.post("/after-google-signin", afterGoogleSignin);
+router.post("/after-google-signup", afterGoogleSignup);
 router.post("/register", registerWithFirebase);
 router.post("/verify-email", verifyEmail);
 router.post("/login", loginWithFirebase);

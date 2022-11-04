@@ -267,20 +267,47 @@ const getUser = async (userCred, req) => {
 };
 
 const afterGoogleSignin = async (req, res) => {
+    try {
+        const findUser = await User.findOne({ firebaseUUID: req.body.uid });
+
+        if (findUser) {
+            const user = {};
+            user._id = findUser._id;
+            user.email = findUser.email;
+            user.full_name = findUser.full_name;
+            user.role = findUser.role;
+            user.phone_number = findUser.phone_number ?? "";
+            user.profile_pict = findUser.profile_pict ?? "";
+
+            const jwt = jwtObject(user);
+            authLogger.info(
+                `url: ${req.originalUrl}, ${user._id} is logging in.`
+            );
+            return res.json(jwt);
+        } else {
+            authLogger.info(
+                `url: ${req.originalUrl}, there is no account with this google, please sign up..`
+            );
+            return res.status(500).json({
+                message: `There is no account with this google, please sign up!`,
+            });
+        }
+    } catch (error) {
+        authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+const afterGoogleSignup = async (req, res) => {
     const findUser = await User.findOne({ firebaseUUID: req.body.uid });
 
     if (findUser) {
-        const user = {};
-        user._id = findUser._id;
-        user.email = findUser.email;
-        user.full_name = findUser.full_name;
-        user.role = findUser.role;
-        user.phone_number = findUser.phone_number ?? "";
-        user.profile_pict = findUser.profile_pict ?? "";
-
-        const jwt = jwtObject(user);
-        authLogger.info(`url: ${req.originalUrl}, ${user._id} is logging in.`);
-        return res.json(jwt);
+        authLogger.info(
+            `url: ${req.originalUrl}, The account has been registered.`
+        );
+        res.status(500).json({
+            message: `"${findUser.email}" has been registered. Please sign in.`,
+        });
     } else {
         const data = {};
         data.firebaseUUID = req.body.uid;
@@ -465,6 +492,7 @@ module.exports = {
     afterGoogleSignin,
     loginWithFirebase,
     updatePhoneNumber,
+    afterGoogleSignup,
     updateRoleUser,
     refreshToken,
     verifyEmail,
