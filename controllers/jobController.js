@@ -671,7 +671,9 @@ const youMightLike = async (req, res) => {
         },
     });
 
-    const ranks = jobs.map(async (d) => {
+    const output = formatData(jobs);
+
+    const ranks = output.map(async (d) => {
         score = 0;
         if (d.isUrgent == true) {
             score += 20;
@@ -836,7 +838,7 @@ const getCurrentJob = async (req, res) => {
         const now = DateTime.now().toMillis();
 
         const jobs = await Job.find({
-            assign_to: {
+            assigned_to: {
                 $in: [req.user._id],
             },
             work_time_start: {
