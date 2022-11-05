@@ -186,6 +186,7 @@ const practicingInformation = async (req, res) => {
             valid_until + "T00:00:00.000+08:00"
         ).toMillis();
         const information = new practicingDocument({
+            user_id: req.user._id,
             registration_number: registration_number,
             full_registration: full_registration,
             valid_from: from,

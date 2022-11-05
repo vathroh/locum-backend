@@ -13,6 +13,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
 const { authLogger } = require("../services/logger/authLogger");
+const personalInormation = require("../models/personalInormation");
+const practicingInformation = require("../models/practicingInformation");
+const personalDocument = require("../models/personalDocument");
 
 const firebaseConfig = {
     apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
@@ -268,9 +271,25 @@ const getUser = async (userCred, req) => {
 
 const afterGoogleSignin = async (req, res) => {
     try {
+        let toPage = "dashboard";
         const findUser = await User.findOne({ firebaseUUID: req.body.uid });
 
         if (findUser) {
+            const personal = await personalInormation.findOne({
+                user_id: findUser._id,
+            });
+
+            const practicing = await practicingInformation.findOne({
+                user_id: findUser._id,
+            });
+
+            const documents = await personalDocument.findOne({
+                user_id: findUser._id,
+            });
+
+            // return res.json(personal);
+            console.log(personal);
+
             const user = {};
             user._id = findUser._id;
             user.email = findUser.email;
@@ -279,7 +298,20 @@ const afterGoogleSignin = async (req, res) => {
             user.phone_number = findUser.phone_number ?? "";
             user.profile_pict = findUser.profile_pict ?? "";
 
+            if (user.phone_number == "") {
+                toPage = "phone_number";
+            } else if (user.role == "user") {
+                toPage = "role";
+            } else if (!personal) {
+                toPage = "verification";
+            } else if (!practicing) {
+                toPage = "practicing";
+            } else if (!documents) {
+                toPage = "documents";
+            }
+
             const jwt = jwtObject(user);
+            jwt.toPage = toPage;
             authLogger.info(
                 `url: ${req.originalUrl}, ${user._id} is logging in.`
             );
@@ -289,7 +321,8 @@ const afterGoogleSignin = async (req, res) => {
                 `url: ${req.originalUrl}, there is no account with this google, please sign up..`
             );
             return res.status(500).json({
-                message: `There is no account with this google, please sign up!`,
+                message: `Your account has not been registered, please sign up!`,
+                status: "unregistered",
             });
         }
     } catch (error) {
@@ -307,6 +340,7 @@ const afterGoogleSignup = async (req, res) => {
         );
         res.status(500).json({
             message: `"${findUser.email}" has been registered. Please sign in.`,
+            status: "registered",
         });
     } else {
         const data = {};
