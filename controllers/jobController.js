@@ -742,7 +742,10 @@ const formatData = (data) => {
             )
                 .shiftTo("hours")
                 .toObject(),
-            priceDuration: e.duration.hours * e.price,
+            priceDuration:
+                Duration.fromMillis(e.work_time_finish - e.work_time_start)
+                    .shiftTo("hours")
+                    .toObject().hours * e.price,
             time_start_format: DateTime.fromMillis(e.work_time_start)
                 .setZone("Asia/Singapore")
                 .toLocaleString(DateTime.TIME_SIMPLE),
