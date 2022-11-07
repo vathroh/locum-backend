@@ -43,6 +43,18 @@ const getUserById = async (req, res) => {
             achievement: 1,
         });
 
+        const personalInfo = await Personal.findOne({
+            user_id: user._id,
+        });
+
+        const practicing = await practicingDocument.findOne({
+            user_id: user._id,
+        });
+
+        const documents = await Document.findOne({
+            user_id: user._id,
+        });
+
         const data = {
             _id: user._id,
             full_name: user.full_name ?? "",
@@ -56,6 +68,20 @@ const getUserById = async (req, res) => {
             resume: user.resume ?? "",
             achievement: user.achievement ?? [],
         };
+
+        if (user.phone_number == "") {
+            data.toPage = "phone_number";
+        } else if (user.role == "user") {
+            data.toPage = "role";
+        } else if (!personalInfo) {
+            data.toPage = "verification";
+        } else if (!practicing) {
+            data.toPage = "practicing";
+        } else if (!documents) {
+            data.toPage = "documents";
+        } else {
+            data.toPage = "dashboard";
+        }
         res.json(data);
     } catch (error) {
         res.status(404).json({ message: error.message });
