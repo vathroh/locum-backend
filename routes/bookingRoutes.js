@@ -4,6 +4,7 @@ const router = express.Router();
 const {
     createBooking,
     deleteBooking,
+    pastBookingByClinic,
     upcomingBookingsByUserId,
     countUpcomingAssignmentsByUserId,
     upcomingUnassignmentByUserId,
@@ -18,6 +19,7 @@ const {
 router.put("/create/:id", createBooking);
 router.put("/delete/:id", deleteBooking);
 router.get("/canceled/:userId", canceledJobsByUser);
+router.get("/past-booking/:clinicId", pastBookingByClinic);
 router.get("/upcoming-by-user/:userId", upcomingBookingsByUserId);
 router.get("/count/completed-by-user/:userId", countCompletedJobsByUser);
 router.get("/count/upcoming-by-user/:userId", countUpcomingAssignmentsByUserId);

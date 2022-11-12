@@ -7,6 +7,7 @@ const { statusJob, formatData } = require("./jobController");
 const { createEvent } = require("../services/googleCalendar/index");
 const User = require("../models/User.js");
 const { restart } = require("nodemon");
+const ObjectId = require("mongoose/lib/types/objectid.js");
 
 const createBooking = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
@@ -490,6 +491,18 @@ const upcomingBookingByClinic = async (req, res) => {
     }
 };
 
+const pastBookingByClinic = async (req, res) => {
+    try {
+        const jobs = await Job.find({
+            clinic: ObjectId(req.params.clinicId),
+            completed: true,
+        });
+        res.json(jobs);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const upcomingBookingsBymonth = async (req, res) => {};
 
 const completedBookingsByMonth = async (req, res) => {};
@@ -497,6 +510,7 @@ const completedBookingsByMonth = async (req, res) => {};
 module.exports = {
     createBooking,
     deleteBooking,
+    pastBookingByClinic,
     upcomingBookingsByUserId,
     upcomingAssignmentsByUserId,
     countUpcomingAssignmentsByUserId,
