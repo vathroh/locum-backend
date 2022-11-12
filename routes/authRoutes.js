@@ -13,16 +13,24 @@ const {
     afterGoogleSignup,
     updatePhoneNumber,
     loginWithFirebase,
+    clinicAdminRegister,
     forgotEmailPassword,
     registerWithFirebase,
     changeFirebasePasswordByUser,
     sendingEmailVerificationCode,
+    changeClininAdminPasswordByAdmin,
 } = require("../controllers/firebaseController");
 
 router.post(
     "/change-password-by-user",
     authJwtMiddleware,
     changeFirebasePasswordByUser
+);
+
+router.post(
+    "/change-password",
+    authJwtMiddleware,
+    changeClininAdminPasswordByAdmin
 );
 
 router.post(
@@ -38,9 +46,9 @@ router.post(
 // );
 
 router.post("/send-email-verification/:userId", sendingEmailVerificationCode);
-
 router.post("/verify-phone-number", authJwtMiddleware, verifyPhoneNumber);
 router.post("/update-role/:userId", authJwtMiddleware, updateRoleUser);
+router.post("/clinic-manager/sign-up", clinicAdminRegister);
 router.post("/email-forgot-password", forgotEmailPassword);
 router.post("/after-google-signin", afterGoogleSignin);
 router.post("/after-google-signup", afterGoogleSignup);

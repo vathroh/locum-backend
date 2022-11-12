@@ -398,10 +398,19 @@ const getJobById = async (req, res) => {
 };
 
 const getJobByClinicId = async (req, res) => {
+    const page = parseInt(req.query.page) - 1 || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = limit * page;
+
     try {
-        await Job.find({ clinic: req.params.id })
+        const totalRows = await Job.find({ clinic: req.query.id }).count();
+        const totalPage = Math.ceil(totalRows / limit);
+        await Job.find({ clinic: req.query.id })
             .lean()
             .populate({ path: "clinic", select: "clinicName Address" })
+            .sort({ work_time_start: -1 })
+            .skip(offset)
+            .limit(limit)
             .then((data) => {
                 data.map((e, index) => {
                     e.number = "";
@@ -415,7 +424,13 @@ const getJobByClinicId = async (req, res) => {
 
                 const output = formatData(data);
                 jobLogger.info(req.originalUrl);
-                res.json(output);
+                res.json({
+                    page: page + 1,
+                    limit: limit,
+                    totalRows: totalRows,
+                    totalPage: totalPage,
+                    data: output,
+                });
             });
     } catch (error) {
         jobLogger.error(
@@ -424,6 +439,143 @@ const getJobByClinicId = async (req, res) => {
             }, data : ${JSON.stringify(req.body)}`
         );
         res.status(404).json({ message: error.message });
+    }
+};
+
+const upcomingByClinicId = async (req, res) => {
+    const page = parseInt(req.query.page) - 1 || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = limit * page;
+
+    try {
+        const now = DateTime.now().toMillis();
+
+        const totalRows = await Job.find({
+            clinic: req.query.id,
+            work_time_start: { $gte: now },
+        }).count();
+
+        const totalPage = Math.ceil(totalRows / limit);
+
+        await Job.find({
+            clinic: req.query.id,
+            work_time_start: { $gte: now },
+        })
+            .skip(offset)
+            .limit(limit)
+            .lean()
+            .populate({ path: "clinic", select: "clinicName Address" })
+            .sort({ work_time_start: -1 })
+            .then((data) => {
+                data.map((e, index) => {
+                    e.number = "";
+                    statusJob(e, req);
+                    e.duration = Duration.fromMillis(
+                        e.work_time_finish - e.work_time_start
+                    )
+                        .shiftTo("hours")
+                        .toObject();
+                });
+
+                const output = formatData(data);
+                jobLogger.info(req.originalUrl);
+                res.json({
+                    page: page + 1,
+                    limit: limit,
+                    totalRows: totalRows,
+                    totalPage: totalPage,
+                    data: output,
+                });
+            });
+    } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
+        res.status(404).json({ message: error.message });
+    }
+};
+
+const needApprovedByClinicId = async (req, res) => {
+    const page = parseInt(req.query.page) - 1 || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = limit * page;
+
+    try {
+        const now = DateTime.now().toMillis();
+
+        const totalRows = await Job.find({
+            clinic: req.query.id,
+            work_time_start: { $gte: now },
+            assigned_to: [],
+        }).count();
+
+        const totalPage = Math.ceil(totalRows / limit);
+
+        await Job.find({
+            clinic: req.query.id,
+            work_time_start: { $gte: now },
+            assigned_to: [],
+        })
+            .skip(offset)
+            .limit(limit)
+            .lean()
+            .populate({ path: "clinic", select: "clinicName Address" })
+            .sort({ work_time_start: -1 })
+            .then((data) => {
+                data.map((e, index) => {
+                    e.number = "";
+                    statusJob(e, req);
+                    e.duration = Duration.fromMillis(
+                        e.work_time_finish - e.work_time_start
+                    )
+                        .shiftTo("hours")
+                        .toObject();
+                });
+
+                const output = formatData(data);
+                jobLogger.info(req.originalUrl);
+                res.json({
+                    page: page + 1,
+                    limit: limit,
+                    totalRows: totalRows,
+                    totalPage: totalPage,
+                    data: output,
+                });
+            });
+    } catch (error) {
+        jobLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${
+                req.user._id
+            }, data : ${JSON.stringify(req.body)}`
+        );
+        res.status(404).json({ message: error.message });
+    }
+};
+
+const bookedBy = async (req, res) => {
+    try {
+        const job = await Job.findById(req.query.jobId);
+
+        const users = [];
+
+        const promisedUser = job.booked_by.map(async (item) => {
+            const user = await User.findById(item).select({
+                _id: 1,
+                phone_number: 1,
+                full_name: 1,
+                profile_pict: 1,
+                role: 1,
+            });
+            users.push(user);
+        });
+
+        await Promise.all(promisedUser);
+
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -886,6 +1038,7 @@ module.exports = {
     updateJob,
     deleteJob,
     getNewJobs,
+    upcomingByClinicId,
     getUpcomingDoctorJobs,
     getUpcomingClinicalAssistantJobs,
     getCalendarJobByClinicId,
@@ -898,4 +1051,6 @@ module.exports = {
     getCurrentJob,
     favoritesByUser,
     setFavorite,
+    bookedBy,
+    needApprovedByClinicId,
 };

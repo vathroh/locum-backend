@@ -61,6 +61,11 @@ const Job = mongoose.Schema(
                 type: String,
             },
         ],
+        rejected: [
+            {
+                type: String,
+            },
+        ],
         completed: {
             type: Boolean,
             default: false,

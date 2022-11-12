@@ -11,6 +11,7 @@ const { DateTime, Duration } = require("luxon");
 const multer = require("multer");
 const path = require("path");
 
+const mimeTypes = ["image/jpeg", "image/png", "image/gif"];
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "public/images/jobs");
@@ -20,7 +21,9 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+    storage: storage,
+});
 
 router.post("/upload", upload.single("image"), (req, res) => {
     console.log(req.body);

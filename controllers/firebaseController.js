@@ -16,6 +16,7 @@ const { authLogger } = require("../services/logger/authLogger");
 const personalInormation = require("../models/personalInormation");
 const practicingInformation = require("../models/practicingInformation");
 const personalDocument = require("../models/personalDocument");
+const { json } = require("express");
 
 const firebaseConfig = {
     apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
@@ -92,6 +93,108 @@ const registerWithFirebase = async (req, res) => {
         .catch((error) => {
             authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
             res.json(error.message);
+        });
+};
+
+const clinicAdminRegister = async (req, res) => {
+    const userResponse = await admin
+        .auth()
+        .createUser({
+            email: req.body.email,
+            password: "Default-password",
+            emailVerified: false,
+            disabled: false,
+        })
+        .then(async (result) => {
+            const data = {};
+            data.email = result.email;
+            data.full_name = req.body.full_name;
+            data.password = await bcrypt.hash("Default-password", 10);
+            data.firebaseUUID = result.uid;
+            data.email_verification_code = Math.random()
+                .toString()
+                .substr(2, 6);
+            const newUser = new User(data);
+
+            try {
+                const savedUser = await newUser.save();
+
+                sendingEmail(
+                    req.body.email,
+                    "Please verify your email address",
+                    `${data.email_verification_code} is your email verification code. Please input the code to the form to activate your account!`,
+                    null
+                );
+
+                admin
+                    .auth()
+                    .updateUser(result.uid, {
+                        disabled: true,
+                    })
+                    .then(() => {
+                        authLogger.info(
+                            `url: ${req.originalUrl}, ${req.body.email} has been registered.`
+                        );
+                        res.json({
+                            message:
+                                "Your verification code has been successfully sent to your email. Please verify to complete the sign up.",
+                        });
+                    })
+                    .catch((err) => {
+                        authLogger.error(
+                            `url: ${req.originalUrl}, ${err.message}, email: ${req.body.email}`
+                        );
+                        res.status(500).json({ message: err.message });
+                    });
+            } catch (error) {
+                authLogger.error(
+                    `url: ${req.originalUrl}, ${error.message}, email: ${req.body.email}`
+                );
+                res.status(500).json({ message: error.message });
+            }
+        })
+        .catch((error) => {
+            authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
+            res.json(error.message);
+        });
+};
+
+const changeClininAdminPasswordByAdmin = async (req, res) => {
+    if (!req.body.password)
+        return res.status(400).json({ message: "Password must not be empty." });
+
+    const passwordValidation = ValidatePassword(req, res);
+
+    if (!passwordValidation)
+        return res.status(400).json({
+            message:
+                "Password must contain min 8 character, with at least a symbol, upper and lower case letters and a number",
+        });
+
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user)
+        return res.status(500).json({
+            message: "Your account can not be found. Please register again.",
+        });
+
+    const password = await bcrypt.hash(req.body.password, 10);
+    await User.updateOne(
+        { email: req.body.email },
+        { $set: { password: password } }
+    );
+
+    await admin
+        .auth()
+        .updateUser(user.firebaseUUID, {
+            password: req.body.password,
+        })
+        .then(async (userRecord) => {
+            await User.updateOne({ _id: user._id }, { $set: user });
+            res.json({ message: "Successfully changed the password." });
+        })
+        .catch((error) => {
+            res.status(500).json({ message: error.message });
         });
 };
 
@@ -327,7 +430,9 @@ const afterGoogleSignin = async (req, res) => {
         }
     } catch (error) {
         authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
-        return res.status(500).json({ message: error.message });
+        return res
+            .status(500)
+            .json({ message: error.message, status: "unregistered" });
     }
 };
 
@@ -499,7 +604,18 @@ function ValidateEmail(req, res) {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body.email)) {
         return true;
     }
-    res.status(400).json("You have entered an invalid email address!");
+    // res.status(400).json("You have entered an invalid email address!");
+    return false;
+}
+
+function ValidatePassword(req, res) {
+    if (
+        /^(?=.*\d)(?=.*[!@#$%^&*()-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(
+            req.body.password
+        )
+    ) {
+        return true;
+    }
     return false;
 }
 
@@ -519,10 +635,12 @@ const forgotEmailPassword = (req, res) => {
 };
 
 module.exports = {
+    changeClininAdminPasswordByAdmin,
     changeFirebasePasswordByUser,
     sendingEmailVerificationCode,
     registerWithFirebase,
     forgotEmailPassword,
+    clinicAdminRegister,
     afterGoogleSignin,
     loginWithFirebase,
     updatePhoneNumber,

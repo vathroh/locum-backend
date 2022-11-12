@@ -6,6 +6,7 @@ const Clinic = require("../models/Clinic.js");
 const { statusJob, formatData } = require("./jobController");
 const { createEvent } = require("../services/googleCalendar/index");
 const User = require("../models/User.js");
+const { restart } = require("nodemon");
 
 const createBooking = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
@@ -130,6 +131,32 @@ const AssignTo = async (req, res) => {
         }
     } else {
         res.status(400).json("The job has been assigned.");
+    }
+};
+
+const rejectBooking = async (req, res) => {
+    try {
+        const job = await Job.findById(req.params.jobId).lean();
+
+        const newBookedBy = job.booked_by.filter((item) => {
+            return item !== req.body.user_id;
+        });
+
+        const rejected = job.rejected;
+        rejected.push(req.body.user_id);
+
+        await Job.updateOne(
+            { _id: req.params.jobId },
+            { $set: { booked_by: newBookedBy, rejected: rejected } }
+        )
+            .then((data) => {
+                res.json(data);
+            })
+            .catch((error) => {
+                res.status(500).json({ message: error.message });
+            });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -478,5 +505,6 @@ module.exports = {
     countCompletedJobsByUser,
     completedJobsByUser,
     canceledJobsByUser,
+    rejectBooking,
     AssignTo,
 };
