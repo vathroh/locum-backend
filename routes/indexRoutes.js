@@ -65,4 +65,8 @@ router.get("/", authJwtMiddleware, (req, res) => {
     );
 });
 
+const { setUrgentJob } = require("../services/cronJob/setUrgentJob");
+
+router.get("/urgent-job", setUrgentJob);
+
 module.exports = router;
