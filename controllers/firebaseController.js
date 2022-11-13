@@ -18,14 +18,24 @@ const practicingInformation = require("../models/practicingInformation");
 const personalDocument = require("../models/personalDocument");
 const { json } = require("express");
 
+// const firebaseConfig = {
+//     apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
+//     authDomain: "locumsg-82094.firebaseapp.com",
+//     projectId: "locumsg-82094",
+//     storageBucket: "locumsg-82094.appspot.com",
+//     messagingSenderId: "868654243090",
+//     appId: "1:868654243090:web:4dbde59e391fb6d82a67cb",
+//     measurementId: "G-BMJF0EBZ33",
+// };
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
-    authDomain: "locumsg-82094.firebaseapp.com",
-    projectId: "locumsg-82094",
-    storageBucket: "locumsg-82094.appspot.com",
-    messagingSenderId: "868654243090",
-    appId: "1:868654243090:web:4dbde59e391fb6d82a67cb",
-    measurementId: "G-BMJF0EBZ33",
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.STORAGE_BUCKET,
+    messagingSenderId: process.env.MESSAGING_SENDER_ID,
+    appId: process.env.APP_ID,
+    measurementId: process.env.MEASUREMENT_ID,
 };
 
 const provider = new GoogleAuthProvider();
@@ -282,38 +292,44 @@ const verifyEmail = async (req, res) => {
 
 const loginWithFirebase = async (req, res) => {
     const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ email: email });
+        const isEmailVerified = true;
+        if (user) {
+            await admin
+                .auth()
+                .getUser(user.firebaseUUID)
+                .then(async (userRecord) => {
+                    if (userRecord.emailVerified == false) {
+                        isEmailVerified = false;
+                    }
+                });
+        }
 
-    const user = await User.findOne({ email: email });
-    if (user) {
-        await admin
-            .auth()
-            .getUser(user.firebaseUUID)
-            .then((userRecord) => {
-                if (userRecord.emailVerified == false) {
-                    authLogger.info(
-                        `url: ${req.originalUrl}, Email is not verified.`
+        if (isEmailVerified == true) {
+            await signInWithEmailAndPassword(auth, email, password)
+                .then(async (userCred) => {
+                    const cred = await getUser(userCred, req);
+                    return res.json(cred);
+                })
+                .catch((error) => {
+                    authLogger.error(
+                        `url: ${req.originalUrl}, ${error.message}`
                     );
-                    return res.status(401).json({
-                        message:
-                            "Your email is not verified. Please check your email.",
-                    });
-                }
-            })
-            .catch((error) => {
-                authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
-                return res.status(500).json({ message: error.message });
+                    return res
+                        .status(401)
+                        .json({ message: "Invalid credentials!" });
+                });
+        } else {
+            authLogger.info(`url: ${req.originalUrl}, Email is not verified.`);
+            return res.status(401).json({
+                message: "Your email is not verified. Please check your email.",
             });
+        }
+    } catch (error) {
+        authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
+        return res.status(500).json({ message: error.message });
     }
-
-    await signInWithEmailAndPassword(auth, email, password)
-        .then(async (userCred) => {
-            const cred = await getUser(userCred, req);
-            res.json(cred);
-        })
-        .catch((error) => {
-            authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
-            res.status(401).json({ message: "Invalid credentials!" });
-        });
 };
 
 const getUser = async (userCred, req) => {

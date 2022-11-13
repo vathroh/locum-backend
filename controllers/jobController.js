@@ -796,51 +796,81 @@ const searchJob = async (req, res) => {
 };
 
 const youMightLike = async (req, res) => {
-    const today = moment().startOf("day");
+    try {
+        const now = DateTime.now().toMillis();
 
-    const personal = await personalInormation
-        .findOne({
-            user_id: req.user._id,
-        })
-        .populate("user_id");
+        const personal = await personalInormation
+            .findOne({
+                user_id: req.user._id,
+            })
+            .populate("user_id");
 
-    const blaclistedClinics = [];
-    const bClinics = await Clinic.find({
-        blacklist: { $in: [req.user._id] },
-    }).then((data) => {
-        data.map((d) => {
-            blaclistedClinics.push(d._id);
+        const blaclistedClinics = [];
+        const bClinics = await Clinic.find({
+            blacklist: { $in: [req.user._id] },
+        }).then((data) => {
+            data.map((d) => {
+                blaclistedClinics.push(d._id);
+            });
         });
-    });
 
-    const jobs = await Job.find({
-        date: {
-            $lte: today.toDate(),
-        },
-        prefered_gender: personal.gender,
-        clinic: {
-            $nin: blaclistedClinics,
-        },
-    });
+        const jobs = await Job.find({
+            work_time_start: {
+                $gte: now,
+            },
+            prefered_gender: personal.gender,
+            clinic: {
+                $nin: blaclistedClinics,
+            },
+        })
+            .populate({
+                path: "clinic",
+                select: "clinicName Address whitelist",
+            })
+            .lean();
 
-    const output = formatData(jobs);
+        const recentClinics = [];
+        await Attendance.find({
+            check_in: { $gte: now - 259200000 },
+            user_id: req.user._id,
+        }).then((data) => {
+            data.map((d) => {
+                recentClinics.push(d.clinic_id.toString());
+            });
+        });
 
-    const ranks = output.map(async (d) => {
-        score = 0;
-        if (d.isUrgent == true) {
-            score += 20;
-        }
-        d.score = score;
-        return d;
-    });
+        const ranks = jobs.map((d) => {
+            score = 0;
+            if (d.isUrgent == true) {
+                score += 30;
+            }
 
-    promisedRanks = await Promise.all(ranks);
-    jobLogger.info(req.originalUrl);
-    res.json(
+            if (d.clinic.whitelist?.includes(req.user._id)) {
+                score1 = score + 40;
+                score = score1;
+            }
+
+            if (recentClinics.includes(d.clinic._id.toString())) {
+                score1 = score + 20;
+                score = score1;
+            }
+
+            d.score = score;
+            return d;
+        });
+
+        promisedRanks = await Promise.all(ranks);
         promisedRanks.sort((a, b) => {
             return b.score - a.score;
-        })
-    );
+        });
+        const output = formatData(promisedRanks);
+
+        jobLogger.info(req.originalUrl);
+
+        res.json(output);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 const statusJob = (e, req) => {

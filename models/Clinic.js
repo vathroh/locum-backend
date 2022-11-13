@@ -57,6 +57,13 @@ const Clinic = mongoose.Schema(
                 exists: true,
             },
         ],
+        whitelist: [
+            {
+                type: String,
+                refer: "User",
+                exists: true,
+            },
+        ],
     },
     {
         timestamps: true,
