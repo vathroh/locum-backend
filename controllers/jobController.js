@@ -891,12 +891,12 @@ const statusJob = (e, req) => {
 
     if (e.favorites) {
         if (e.favorites.includes(req.user._id)) {
-            e.isFavorite = "true";
+            e.isFavorite = true;
         } else {
-            e.isFavorite = "false";
+            e.isFavorite = false;
         }
     } else {
-        e.isFavorite = "false";
+        e.isFavorite = false;
     }
 };
 
