@@ -51,8 +51,9 @@ const User = mongoose.Schema(
             type: String,
             enum: [
                 "user",
-                "super admin",
-                "system admin",
+                "super_admin",
+                "system_admin",
+                "company_admin",
                 "clinic_admin",
                 "doctor",
                 "clinic_assistants",

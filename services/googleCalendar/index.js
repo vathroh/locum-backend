@@ -41,6 +41,7 @@ const createEvent = (
         },
         attendees: attendees,
     };
+
     try {
         calendar.events.insert(
             { calendarId: "primary", resource: event },
@@ -50,6 +51,7 @@ const createEvent = (
                         message: "Error Creating Calender Event:",
                         err,
                     };
+                console.log("sukses create event on google calendar");
                 return { message: "Calendar event successfully created." };
             }
         );

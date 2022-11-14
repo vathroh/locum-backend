@@ -83,6 +83,11 @@ const Job = mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        listing_type: {
+            type: String,
+            enum: ["manual_listing", "automated_listing", "direct_listing"],
+            default: "manual_listing",
+        },
     },
     {
         timestamps: true,

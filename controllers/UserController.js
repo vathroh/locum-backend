@@ -2,10 +2,10 @@ const User = require("../models/User.js");
 const Personal = require("../models/personalInormation");
 const Document = require("../models/personalDocument");
 const practicingDocument = require("../models/practicingInformation");
+const { userLogger } = require("../services/logger/userLogger");
 const { DateTime } = require("luxon");
 const multer = require("multer");
 const path = require("path");
-const { userLogger } = require("../services/logger/userLogger");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -257,6 +257,7 @@ const personalDocument = async (req, res) => {
         res.status(500).json({ message: "There is something wrong." });
     }
 };
+
 module.exports = {
     upload,
     getUsers,

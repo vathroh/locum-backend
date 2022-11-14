@@ -114,7 +114,9 @@ const AssignTo = async (req, res) => {
                     { _id: req.params.id },
                     { $set: updatedData }
                 );
+
                 await saveEvent(data);
+                console.log("saveEvent");
                 createEvent(
                     summary,
                     location,
