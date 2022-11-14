@@ -873,6 +873,7 @@ const youMightLike = async (req, res) => {
             }
 
             d.score = score;
+            statusJob(d, req);
             return d;
         });
 
@@ -880,6 +881,7 @@ const youMightLike = async (req, res) => {
         promisedRanks.sort((a, b) => {
             return b.score - a.score;
         });
+
         const output = formatData(promisedRanks);
 
         jobLogger.info(req.originalUrl);
