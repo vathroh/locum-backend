@@ -140,6 +140,7 @@ const getExploreJobs = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .lean()
             .populate({
@@ -148,6 +149,7 @@ const getExploreJobs = async (req, res) => {
             })
             .then((data) => {
                 data.map((e, index) => {
+                    console.log(e);
                     e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
@@ -207,6 +209,7 @@ const getUpcomingDoctorJobs = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .then((data) => {
                 data.map((e, index) => {
@@ -272,6 +275,7 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .then((data) => {
                 data.map((e, index) => {
@@ -360,6 +364,7 @@ const getJobById = async (req, res) => {
                 canceled_by: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .lean()
             .populate({
@@ -383,6 +388,16 @@ const getJobById = async (req, res) => {
                 data.date = DateTime.fromMillis(data.date)
                     .setZone("Asia/Singapore")
                     .toFormat("dd LLLL yyyy");
+
+                if (data.favorites) {
+                    if (data.favorites.includes(req.user._id)) {
+                        data.isFavorite = true;
+                    } else {
+                        data.isFavorite = false;
+                    }
+                } else {
+                    data.isFavorite = false;
+                }
 
                 jobLogger.info(req.originalUrl);
                 res.json(data);

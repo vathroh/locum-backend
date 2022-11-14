@@ -188,6 +188,7 @@ const upcomingBookingsByUserId = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .lean()
             .populate({
@@ -238,6 +239,7 @@ const upcomingUnassignmentByUserId = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .lean()
             .populate({
@@ -289,6 +291,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .lean()
             .populate({
@@ -360,6 +363,7 @@ const completedJobsByUser = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .lean()
             .populate({
@@ -407,6 +411,7 @@ const canceledJobsByUser = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .lean()
             .populate({
@@ -466,6 +471,7 @@ const upcomingBookingByClinic = async (req, res) => {
                 assigned_to: 1,
                 completed: 1,
                 canceled_by: 1,
+                favorites: 1,
             })
             .populate({
                 path: "clinic",
