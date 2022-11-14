@@ -399,6 +399,8 @@ const getJobById = async (req, res) => {
                     data.isFavorite = false;
                 }
 
+                delete data.favorites;
+
                 jobLogger.info(req.originalUrl);
                 res.json(data);
             });
