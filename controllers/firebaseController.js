@@ -102,7 +102,7 @@ const registerWithFirebase = async (req, res) => {
         })
         .catch((error) => {
             authLogger.error(`url: ${req.originalUrl}, ${error.message}`);
-            res.status.json(error.message);
+            res.status(500).json(error.message);
         });
 };
 
