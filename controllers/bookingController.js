@@ -116,7 +116,6 @@ const AssignTo = async (req, res) => {
                 );
 
                 await saveEvent(data);
-                console.log("saveEvent");
                 createEvent(
                     summary,
                     location,

@@ -16,8 +16,18 @@ const {
 
 const { updateUserModel } = require("../services/updateModels/user");
 
+const {
+    setBlacklist,
+    setWhitelist,
+    getBlacklistByClinic,
+    getWhitelistByClinic,
+    removeFromBlacklist,
+    removeFromWhitelist,
+} = require("../controllers/whitelistBlacklistController");
+
 router.post("/practicing-information/:userId", practicingInformation);
 router.post("/personal-information/:userId", personalInformation);
+
 router.post(
     "/personal-document/:userId",
     upload.fields([
@@ -40,12 +50,19 @@ router.post(
     ]),
     personalDocument
 );
+
 router.get("/preferences/:userId", preferences);
+router.get("/get-inclusion-by-clinic", getWhitelistByClinic);
+router.get("/get-exclusion-by-clinic", getBlacklistByClinic);
+router.post("/delete-exclusion", removeFromBlacklist);
+router.post("/delete-inclusion", removeFromWhitelist);
 router.post("/update-model", updateUserModel);
-router.get("/", getUsers);
-router.get("/:id", getUserById);
-router.post("/", saveUser);
-router.patch("/:id", updateUser);
+router.post("/set-exclusion", setBlacklist);
+router.post("/set-inclusion", setWhitelist);
 router.delete("/:id", deleteUser);
+router.patch("/:id", updateUser);
+router.get("/:id", getUserById);
+router.get("/", getUsers);
+router.post("/", saveUser);
 
 module.exports = router;

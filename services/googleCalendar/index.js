@@ -46,6 +46,7 @@ const createEvent = (
         calendar.events.insert(
             { calendarId: "primary", resource: event },
             (err, data) => {
+                console.log(data);
                 if (err)
                     return {
                         message: "Error Creating Calender Event:",

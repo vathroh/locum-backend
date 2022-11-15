@@ -7,8 +7,7 @@ const getClinics = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-
-}
+};
 
 const getClinicById = async (req, res) => {
     try {
@@ -17,9 +16,7 @@ const getClinicById = async (req, res) => {
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
-
-}
-
+};
 
 const saveClinic = async (req, res) => {
     const clinic = new Clinic(req.body);
@@ -29,41 +26,54 @@ const saveClinic = async (req, res) => {
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-}
-
+};
 
 const updateClinic = async (req, res) => {
     const cekId = await Clinic.findById(req.params.id);
-    if (!cekId) return res.status(404).json({ message: "Data tidak ditemukan" });
+    if (!cekId)
+        return res.status(404).json({ message: "Data tidak ditemukan" });
     try {
-        const updatedClinic = await Clinic.updateOne({ _id: req.params.id }, { $set: req.body });
+        const updatedClinic = await Clinic.updateOne(
+            { _id: req.params.id },
+            { $set: req.body }
+        );
         res.status(200).json(updatedClinic);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-}
+};
 
 // function Delete Clinic
 const deleteClinic = async (req, res) => {
     const cekId = await Clinic.findById(req.params.id);
-    if (!cekId) return res.status(404).json({ message: "Data tidak ditemukan" });
+    if (!cekId)
+        return res.status(404).json({ message: "Data tidak ditemukan" });
     try {
         const deletedClinic = await Clinic.deleteOne({ _id: req.params.id });
         res.status(200).json(deletedClinic);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-}
+};
 
 const getOtherOutlet = async (req, res) => {
     try {
-        const clinic = await Clinic.findOne({ _id: req.params.clinicId })
-        const clinics = await Clinic.find({ _id: { $ne: clinic._id }, group: clinic.group })
-        res.json(clinics)
+        const clinic = await Clinic.findOne({ _id: req.params.clinicId });
+        const clinics = await Clinic.find({
+            _id: { $ne: clinic._id },
+            group: clinic.group,
+        });
+        res.json(clinics);
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-}
+};
 
-
-module.exports = { getClinics, getClinicById, saveClinic, updateClinic, deleteClinic, getOtherOutlet }
+module.exports = {
+    getClinics,
+    getClinicById,
+    saveClinic,
+    updateClinic,
+    deleteClinic,
+    getOtherOutlet,
+};

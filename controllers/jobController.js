@@ -46,7 +46,7 @@ const getAllJobs = async (req, res) => {
 
 const getNewJobs = async (req, res) => {
     try {
-        await Job.find()
+        await Job.find({ profession: req.user.role })
             .sort({ createdAt: -1 })
             .lean()
             .populate({ path: "clinic", select: "clinicName Address" })
@@ -123,6 +123,7 @@ const getExploreJobs = async (req, res) => {
             work_time_start: {
                 $gte: DateTime.now().toMillis(),
             },
+            profession: req.user.role,
         })
             .sort({ date: 1 })
             .select({
@@ -163,6 +164,7 @@ const getExploreJobs = async (req, res) => {
                     return el.status == "Booking Opened";
                 });
 
+                console.log(data);
                 const output = formatData(OpenedStatus);
                 jobLogger.info(req.originalUrl);
 
