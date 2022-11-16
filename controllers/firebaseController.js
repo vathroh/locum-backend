@@ -255,7 +255,7 @@ const verifyEmail = async (req, res) => {
         } begin. data: ${JSON.stringify(req.body)}`
     );
 
-    if (email_verification_code === user.email_verification_code) {
+    if (email_verification_code == user.email_verification_code) {
         await User.updateOne({ _id: user._id }, { $set: user });
 
         admin
