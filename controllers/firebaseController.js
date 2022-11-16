@@ -252,7 +252,7 @@ const verifyEmail = async (req, res) => {
     authLogger.info(
         `url: ${req.originalUrl}, process verification ${
             req.body.email
-        } begin. data: ${JSON.stringify(req.body)}`
+        } begin. data: ${JSON.stringify(req.body)} user:${JSON.stringify(user)}`
     );
 
     if (email_verification_code == user.email_verification_code) {
