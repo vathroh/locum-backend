@@ -281,12 +281,6 @@ const verifyEmail = async (req, res) => {
                     `url: ${req.originalUrl}, ${user._id} is logging in.`
                 );
                 res.json(jwt);
-            })
-            .catch((error) => {
-                authLogger.info(`url: ${req.originalUrl}, ${error.message}`);
-                res.status(500).json({
-                    message: "There is something wrong.",
-                });
             });
     } else {
         authLogger.error(`url: ${req.originalUrl}, wrong verification code `);
