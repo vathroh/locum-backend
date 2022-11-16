@@ -243,7 +243,7 @@ const sendingEmailVerificationCode = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
-    const { email, email_verification_code } = req.body;
+    const { email, verification_code } = req.body;
     const user = await User.findOne({ email: email });
 
     user.status = "Activated";
@@ -255,7 +255,7 @@ const verifyEmail = async (req, res) => {
         } begin. data: ${JSON.stringify(req.body)} user:${JSON.stringify(user)}`
     );
 
-    if (email_verification_code == user.email_verification_code) {
+    if (verification_code == user.email_verification_code) {
         await User.updateOne({ _id: user._id }, { $set: user });
 
         admin
@@ -281,6 +281,12 @@ const verifyEmail = async (req, res) => {
                     `url: ${req.originalUrl}, ${user._id} is logging in.`
                 );
                 res.json(jwt);
+            })
+            .catch((error) => {
+                authLogger.info(`url: ${req.originalUrl}, ${error.message}`);
+                res.status(500).json({
+                    message: "There is something wrong.",
+                });
             });
     } else {
         authLogger.error(`url: ${req.originalUrl}, wrong verification code `);
