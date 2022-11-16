@@ -249,6 +249,12 @@ const verifyEmail = async (req, res) => {
     user.status = "Activated";
     user.email_verified = true;
 
+    authLogger.info(
+        `url: ${req.originalUrl}, process verification ${
+            req.body.email
+        } begin. data: ${JSON.stringify(req.body)}`
+    );
+
     if (email_verification_code === user.email_verification_code) {
         await User.updateOne({ _id: user._id }, { $set: user });
 
@@ -260,7 +266,7 @@ const verifyEmail = async (req, res) => {
             })
             .then(async () => {
                 authLogger.info(
-                    `url: ${req.originalUrl}, Email verification has been sent to ${req.body.email}.`
+                    `url: ${req.originalUrl}, ${req.body.email} has been verified.`
                 );
                 const currentUser = {};
                 currentUser._id = user._id ?? "";
@@ -279,7 +285,7 @@ const verifyEmail = async (req, res) => {
             .catch((error) => {
                 authLogger.info(`url: ${req.originalUrl}, ${error.message}`);
                 res.status(500).json({
-                    message: "There is omething wrong.",
+                    message: "There is something wrong.",
                 });
             });
     } else {
