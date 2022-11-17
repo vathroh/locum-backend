@@ -70,19 +70,39 @@ const authFirebaseMiddleware = (req, res, next) => {
 };
 
 const authJwtMiddleware = (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+    const isBolehMasuk = req.session.isBolehMasuk;
+    const token = req.session.idToken;
 
-    if (token == null)
+    if (!isBolehMasuk)
         return res.status(401).json("You have log out, please login!");
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) return res.status(403).json("Unauthorized!");
         delete user.iat;
         req.user = user;
-        console.log(req.user);
         next();
     });
 };
+
+// const authJwtMiddleware = (req, res, next) => {
+//     const authHeader = req.headers["authorization"];
+//     const token = authHeader && authHeader.split(" ")[1];
+//     const isBolehMasuk = req.session.isBolehMasuk;
+
+//     if (token == null)
+//         return res.status(401).json("You have log out, please login!");
+
+//     if (!isBolehMasuk)
+//         return res.status(401).json("You have log out, please login!");
+
+//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+//         if (err) return res.status(403).json("Unauthorized!");
+//         delete user.iat;
+//         req.user = user;
+//         console.log(user);
+//         console.log(req.session.isBolehMasuk);
+//         next();
+//     });
+// };
 
 module.exports = { verifyIdToken, authFirebaseMiddleware, authJwtMiddleware };

@@ -14,6 +14,8 @@ const fcmRoute = require("./routes/fcmRoutes");
 const cors = require("cors");
 const port = process.env.PORT;
 const path = require("path");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const { Server } = require("socket.io");
 
 const app = express();
@@ -44,6 +46,17 @@ const db = mongoose.connection;
 db.on("error", (error) => console.error(error));
 db.once("open", () => console.log("Database Connected"));
 
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        store: MongoStore.create({
+            client: mongoose.connection.getClient(),
+        }),
+        resave: false,
+        saveUninitialized: false,
+    })
+);
+
 app.get("/socket.io/socket.io.js", (req, res) => {
     res.sendFile(
         __dirname + "/node_modules/socket.io/client-dist/socket.io.js"
@@ -70,11 +83,11 @@ app.use(
 app.use("/messages", authJwtMiddleware, require("./routes/messageRoutes"));
 app.use("/settings", authJwtMiddleware, require("./routes/settingRoutes"));
 app.use("/comment", authJwtMiddleware, require("./routes/commentRoutes"));
+app.use("/google-calendar", require("./routes/googleCalendarRoutes"));
 app.use("/jobs", authJwtMiddleware, require("./routes/jobRoutes.js"));
 app.use("/attendance", authJwtMiddleware, attendanceRoute);
 app.use("/clinic", authJwtMiddleware, clinicRoute);
 app.use("/user", authJwtMiddleware, userRoute);
-app.use("/google-calendar", require("./routes/googleCalendarRoutes"));
 app.use("/doctor-ranks", doctorRanksRoute);
 app.use("/doctor", doctorRoute);
 app.use("/auth", authRoutes);

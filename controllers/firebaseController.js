@@ -277,6 +277,11 @@ const verifyEmail = async (req, res) => {
                 currentUser.profile_pict = user.profile_pict ?? "";
 
                 const jwt = jwtObject(currentUser);
+
+                req.session.isBolehMasuk = true;
+                req.session.idToken = jwt.idToken;
+                req.session.refreshToken = jwt.refreshToken;
+
                 authLogger.info(
                     `url: ${req.originalUrl}, ${user._id} is logging in.`
                 );
@@ -316,6 +321,11 @@ const loginWithFirebase = async (req, res) => {
             await signInWithEmailAndPassword(auth, email, password)
                 .then(async (userCred) => {
                     const cred = await getUser(userCred, req);
+
+                    req.session.isBolehMasuk = true;
+                    req.session.idToken = cred.idToken;
+                    req.session.refreshToken = cred.refreshToken;
+
                     return res.json(cred);
                 })
                 .catch((error) => {
@@ -437,6 +447,11 @@ const afterGoogleSignin = async (req, res) => {
 
             const jwt = jwtObject(user);
             jwt.toPage = toPage;
+
+            req.session.isBolehMasuk = true;
+            req.session.idToken = jwt.idToken;
+            req.session.refreshToken = jwt.refreshToken;
+
             authLogger.info(
                 `url: ${req.originalUrl}, ${user._id} is logging in.`
             );
@@ -474,6 +489,7 @@ const afterGoogleSignup = async (req, res) => {
         data.firebaseUUID = req.body.uid;
         data.full_name = req.body.displayName;
         data.email = req.body.email;
+        data.email_verified = true;
         data.phone_number = req.body.phoneNumber ?? "";
 
         const newUser = new User(data);
@@ -493,6 +509,11 @@ const afterGoogleSignup = async (req, res) => {
                 user.profile_pict = findUseragain.profile_pict ?? "";
 
                 const jwt = jwtObject(user);
+
+                req.session.isBolehMasuk = true;
+                req.session.idToken = jwt.idToken;
+                req.session.refreshToken = jwt.refreshToken;
+
                 authLogger.info(
                     `url: ${req.originalUrl}, ${user._id} is logging in.`
                 );

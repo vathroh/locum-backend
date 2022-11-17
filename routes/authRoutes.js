@@ -55,7 +55,9 @@ router.post("/after-google-signup", afterGoogleSignup);
 router.post("/register", registerWithFirebase);
 router.post("/verify-email", verifyEmail);
 router.post("/login", loginWithFirebase);
-// router.post("/register", register);
-// router.post("/login", login);
+router.post("/logout", (req, res) => {
+    req.session.destroy();
+    res.end();
+});
 
 module.exports = router;
