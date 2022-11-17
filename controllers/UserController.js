@@ -70,7 +70,7 @@ const getUserById = async (req, res) => {
         };
 
         if (user.email_verified == false) {
-            toPage = "email";
+            data.toPage = "email";
         } else if (user.phone_number == "") {
             data.toPage = "phone_number";
         } else if (user.role == "user") {

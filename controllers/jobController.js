@@ -650,33 +650,57 @@ const getCalendarJobByClinicId = async (req, res) => {
     }
 };
 
+const postManualListing = (req, res) => {
+    req.body.listing_type = "manual_listing";
+    saveJob(req, res);
+};
+
+const postAutomatedListing = (req, res) => {
+    req.body.listing_type = "automated_listing";
+    saveJob(req, res);
+};
+
+const postDirectListing = (req, res) => {
+    const user = User.findOne({ code: req.body.shared_to });
+    const assigned_to = [];
+    const booked_by = [];
+
+    booked_by.push(user._id);
+    assigned_to.push(user._id);
+
+    req.body.listing_type = "direct_listing";
+    req.body.assigned_to = assigned_to;
+    req.body.booked_by = booked_by;
+
+    saveJob(req, res);
+};
+
 const saveJob = async (req, res) => {
+    if (!req.file)
+        return res.status(400).json({ message: "The image must not empty." });
     let data = req.body;
-    data.work_time_start =
-        DateTime.fromISO(req.body.date + "T" + req.body.work_time_start, {
-            zone: "Asia/Singapore",
-        }).toMillis() ?? 0;
-    data.work_time_finish =
-        DateTime.fromISO(req.body.date + "T" + req.body.work_time_finish, {
-            zone: "Asia/Singapore",
-        }).toMillis() ?? 0;
-    data.date =
-        DateTime.fromISO(req.body.date, {
-            zone: "Asia/Singapore",
-        }).toMillis() ?? 0;
+    data.image = "/" + req.file?.destination + "/" + req.file?.filename;
+    console.log(req.file?.destination);
+    data.work_time_start = DateTime.fromISO(
+        req.body.date + "T" + req.body.work_time_start,
+        { zone: "Asia/Singapore" }
+    ).toMillis();
+
+    data.work_time_finish = DateTime.fromISO(
+        req.body.date + "T" + req.body.work_time_finish,
+        { zone: "Asia/Singapore" }
+    ).toMillis();
+
+    data.date = DateTime.fromISO(req.body.date, {
+        zone: "Asia/Singapore",
+    }).toMillis();
 
     const job = new Job(data);
 
     try {
         const savedJob = await job.save();
-        jobLogger.info(req.originalUrl);
         res.status(200).json(savedJob);
     } catch (error) {
-        jobLogger.error(
-            `url: ${req.originalUrl}, error: ${error.message}, user:${
-                req.user._id
-            }, data : ${JSON.stringify(req.body)}`
-        );
         res.status(400).json({ message: error.message });
     }
 };
@@ -723,7 +747,6 @@ const deleteJob = async (req, res) => {
     }
 };
 
-//Searching Jobs
 const filteredJob = async (req, res) => {
     let filters = {};
 
@@ -767,7 +790,6 @@ const filteredJob = async (req, res) => {
         });
 };
 
-//Searching Jobs
 const searchJob = async (req, res) => {
     await Job.find()
         .populate("clinic")
@@ -1080,28 +1102,31 @@ const getCurrentJob = async (req, res) => {
 };
 
 module.exports = {
-    getAllJobs,
-    getUpcomingJobs,
-    getPastJobs,
-    getJobById,
-    getJobByClinicId,
     saveJob,
     updateJob,
     deleteJob,
+    getAllJobs,
     getNewJobs,
+    getJobById,
+    getPastJobs,
+    getUpcomingJobs,
+    getJobByClinicId,
     upcomingByClinicId,
     getUpcomingDoctorJobs,
     getUpcomingClinicalAssistantJobs,
     getCalendarJobByClinicId,
-    youMightLike,
-    filteredJob,
-    searchJob,
-    statusJob,
-    formatData,
+    needApprovedByClinicId,
+    postAutomatedListing,
+    postDirectListing,
+    postManualListing,
+    favoritesByUser,
     getExploreJobs,
     getCurrentJob,
-    favoritesByUser,
+    youMightLike,
+    filteredJob,
     setFavorite,
+    formatData,
+    searchJob,
+    statusJob,
     bookedBy,
-    needApprovedByClinicId,
 };

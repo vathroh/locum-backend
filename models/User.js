@@ -60,6 +60,10 @@ const User = mongoose.Schema(
             ],
             default: "user",
         },
+        role_id: {
+            type: String,
+            default: "",
+        },
         status: {
             type: String,
             default: "created",
