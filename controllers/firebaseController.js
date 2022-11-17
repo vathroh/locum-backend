@@ -73,26 +73,13 @@ const registerWithFirebase = async (req, res) => {
                     null
                 );
 
-                admin
-                    .auth()
-                    .updateUser(result.uid, {
-                        disabled: true,
-                    })
-                    .then(() => {
-                        authLogger.info(
-                            `url: ${req.originalUrl}, ${req.body.email} has been registered.`
-                        );
-                        res.json({
-                            message:
-                                "Your verification code has been successfully sent to your email. Please verify before login.",
-                        });
-                    })
-                    .catch((err) => {
-                        authLogger.error(
-                            `url: ${req.originalUrl}, ${err.message}, email: ${req.body.email}`
-                        );
-                        res.status(500).json({ message: err.message });
-                    });
+                authLogger.info(
+                    `url: ${req.originalUrl}, ${req.body.email} has been registered.`
+                );
+                res.json({
+                    message:
+                        "Your verification code has been successfully sent to your email. Please verify before login.",
+                });
             } catch (error) {
                 authLogger.error(
                     `url: ${req.originalUrl}, ${error.message}, email: ${req.body.email}`
@@ -433,7 +420,9 @@ const afterGoogleSignin = async (req, res) => {
             user.phone_number = findUser.phone_number ?? "";
             user.profile_pict = findUser.profile_pict ?? "";
 
-            if (user.phone_number == "") {
+            if (user.email_verified == false) {
+                toPage = "email";
+            } else if (user.phone_number == "") {
                 toPage = "phone_number";
             } else if (user.role == "user") {
                 toPage = "role";

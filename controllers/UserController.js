@@ -69,7 +69,9 @@ const getUserById = async (req, res) => {
             achievement: user.achievement ?? [],
         };
 
-        if (user.phone_number == "") {
+        if (user.email_verified == false) {
+            toPage = "email";
+        } else if (user.phone_number == "") {
             data.toPage = "phone_number";
         } else if (user.role == "user") {
             data.toPage = "role";
