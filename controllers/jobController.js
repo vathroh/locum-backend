@@ -20,7 +20,6 @@ const getAllJobs = async (req, res) => {
             .populate({ path: "clinic", select: "clinicName Address" })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -52,7 +51,6 @@ const getNewJobs = async (req, res) => {
             .populate({ path: "clinic", select: "clinicName Address" })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -91,7 +89,6 @@ const getUpcomingJobs = async (req, res) => {
             .populate({ path: "clinic", select: "clinicName Address" })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -151,7 +148,6 @@ const getExploreJobs = async (req, res) => {
             .then((data) => {
                 data.map((e, index) => {
                     console.log(e);
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -215,7 +211,6 @@ const getUpcomingDoctorJobs = async (req, res) => {
             })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -281,7 +276,6 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
             })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -322,7 +316,6 @@ const getPastJobs = async (req, res) => {
             .populate({ path: "clinic", select: "clinicName Address" })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -432,7 +425,6 @@ const getJobByClinicId = async (req, res) => {
             .limit(limit)
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -487,7 +479,6 @@ const upcomingByClinicId = async (req, res) => {
             .sort({ work_time_start: -1 })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -544,7 +535,6 @@ const needApprovedByClinicId = async (req, res) => {
             .sort({ work_time_start: -1 })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -813,7 +803,6 @@ const searchJob = async (req, res) => {
             const unique = [...new Set(data.map((item) => item))];
 
             unique.map((e, index) => {
-                e.number = "";
                 statusJob(e, req);
                 e.duration = Duration.fromMillis(
                     e.work_time_finish - e.work_time_start
@@ -947,21 +936,20 @@ const formatData = (data) => {
     return data.map((e) => {
         return {
             _id: e._id,
-            clinic: e.clinic,
-            date: e.date,
-            work_time_start: e.work_time_start,
-            work_time_finish: e.work_time_finish,
-            price: e.price,
-            scope: e.scope,
-            job_description: e.job_description,
-            booked_by: e.booked_by,
-            assigned_to: e.assigned_to,
-            completed: e.completed,
-            canceled_by: e.canceled_by,
-            status: e.status,
+            clinic: e.clinic ?? "",
+            date: e.date ?? "",
+            work_time_start: e.work_time_start ?? 0,
+            work_time_finish: e.work_time_finish ?? 0,
+            price: e.price ?? 0,
+            scope: e.scope ?? [],
+            job_description: e.job_description ?? "",
+            booked_by: e.booked_by ?? [],
+            assigned_to: e.assigned_to ?? [],
+            completed: e.completed ?? false,
+            canceled_by: e.canceled_by ?? [],
+            status: e.status ?? "",
             isFavorite: e.isFavorite ?? false,
-            image: process.env.BASE_URL + e.image,
-            number: e.number,
+            image: process.env.BASE_URL + e.image ?? "",
             duration: Duration.fromMillis(
                 e.work_time_finish - e.work_time_start
             )
@@ -996,7 +984,6 @@ const favoritesByUser = async (req, res) => {
             .populate({ path: "clinic", select: "clinicName Address" })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
@@ -1080,7 +1067,6 @@ const getCurrentJob = async (req, res) => {
             .populate({ path: "clinic", select: "clinicName Address" })
             .then((data) => {
                 data.map((e, index) => {
-                    e.number = "";
                     statusJob(e, req);
                     e.duration = Duration.fromMillis(
                         e.work_time_finish - e.work_time_start
