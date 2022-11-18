@@ -646,7 +646,7 @@ const updateRoleUser = async (req, res) => {
             }).count();
 
             const number = parseInt(count) + 1;
-            const string = "LOC-" + now + "000";
+            const string = "CLA-" + now + "000";
             const code = string.slice(0, 14 - number) + number;
 
             userId.role_id = code;
