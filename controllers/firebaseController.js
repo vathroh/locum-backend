@@ -623,9 +623,9 @@ const updateRoleUser = async (req, res) => {
         userId.role = role;
 
         if (role == "doctor") {
-            const count = User.find({ role: "doctor" });
+            const count = await User.find({ role: "doctor" }).count();
             const string = "LOC-" + now + "000";
-            return res.json(string);
+            return res.json(count);
         } else if (role == "clinic_assistants") {
             const string = "CLA-" + now + "000";
             return res.json.string(string);

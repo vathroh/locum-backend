@@ -844,20 +844,36 @@ const youMightLike = async (req, res) => {
             });
         });
 
-        const jobs = await Job.find({
-            work_time_start: {
-                $gte: now,
-            },
-            prefered_gender: personal.gender,
-            clinic: {
-                $nin: blaclistedClinics,
-            },
-        })
-            .populate({
-                path: "clinic",
-                select: "clinicName Address whitelist",
+        if (personal.gender) {
+            const jobs = await Job.find({
+                work_time_start: {
+                    $gte: now,
+                },
+                prefered_gender: personal.gender,
+                clinic: {
+                    $nin: blaclistedClinics,
+                },
             })
-            .lean();
+                .populate({
+                    path: "clinic",
+                    select: "clinicName Address whitelist",
+                })
+                .lean();
+        } else {
+            const jobs = await Job.find({
+                work_time_start: {
+                    $gte: now,
+                },
+                clinic: {
+                    $nin: blaclistedClinics,
+                },
+            })
+                .populate({
+                    path: "clinic",
+                    select: "clinicName Address whitelist",
+                })
+                .lean();
+        }
 
         const recentClinics = [];
         await Attendance.find({
