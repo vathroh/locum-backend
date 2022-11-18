@@ -70,18 +70,29 @@ const authFirebaseMiddleware = (req, res, next) => {
 };
 
 const authJwtMiddleware = (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
     const isBolehMasuk = req.session.isBolehMasuk;
-    const token = req.session.idToken;
 
-    if (!isBolehMasuk)
+    if (isBolehMasuk) {
+        const idToken = req.session.idToken;
+
+        jwt.verify(idToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+            if (err) return res.status(403).json("Unauthorized!");
+            delete user.iat;
+            req.user = user;
+            next();
+        });
+    } else if (token) {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+            if (err) return res.status(403).json("Unauthorized!");
+            delete user.iat;
+            req.user = user;
+            next();
+        });
+    } else {
         return res.status(401).json("You have log out, please login!");
-
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) return res.status(403).json("Unauthorized!");
-        delete user.iat;
-        req.user = user;
-        next();
-    });
+    }
 };
 
 // const authJwtMiddleware = (req, res, next) => {

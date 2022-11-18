@@ -17,6 +17,7 @@ const personalInormation = require("../models/personalInormation");
 const practicingInformation = require("../models/practicingInformation");
 const personalDocument = require("../models/personalDocument");
 const { json } = require("express");
+const { DateTime } = require("luxon");
 
 // const firebaseConfig = {
 //     apiKey: "AIzaSyAJMrnCOVifTBjIj4xv5rsxnDMQsgXzBS4",
@@ -432,6 +433,8 @@ const afterGoogleSignin = async (req, res) => {
                 toPage = "practicing";
             } else if (!documents) {
                 toPage = "documents";
+            } else {
+                toPage = "dashboard";
             }
 
             const jwt = jwtObject(user);
@@ -606,12 +609,28 @@ const updatePhoneNumber = async (req, res) => {
 };
 
 const updateRoleUser = async (req, res) => {
-    const userId = await User.findById(req.params.userId);
-    if (!userId)
-        return res.status(404).json({ message: "The user is not found." });
-    userId.role = req.body.role;
-
+    const { role } = req.body;
     try {
+        const userId = await User.findById(req.params.userId);
+        if (!userId)
+            return res.status(404).json({ message: "The user is not found." });
+
+        const now = DateTime.now()
+            .setZone("Asia/Singapore")
+            .toFormat("yyLLdd")
+            .toString();
+
+        userId.role = role;
+
+        if (role == "doctor") {
+            const count = User.find({ role: "doctor" });
+            const string = "LOC-" + now + "000";
+            return res.json(string);
+        } else if (role == "clinic_assistants") {
+            const string = "CLA-" + now + "000";
+            return res.json.string(string);
+        }
+
         const updatedUser = await User.updateOne(
             { _id: req.params.userId },
             { $set: userId }
