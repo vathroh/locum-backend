@@ -844,8 +844,10 @@ const youMightLike = async (req, res) => {
             });
         });
 
-        if (personal.gender) {
-            const jobs = await Job.find({
+        let jobs = "";
+
+        if (personal) {
+            const newjobs = await Job.find({
                 work_time_start: {
                     $gte: now,
                 },
@@ -859,8 +861,9 @@ const youMightLike = async (req, res) => {
                     select: "clinicName Address whitelist",
                 })
                 .lean();
+            jobs = newjobs;
         } else {
-            const jobs = await Job.find({
+            const newjobs = await Job.find({
                 work_time_start: {
                     $gte: now,
                 },
@@ -873,6 +876,8 @@ const youMightLike = async (req, res) => {
                     select: "clinicName Address whitelist",
                 })
                 .lean();
+
+            jobs = newjobs;
         }
 
         const recentClinics = [];
