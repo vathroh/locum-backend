@@ -622,13 +622,34 @@ const updateRoleUser = async (req, res) => {
 
         userId.role = role;
 
+        const startOfDay = DateTime.now()
+            .setZone("Asia/Singapore")
+            .startOf("day");
+
+        const endOfDay = DateTime.now().setZone("Asia/Singapore").endOf("day");
+
         if (role == "doctor") {
-            const count = await User.find({ role: "doctor" }).count();
+            const count = await User.find({
+                role: "doctor",
+                createdAt: { $lte: endOfDay, $gte: startOfDay },
+            }).count();
+
+            const number = parseInt(count) + 1;
             const string = "LOC-" + now + "000";
-            // return res.json(count);
+            const code = string.slice(0, 14 - number) + number;
+
+            userId.role_id = code;
         } else if (role == "clinic_assistants") {
-            const string = "CLA-" + now + "000";
-            // return res.json.string(string);
+            const count = await User.find({
+                role: "clinic_assistants",
+                createdAt: { $lte: endOfDay, $gte: startOfDay },
+            }).count();
+
+            const number = parseInt(count) + 1;
+            const string = "LOC-" + now + "000";
+            const code = string.slice(0, 14 - number) + number;
+
+            userId.role_id = code;
         }
 
         const updatedUser = await User.updateOne(
