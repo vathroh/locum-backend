@@ -625,10 +625,10 @@ const updateRoleUser = async (req, res) => {
         if (role == "doctor") {
             const count = await User.find({ role: "doctor" }).count();
             const string = "LOC-" + now + "000";
-            return res.json(count);
+            // return res.json(count);
         } else if (role == "clinic_assistants") {
             const string = "CLA-" + now + "000";
-            return res.json.string(string);
+            // return res.json.string(string);
         }
 
         const updatedUser = await User.updateOne(
