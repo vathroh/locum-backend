@@ -2,15 +2,6 @@ const express = require("express");
 const http = require("http");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv").config();
-const doctorRoute = require("./routes/doctorRoutes.js");
-const clinicRoute = require("./routes/clinicRoutes.js");
-const authRoutes = require("./routes/authRoutes.js");
-const userRoute = require("./routes/userRoutes.js");
-const attendanceRoute = require("./routes/attendanceRecordRoutes.js");
-const { authJwtMiddleware } = require("./middleware/authMiddleware");
-const doctorRanksRoute = require("./routes/doctorRanksRoutes.js");
-const indexRoute = require("./routes/indexRoutes.js");
-const fcmRoute = require("./routes/fcmRoutes");
 const cors = require("cors");
 const port = process.env.PORT;
 const path = require("path");
@@ -29,7 +20,12 @@ const io = new Server(server, {
     },
 });
 
-app.use(cors());
+app.use(
+    cors({
+        origin: true,
+        credentials: true,
+    })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,38 +59,8 @@ app.get("/socket.io/socket.io.js", (req, res) => {
     );
 });
 
-app.use("/booking", authJwtMiddleware, require("./routes/bookingRoutes"));
-app.use("/calendar", authJwtMiddleware, require("./routes/calendarRoutes"));
-app.use(
-    "/conversation",
-    authJwtMiddleware,
-    require("./routes/conversationRoutes")
-);
-app.use(
-    "/clinic-group",
-    authJwtMiddleware,
-    require("./routes/clinicGroupRoutes")
-);
-app.use(
-    "/attendance",
-    authJwtMiddleware,
-    require("./routes/attendanceRecordRoutes")
-);
-app.use("/messages", authJwtMiddleware, require("./routes/messageRoutes"));
-app.use("/settings", authJwtMiddleware, require("./routes/settingRoutes"));
-app.use("/comment", authJwtMiddleware, require("./routes/commentRoutes"));
-app.use("/google-calendar", require("./routes/googleCalendarRoutes"));
-app.use("/jobs", authJwtMiddleware, require("./routes/jobRoutes.js"));
-app.use("/attendance", authJwtMiddleware, attendanceRoute);
-app.use("/clinic", authJwtMiddleware, clinicRoute);
-app.use("/user", authJwtMiddleware, userRoute);
-app.use("/doctor-ranks", doctorRanksRoute);
-app.use("/doctor", doctorRoute);
-app.use("/auth", authRoutes);
-app.use("/send", fcmRoute);
-app.use("/", indexRoute);
-app.use("/faker", require("./routes/fakerRoutes"));
-
+require("./routes")(app);
+require("./services/cronJob");
 // app.use('/quee/send', require('./services/rabbitmq/producer.js'))
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
@@ -127,8 +93,6 @@ io.on("connection", (socket) => {
         // console.log(`${socket.id} has disconnected`);
     });
 });
-
-require("./services/cronJob");
 
 server.listen(port, () =>
     console.log(`Server is running on http://localhost:${port}`)

@@ -670,7 +670,6 @@ const saveJob = async (req, res) => {
         return res.status(400).json({ message: "The image must not empty." });
     let data = req.body;
     data.image = "/" + req.file?.destination + "/" + req.file?.filename;
-    console.log(req.file?.destination);
     data.work_time_start = DateTime.fromISO(
         req.body.date + "T" + req.body.work_time_start,
         { zone: "Asia/Singapore" }

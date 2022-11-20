@@ -6,6 +6,7 @@ const { userLogger } = require("../services/logger/userLogger");
 const { DateTime } = require("luxon");
 const multer = require("multer");
 const path = require("path");
+const ObjectId = require("mongoose/lib/types/objectid.js");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -163,6 +164,29 @@ const preferences = async (req, res) => {
     }
 };
 
+const postPreferences = async (req, res) => {
+    try {
+        const { preference_id } = req.body;
+        const user = await User.findById(req.params.userId);
+        const preferences = user.preferences;
+
+        preference_id.map((data) => {
+            preferences.push(data);
+        });
+
+        let newPreferences = [...new Set(preferences)];
+
+        const updatePreferences = await User.updateOne(
+            { _id: ObjectId(req.params.userId) },
+            { $set: { preferences: newPreferences } }
+        );
+
+        res.json(updatePreferences);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const personalInformation = async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
@@ -260,6 +284,33 @@ const personalDocument = async (req, res) => {
     }
 };
 
+const updateProfilePicture = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        if (!req.file)
+            return res.status(404).json({ message: "The file is empty" });
+
+        profile_pict = "/" + req.file?.destination + "/" + req.file?.filename;
+
+        await User.updateOne(
+            { _id: req.params.userId },
+            { $set: { profile_pict: profile_pict } }
+        );
+
+        userLogger.info(`url: ${req.originalUrl},  user:${req.user._id}`);
+
+        res.json({
+            message: "Your profile picture has been changed successfully.",
+        });
+    } catch (error) {
+        userLogger.error(
+            `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+        );
+
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     upload,
     getUsers,
@@ -268,7 +319,9 @@ module.exports = {
     deleteUser,
     preferences,
     getUserById,
+    postPreferences,
     personalDocument,
     personalInformation,
+    updateProfilePicture,
     practicingInformation,
 };

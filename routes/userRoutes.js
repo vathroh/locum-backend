@@ -9,8 +9,10 @@ const {
     updateUser,
     deleteUser,
     preferences,
+    postPreferences,
     personalDocument,
     personalInformation,
+    updateProfilePicture,
     practicingInformation,
 } = require("../controllers/UserController.js");
 
@@ -51,11 +53,17 @@ router.post(
     personalDocument
 );
 
-router.get("/preferences/:userId", preferences);
+router.put(
+    "/update-profile-picture/:userId",
+    upload.single("profile_picture"),
+    updateProfilePicture
+);
 router.get("/get-inclusion-by-clinic", getWhitelistByClinic);
 router.get("/get-exclusion-by-clinic", getBlacklistByClinic);
 router.post("/delete-exclusion", removeFromBlacklist);
 router.post("/delete-inclusion", removeFromWhitelist);
+router.put("/preferences/:userId", postPreferences);
+router.get("/preferences/:userId", preferences);
 router.post("/update-model", updateUserModel);
 router.post("/set-exclusion", setBlacklist);
 router.post("/set-inclusion", setWhitelist);
