@@ -74,8 +74,6 @@ const authJwtMiddleware = (req, res, next) => {
     const token = authHeader && authHeader.split(" ")[1];
     const isBolehMasuk = req.session.isBolehMasuk;
 
-    console.log(req.session.idToken);
-
     if (isBolehMasuk) {
         const idToken = req.session.idToken;
 

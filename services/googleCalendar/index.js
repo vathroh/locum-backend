@@ -3,13 +3,12 @@ const { DateTime } = require("luxon");
 const { OAuth2 } = google.auth;
 
 const oAuth2Client = new OAuth2(
-    "883040963244-gvl6le1kh4bonfkm0qss5o08q1ffcp6r.apps.googleusercontent.com",
-    "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"
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
 );
 
 oAuth2Client.setCredentials({
-    refresh_token:
-        "1//04HyTVscXB13TCgYIARAAGAQSNwF-L9IrYoOm5H-LtV26PSFAgW8VmhO7O6qjz2pCC8T5REYAiePga6HSiV6nQ0hLMvWfrdzZb1E",
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
 });
 
 const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
@@ -52,7 +51,6 @@ const createEvent = (
                         message: "Error Creating Calender Event:",
                         err,
                     };
-                console.log("sukses create event on google calendar");
                 return { message: "Calendar event successfully created." };
             }
         );
