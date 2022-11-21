@@ -58,6 +58,7 @@ router.put(
     upload.single("profile_picture"),
     updateProfilePicture
 );
+
 router.get("/get-inclusion-by-clinic", getWhitelistByClinic);
 router.get("/get-exclusion-by-clinic", getBlacklistByClinic);
 router.post("/delete-exclusion", removeFromBlacklist);
