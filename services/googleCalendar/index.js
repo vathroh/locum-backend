@@ -1,7 +1,7 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
 const { OAuth2 } = google.auth;
-const googleCalendarLogger = require("../logger/googleCalendarLogging");
+const { googleCalendarLogger } = require("../logger/googleCalendarLogging");
 
 const oAuth2Client = new OAuth2(
     process.env.GOOGLE_CLIENT_ID,
