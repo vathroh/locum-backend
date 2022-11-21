@@ -48,7 +48,7 @@ const createEvent = (
             (err, data) => {
                 console.log(data);
                 if (err) {
-                    jobLogger.error(
+                    googleCalendarLogger.error(
                         `error: ${err}, data: ${JSON.stringify(event)}`
                     );
                     return {
@@ -57,7 +57,7 @@ const createEvent = (
                     };
                 }
 
-                jobLogger.info(
+                googleCalendarLogger.info(
                     `success creating event: ${JSON.stringify(event)}`
                 );
 
