@@ -1,6 +1,7 @@
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
 const { OAuth2 } = google.auth;
+const googleCalendarLogger = require("../logger/googleCalendarLogging");
 
 const oAuth2Client = new OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -46,11 +47,20 @@ const createEvent = (
             { calendarId: "primary", resource: event },
             (err, data) => {
                 console.log(data);
-                if (err)
+                if (err) {
+                    jobLogger.error(
+                        `error: ${err}, data: ${JSON.stringify(event)}`
+                    );
                     return {
                         message: "Error Creating Calender Event:",
                         err,
                     };
+                }
+
+                jobLogger.info(
+                    `success creating event: ${JSON.stringify(event)}`
+                );
+
                 return { message: "Calendar event successfully created." };
             }
         );
