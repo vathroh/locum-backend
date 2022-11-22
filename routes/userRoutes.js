@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+    me,
     upload,
     getUsers,
     saveUser,
@@ -68,6 +69,7 @@ router.get("/preferences/:userId", preferences);
 router.post("/update-model", updateUserModel);
 router.post("/set-exclusion", setBlacklist);
 router.post("/set-inclusion", setWhitelist);
+router.get("/me", me);
 router.delete("/:id", deleteUser);
 router.patch("/:id", updateUser);
 router.get("/:id", getUserById);

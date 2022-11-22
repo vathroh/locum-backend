@@ -311,7 +311,22 @@ const updateProfilePicture = async (req, res) => {
     }
 };
 
+const me = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select({
+            full_name: 1,
+            role: 1,
+            role_id: 1,
+            status: 1,
+        });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
+    me,
     upload,
     getUsers,
     saveUser,

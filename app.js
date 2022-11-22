@@ -49,8 +49,8 @@ app.use(
         store: MongoStore.create({
             client: mongoose.connection.getClient(),
         }),
-        resave: false,
-        saveUninitialized: false,
+        resave: true,
+        saveUninitialized: true,
     })
 );
 
