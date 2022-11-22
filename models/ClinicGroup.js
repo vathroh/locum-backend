@@ -52,6 +52,7 @@ const ClinicGroupSchema = mongoose.Schema({
             file_name: String,
         },
     },
+    user_id: [{ type: String }],
 });
 
 module.exports = mongoose.model("ClinicGroup", ClinicGroupSchema);

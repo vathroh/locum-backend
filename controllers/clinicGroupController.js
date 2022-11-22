@@ -23,6 +23,17 @@ const getClinicGroups = async (req, res) => {
     }
 };
 
+const getClinicGroupByUserId = async (req, res) => {
+    try {
+        const clinicGroup = await ClinicGroup.findOne({
+            user_id: { $in: req.user._id },
+        });
+        res.json(clinicGroup);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const getClinicGroupById = async (req, res) => {
     try {
         const clinic = await ClinicGroup.findById(req.params.id);
@@ -147,6 +158,7 @@ const deleteClinic = async (req, res) => {
 };
 
 module.exports = {
+    getClinicGroupByUserId,
     getClinicsByGroup,
     saveClinicGroup,
     getClinicGroups,

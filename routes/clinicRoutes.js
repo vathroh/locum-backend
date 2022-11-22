@@ -8,13 +8,14 @@ const {
     saveClinic,
     updateClinic,
     deleteClinic,
+    getClinicByUserId,
 } = require("../controllers/clinicController.js");
 
 const { updateClinicModel } = require("../services/updateModels/clinic");
 
 router.get("/other-outlet/:clinicId", getOtherOutlet);
 router.get("/update-model", updateClinicModel);
-
+router.get("/get-by-user", getClinicByUserId);
 router.get("/", getClinics);
 router.get("/:id", getClinicById);
 router.post("/", saveClinic);

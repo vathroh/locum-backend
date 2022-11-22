@@ -6,12 +6,15 @@ const {
     getClinicGroups,
     saveClinicGroup,
     getClinicsByGroup,
+    getClinicGroupByUserId,
 } = require("../controllers/clinicGroupController");
 
-router.get("/clinics/:groupId", getClinicsByGroup);
-router.get("/", getClinicGroups);
-router.post("/create", saveClinicGroup);
 router.post("/input-mailing-address/:groupId", mailingAddress);
+router.get("/get-company-by-user", getClinicGroupByUserId);
+router.get("/clinics/:groupId", getClinicsByGroup);
+router.post("/create", saveClinicGroup);
+router.get("/", getClinicGroups);
+
 router.post(
     "/upload-documents/:groupId",
     upload.fields([

@@ -1,4 +1,5 @@
 const Clinic = require("../models/Clinic.js");
+const ClinicGroup = require("../models/ClinicGroup.js");
 
 const getClinics = async (req, res) => {
     try {
@@ -69,6 +70,28 @@ const getOtherOutlet = async (req, res) => {
     }
 };
 
+const getClinicByUserId = async (req, res) => {
+    try {
+        let clinics = [];
+
+        if (req.user.role == "company_admin") {
+            const group = await ClinicGroup.findOne({
+                user_id: { $in: req.user._id },
+            });
+
+            clinics = await Clinic.find({ group: group._id });
+        }
+
+        if (req.user.role == "clinic_admin") {
+            clinics = await Clinic.find({ user_id: req.user._id });
+        }
+
+        res.json(clinics);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getClinics,
     getClinicById,
@@ -76,4 +99,5 @@ module.exports = {
     updateClinic,
     deleteClinic,
     getOtherOutlet,
+    getClinicByUserId,
 };

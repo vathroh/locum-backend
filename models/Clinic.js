@@ -64,6 +64,11 @@ const Clinic = mongoose.Schema(
                 exists: true,
             },
         ],
+        user_id: [
+            {
+                type: String,
+            },
+        ],
     },
     {
         timestamps: true,
