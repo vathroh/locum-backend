@@ -71,6 +71,7 @@ app.use(
     }),
     resave: true,
     saveUninitialized: true,
+    httpOnly: false,
   })
 );
 
