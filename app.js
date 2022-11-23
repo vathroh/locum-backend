@@ -20,10 +20,7 @@ const io = new Server(server, {
     },
 });
 
-var allowedOrigins = [
-    "http://localhost:3000",
-    "https://app-staging.work-wiz.com",
-];
+var allowedOrigins = ["*"];
 
 app.use(
     cors({
@@ -62,6 +59,7 @@ db.once("open", () => console.log("Database Connected"));
 app.use(
     session({
         secret: process.env.SESSION_SECRET,
+        sameSite: "none",
         store: MongoStore.create({
             client: mongoose.connection.getClient(),
         }),
