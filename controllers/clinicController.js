@@ -72,8 +72,6 @@ const getClinicByUserId = async (req, res) => {
   try {
     let clinics = [];
 
-    console.log(req.user);
-
     if (req.user.role == "company_admin") {
       const group = await ClinicGroup.findOne({
         user_id: { $in: req.user._id },

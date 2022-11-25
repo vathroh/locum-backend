@@ -7,92 +7,90 @@ const axios = require("axios");
 const { post } = require("../routes/clinicRoutes");
 
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount),
 });
 
 //https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=[API_KEY]
 
 const verifyIdToken = (req, res) => {
-    const token = req.headers.authorization
-        ? req.headers.authorization.split(" ")
-        : null;
-    if (!token) {
-        res.json("You are not logged in!");
-    } else {
-        // console.log(token[1]);
-        admin
-            .auth()
-            .verifyIdToken(token[1])
-            .then((decodedToken) => {
-                // const uid = decodedToken.uid;
-                console.log(decodedToken);
-                // console.log(uid)
-                // ...
-                res.json("good1");
-            })
-            .catch((error) => {
-                // Handle error
-                res.json(error);
-            });
-    }
+  const token = req.headers.authorization
+    ? req.headers.authorization.split(" ")
+    : null;
+  if (!token) {
+    res.json("You are not logged in!");
+  } else {
+    // console.log(token[1]);
+    admin
+      .auth()
+      .verifyIdToken(token[1])
+      .then((decodedToken) => {
+        // const uid = decodedToken.uid;
+        console.log(decodedToken);
+        // console.log(uid)
+        // ...
+        res.json("good1");
+      })
+      .catch((error) => {
+        // Handle error
+        res.json(error);
+      });
+  }
 };
 
 const authFirebaseMiddleware = (req, res, next) => {
-    const token = req.headers.authorization
-        ? req.headers.authorization.split(" ")
-        : null;
-    if (!token) {
-        res.json("You are not logged in!");
-    } else {
-        admin
-            .auth()
-            .verifyIdToken(token[1])
-            .then(async (decodedToken) => {
-                const findUser = await User.findOne({
-                    firebaseUUID: decodedToken.user_id,
-                });
-                const user = {};
-                user._id = findUser._id.toString();
-                user.full_name = findUser.full_name;
-                user.role = findUser.role;
-                user.phone_number = findUser.phone_number ?? "";
-                user.profile_pict = findUser.profile_pict ?? "";
-                req.user = user;
-                console.log(req.user);
-                next();
-            })
-            .catch(async (error) => {
-                res.status(401).json(
-                    "The Token has been expired. Please relogin."
-                );
-            });
-    }
+  const token = req.headers.authorization
+    ? req.headers.authorization.split(" ")
+    : null;
+  if (!token) {
+    res.json("You are not logged in!");
+  } else {
+    admin
+      .auth()
+      .verifyIdToken(token[1])
+      .then(async (decodedToken) => {
+        const findUser = await User.findOne({
+          firebaseUUID: decodedToken.user_id,
+        });
+        const user = {};
+        user._id = findUser._id.toString();
+        user.full_name = findUser.full_name;
+        user.role = findUser.role;
+        user.phone_number = findUser.phone_number ?? "";
+        user.profile_pict = findUser.profile_pict ?? "";
+        req.user = user;
+        console.log(req.user);
+        next();
+      })
+      .catch(async (error) => {
+        res.status(401).json("The Token has been expired. Please relogin.");
+      });
+  }
 };
 
 const authJwtMiddleware = (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
-    const isBolehMasuk = req.session.isBolehMasuk;
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  const isBolehMasuk = req.session.isBolehMasuk;
 
-    if (isBolehMasuk) {
-        const idToken = req.session.idToken;
+  // if (isBolehMasuk) {
+  //     const idToken = req.session.idToken;
 
-        jwt.verify(idToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-            if (err) return res.status(403).json("Unauthorized!");
-            delete user.iat;
-            req.user = user;
-            next();
-        });
-    } else if (token) {
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-            if (err) return res.status(403).json("Unauthorized!");
-            delete user.iat;
-            req.user = user;
-            next();
-        });
-    } else {
-        return res.status(401).json("You have log out, please login!");
-    }
+  //     jwt.verify(idToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+  //         if (err) return res.status(403).json("Unauthorized!");
+  //         delete user.iat;
+  //         req.user = user;
+  //         next();
+  //     });
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+      if (err) return res.status(403).json("Unauthorized!");
+      delete user.iat;
+      req.user = user;
+      next();
+    });
+  } else {
+    return res.status(401).json("You have log out, please login!");
+  }
 };
 
 // const authJwtMiddleware = (req, res, next) => {
