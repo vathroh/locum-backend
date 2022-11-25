@@ -51,10 +51,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/public", express.static(path.join(__dirname, "./public")));
 
 mongoose.connect(process.env.MONGOURI, {
-  // autoIndex: false,
-  // useNewUrlParser: true,
+  useNewUrlParser: true,
   useUnifiedTopology: true,
-  // maxPoolSize: 5,
 });
 
 const db = mongoose.connection;

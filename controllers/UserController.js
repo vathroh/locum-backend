@@ -7,6 +7,7 @@ const { DateTime } = require("luxon");
 const multer = require("multer");
 const path = require("path");
 const ObjectId = require("mongoose/lib/types/objectid.js");
+const Preferences = require("../models/Preference");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -145,20 +146,25 @@ const deleteUser = async (req, res) => {
 
 const preferences = async (req, res) => {
   try {
-    const preferences = await User.findById(req.params.userId)
+    const user = await User.findById(req.params.userId)
       .select({
-        prefrences: 1,
+        preferences: 1,
       })
-      .lean()
-      .then((data) => {
-        const user = {};
-        user._id = data._id ?? "";
-        user.preferences = data.preferences ?? [];
-        res.json(user);
-      })
-      .catch((error) => {
-        res.status(500).json({ message: error.message });
-      });
+      .lean();
+
+    const preferenceIds = user.preferences;
+
+    let preferences = [];
+
+    const promise = preferenceIds.map(async (item) => {
+      let pref = await Preferences.findById(item);
+      preferences.push(pref);
+      console.log(pref);
+    });
+
+    await Promise.all(promise);
+
+    res.json(preferences);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
