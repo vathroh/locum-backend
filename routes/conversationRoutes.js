@@ -98,7 +98,7 @@ router.get("/users/:userId", async (req, res) => {
         });
       });
 
-    const users = [];
+    const users = new Array();
 
     const getUsers = user.map(async (item) => {
       const user = await User.findById(item.user_id)
@@ -106,10 +106,15 @@ router.get("/users/:userId", async (req, res) => {
           role_id: 1,
           role: 1,
           full_name: 1,
-          profile_picture: 1,
+          profile_pict: 1,
         })
         .lean();
       user.conversation_id = item._id;
+      if (!user.profile_pict) {
+        user.profile_pict = "";
+      } else {
+        user.profile_pict = process.env.BASE_URL + user.profile_pict;
+      }
       users.push(user);
     });
 
