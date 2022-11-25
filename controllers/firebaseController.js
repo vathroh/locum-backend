@@ -628,7 +628,14 @@ const updateRoleUser = async (req, res) => {
       { _id: req.params.userId },
       { $set: userId }
     );
-    res.json(updatedUser);
+
+    const user = await User.findById(req.params.userId).select({
+      full_name: 1,
+      role: 1,
+      role_id: 1,
+    });
+
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
