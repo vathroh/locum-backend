@@ -20,28 +20,10 @@ const io = new Server(server, {
   },
 });
 
-var allowedOrigins = [
-  "http://localhost:3000",
-  "https://app-staging.work-wiz.com",
-  "*",
-];
-
 app.use(
   cors({
     credentials: true,
     origin: true,
-    // origin: function (origin, callback) {
-    //   // allow requests with no origin
-    //   // (like mobile apps or curl requests)
-    //   if (!origin) return callback(null, true);
-    //   if (allowedOrigins.indexOf(origin) === -1) {
-    //     var msg =
-    //       "The CORS policy for this site does not " +
-    //       "allow access from the specified Origin.";
-    //     return callback(new Error(msg), false);
-    //   }
-    //   return callback(null, true);
-    // },
   })
 );
 
@@ -85,19 +67,14 @@ const users = [];
 io.on("connection", (socket) => {
   console.log(`User ${socket.id} has Joined`);
 
-  socket.on("join", (data) => {
-    const user = {
-      socket_id: socket.id,
-      user_id: data._id,
-      full_name: data.full_name,
-    };
-    users.push(user);
-    // console.log(socket);
+  socket.on("join_room", (data) => {
+    socket.join(data);
+    console.log(`User with ID: ${socket.id} joined room: ${data}`);
   });
 
   socket.on("message", (data) => {
-    socket.broadcast.emit("message", data);
-    // console.log(data);
+    socket.to(data.to).emit("receive_message", data);
+    console.log(data);
   });
 
   socket.on("disconnect", () => {

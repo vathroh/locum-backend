@@ -266,6 +266,11 @@ const practicingInformation = async (req, res) => {
 const personalDocument = async (req, res) => {
   try {
     const files = Object.keys(req.files);
+    // return res.json(files.length);
+
+    if (files.length == 0)
+      return res.status(400).json({ message: "The files must not empty." });
+
     files.map(async (item) => {
       const file = req.files[item][0];
       const data = {};
