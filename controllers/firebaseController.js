@@ -373,7 +373,7 @@ const getUser = async (userCred, req) => {
 const afterGoogleSignin = async (req, res) => {
   try {
     let toPage = "dashboard";
-    const findUser = await User.findOne({ firebaseUUID: req.body.uid });
+    const findUser = await User.findOne({ email: req.body.email });
 
     if (findUser) {
       const personal = await personalInormation.findOne({
@@ -405,9 +405,9 @@ const afterGoogleSignin = async (req, res) => {
         toPage = "phone_number";
       } else if (user.role == "user") {
         toPage = "role";
-      } else if (!personal) {
+      } else if (user.role == "doctor" && !personal) {
         toPage = "verification";
-      } else if (!practicing) {
+      } else if (user.role == "clinic_assistants" && !practicing) {
         toPage = "practicing";
       } else if (!documents) {
         toPage = "documents";
@@ -442,7 +442,7 @@ const afterGoogleSignin = async (req, res) => {
 };
 
 const afterGoogleSignup = async (req, res) => {
-  const findUser = await User.findOne({ firebaseUUID: req.body.uid });
+  const findUser = await User.findOne({ email: req.body.email });
 
   if (findUser) {
     authLogger.info(
