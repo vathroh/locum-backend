@@ -14,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://app-staging.work-wiz.com",
+    origin: "https://app-staging.work-wiz.com:3000",
     allowedHeaders: ["Access-Control-Allow-Credentials"],
     credentials: false,
     rejectUnauthorized: false,
