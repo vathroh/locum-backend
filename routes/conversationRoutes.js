@@ -25,7 +25,7 @@ router.post("/", async (req, res) => {
       });
 
       try {
-        res.status(201).json(await conversation.save());
+        res.status(200).json(await conversation.save());
       } catch (error) {
         res.status(500).json({ message: "error" });
       }

@@ -17,6 +17,7 @@ const io = new Server(server, {
     origin: "*",
     allowedHeaders: ["Access-Control-Allow-Credentials"],
     credentials: false,
+    rejectUnauthorized: false,
   },
 });
 

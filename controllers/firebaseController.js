@@ -445,7 +445,7 @@ const afterGoogleSignup = async (req, res) => {
   const findUser = await User.findOne({ email: req.body.email });
 
   if (findUser) {
-    authLogger.info(
+    authLogger.error(
       `url: ${req.originalUrl}, The account has been registered.`
     );
     res.status(500).json({
