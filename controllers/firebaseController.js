@@ -557,6 +557,28 @@ const changeFirebasePasswordByAdmin = async (req, res) => {
   }
 };
 
+const updateForgotenPassword = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.password = await bcrypt.hash(req.body.new_password, 10);
+
+    await admin
+      .auth()
+      .updateUser(user.firebaseUUID, {
+        password: req.body.new_password,
+      })
+      .then(async (userRecord) => {
+        await User.updateOne({ _id: user._id }, { $set: user });
+        res.json({ message: "Successfully update the password." });
+      })
+      .catch((error) => {
+        res.status(500).json({ message: error.message });
+      });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const updatePhoneNumber = async (req, res) => {
   const userId = await User.findById(req.params.userId);
   if (!userId)
@@ -696,10 +718,47 @@ const forgotEmailPassword = async (req, res) => {
   }
 };
 
+const verifyForgotPassword = async (req, res) => {
+  const { email, forgot_password_code } = req.body;
+  const user = await User.findOne({ email: email });
+
+  authLogger.info(
+    `url: ${req.originalUrl}, forgot password verification process ${
+      req.body.email
+    } begin. data: ${JSON.stringify(req.body)} user:${JSON.stringify(user)}`
+  );
+
+  if (forgot_password_code == user.forgot_password_code) {
+    authLogger.info(
+      `url: ${req.originalUrl}, ${req.body.email} forgot password has been verified.`
+    );
+    const theuser = {};
+    theuser.email = user.email ?? "";
+    theuser._id = user._id ?? "";
+    theuser.full_name = user.full_name ?? "";
+    theuser.role = user.role ?? "";
+    theuser.phone_number = user.phone_number ?? "";
+    theuser.profile_pict = user.profile_pict ?? "";
+
+    const jwt = jwtObject(theuser);
+
+    authLogger.info(`url: ${req.originalUrl}, ${user._id} is logging in.`);
+    res.json(jwt);
+  } else {
+    authLogger.error(`url: ${req.originalUrl}, wrong forgot password code `);
+    res.status(500).json({
+      message: "You input wrong  code.",
+    });
+  }
+};
+
 module.exports = {
   changeClininAdminPasswordByAdmin,
+  changeFirebasePasswordByAdmin,
   changeFirebasePasswordByUser,
   sendingEmailVerificationCode,
+  updateForgotenPassword,
+  verifyForgotPassword,
   registerWithFirebase,
   forgotEmailPassword,
   clinicAdminRegister,
