@@ -24,7 +24,7 @@ const io = new Server(server, {
 var allowedOrigins = [
   "http://localhost:3000",
   "https://app-staging.work-wiz.com",
-  "*.netlify.app",
+  "work-wiz-admin.netlify.app",
   "*",
 ];
 
