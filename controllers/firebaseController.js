@@ -670,18 +670,30 @@ function ValidatePassword(req, res) {
   return false;
 }
 
-const forgotEmailPassword = (req, res) => {
-  const auth = getAuth();
-  auth.languageCode = "en";
-  sendPasswordResetEmail(auth, req.body.email)
-    .then(() => {
-      res.json({
-        message: "We have sent link to your email, Please check your email.",
-      });
-    })
-    .catch((error) => {
-      res.status(500).json({ message: error.message });
+const forgotEmailPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    forgotPasswordCode = Math.random().toString().substr(2, 6);
+
+    await User.updateOne(
+      { email: req.body.email },
+      { $set: { forgot_password_code: forgotPasswordCode } }
+    );
+
+    sendingEmail(
+      req.body.email,
+      "Forgot Password Code",
+      `${forgotPasswordCode} is your WorkWiz  code. Please input the code to the form to regain your password!`,
+      null
+    );
+
+    res.json({
+      message:
+        "We have sent a code to your email. Please enter to the form below.",
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 module.exports = {
