@@ -60,7 +60,8 @@ const getUserById = async (req, res) => {
     const data = {
       _id: user._id,
       full_name: user.full_name ?? "",
-      profile_pict: process.env.BASE_URL + user.profile_pict ?? "",
+      profile_pict:
+        user.profile_pict == "" ? "" : process.env.BASE_URL + user.profile_pict,
       phone_number: user.phone_number ?? "",
       email: user.email ?? "",
       role: user.role ?? "",
