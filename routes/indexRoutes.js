@@ -9,27 +9,27 @@ const path = require("path");
 
 const mimeTypes = ["image/jpeg", "image/png", "image/gif"];
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "public/images/jobs");
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
+  destination: (req, file, cb) => {
+    cb(null, "public/images/jobs");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
 });
 
 const upload = multer({
-    storage: storage,
+  storage: storage,
 });
 
 router.post("/upload", upload.single("image"), (req, res) => {
-    console.log(req.body);
-    res.send(req.body);
+  console.log(req.body);
+  res.send(req.body);
 });
 
-router.get("/", authJwtMiddleware, (req, res) => {
-    res.send(
-        '<center><h1 style="margin-top:200px;">Hello from LOCUM App.</h1></center>'
-    );
+router.get("/", (req, res) => {
+  res.send(
+    '<center><h1 style="margin-top:200px;">Hello from LOCUM App.</h1></center>'
+  );
 });
 
 module.exports = router;
