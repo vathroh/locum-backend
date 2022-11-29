@@ -573,7 +573,9 @@ const bookedBy = async (req, res) => {
         profile_pict: 1,
         role: 1,
       });
-      user.profile_pict = process.env.BASE_URL + profile_pict;
+      user.profile_pict = user.profile_pict
+        ? process.env.BASE_URL + profile_pict
+        : "";
       users.push(user);
     });
 
