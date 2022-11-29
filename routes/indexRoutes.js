@@ -6,6 +6,7 @@ const { authJwtMiddleware } = require("../middleware/authMiddleware");
 
 const multer = require("multer");
 const path = require("path");
+const { sendingSMS } = require("../services/sendSMS/index.js");
 
 const mimeTypes = ["image/jpeg", "image/png", "image/gif"];
 const storage = multer.diskStorage({
@@ -30,6 +31,11 @@ router.get("/", (req, res) => {
   res.send(
     '<center><h1 style="margin-top:200px;">Hello from WorkWiz App</h1></center>'
   );
+});
+
+router.post("/sendsms", authJwtMiddleware, (req, res) => {
+  sendingSMS();
+  res.json("Pesan terkirim");
 });
 
 module.exports = router;

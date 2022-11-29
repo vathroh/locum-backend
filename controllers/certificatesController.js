@@ -19,7 +19,7 @@ const saveCertificate = async (req, res) => {
     if (!req.file)
       return res.status(400).json({ message: "The file is empty" });
 
-    if (!req.item)
+    if (!req.body.item)
       return res.status(400).json({ message: "The item must not empty" });
 
     data = {};

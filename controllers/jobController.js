@@ -749,10 +749,6 @@ const filteredJob = async (req, res) => {
   // work_time_finish: req.query.timeto,
   // date: { $gte: req.query.datefrom, $lte: req.query.dateto }
 
-  if (req.query.gender == "both") {
-    delete filters.prefered_gender;
-  }
-
   await Job.find({ ...filters })
     .populate("clinic")
     .then((jobs) => {
