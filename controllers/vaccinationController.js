@@ -21,20 +21,42 @@ const saveVaccination = async (req, res) => {
       return res.status(400).json({ message: "The files must not empty." });
     }
 
-    files.map(async (item) => {
+    const items = [];
+
+    const saveFiles = files.map(async (item) => {
       const file = req.files[item][0];
       const data = {};
       data.user_id = req.user._id;
       data.item = file.fieldname;
       data.file = "/" + file.path;
 
-      const doc = new Vaccination(data);
-      const saveDoc = await doc.save();
+      const vaccination = await Vaccination.findOne({
+        item: data.item,
+        user_id: data.user_id,
+      });
+
+      if (!vaccination) {
+        const doc = new Vaccination(data);
+        const saveDoc = await doc.save();
+
+        vaccinationLogger.info(`url: ${req.originalUrl}, data: ${data.item}`);
+      } else {
+        items.push(data.item);
+        console.log(data.item);
+      }
     });
-    vaccinationLogger.info(
-      `url: ${req.originalUrl}, data: ${JSON.stringify(req.files)}`
-    );
-    res.json({ message: "files have been uploaded successfully." });
+
+    await Promise.all(saveFiles);
+
+    if (items.length === 0) {
+      res.json({ message: "files have been uploaded successfully." });
+    } else {
+      res.json({
+        message: `You have uploaded ${items.join(
+          ", "
+        )}. The files will not uploaded.`,
+      });
+    }
   } catch (error) {
     vaccinationLogger.error(
       `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
