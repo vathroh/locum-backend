@@ -576,9 +576,11 @@ const bookedBy = async (req, res) => {
         })
         .lean();
 
-      //   user.profile_pict = user.profile_pict
-      //     ? process.env.BASE_URL + profile_pict
-      //     : "";
+      user.profile_pict =
+        user.profile_pict !== ""
+          ? process.env.BASE_URL + user.profile_pict
+          : "";
+
       users.push(user);
     });
 
