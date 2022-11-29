@@ -576,10 +576,10 @@ const bookedBy = async (req, res) => {
         })
         .lean();
 
-      user.profile_pict = user.profile_pict
-        ? process.env.BASE_URL + profile_pict
-        : "";
-      users.push(user);
+      //   user.profile_pict = user.profile_pict
+      //     ? process.env.BASE_URL + profile_pict
+      //     : "";
+      //   users.push(user);
     });
 
     await Promise.all(promisedUser);
