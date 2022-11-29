@@ -28,7 +28,7 @@ router.post("/upload", upload.single("image"), (req, res) => {
 
 router.get("/", (req, res) => {
   res.send(
-    '<center><h1 style="margin-top:200px;">Hello from LOCUM App.</h1></center>'
+    '<center><h1 style="margin-top:200px;">Hello from WorkWiz App</h1></center>'
   );
 });
 
