@@ -566,13 +566,16 @@ const bookedBy = async (req, res) => {
     const users = [];
 
     const promisedUser = job.booked_by.map(async (item) => {
-      const user = await User.findById(item).select({
-        _id: 1,
-        phone_number: 1,
-        full_name: 1,
-        profile_pict: 1,
-        role: 1,
-      });
+      const user = await User.findById(item)
+        .select({
+          _id: 1,
+          phone_number: 1,
+          full_name: 1,
+          profile_pict: 1,
+          role: 1,
+        })
+        .lean();
+
       user.profile_pict = user.profile_pict
         ? process.env.BASE_URL + profile_pict
         : "";
