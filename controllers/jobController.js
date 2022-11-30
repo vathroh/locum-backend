@@ -892,7 +892,6 @@ const youMightLike = async (req, res) => {
         work_time_start: {
           $gte: now,
         },
-        prefered_gender: personal.gender,
         clinic: {
           $nin: blaclistedClinics,
         },

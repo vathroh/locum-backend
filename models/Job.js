@@ -30,10 +30,6 @@ const Job = mongoose.Schema(
       type: Number,
       requiered: true,
     },
-    prefered_gender: {
-      type: String,
-      enum: ["male", "female"],
-    },
     scope: [
       {
         type: String,

@@ -57,4 +57,64 @@ const getCertificate = async (req, res) => {
   }
 };
 
-module.exports = { saveCertificate, getCertificate, upload };
+const editCertificate = async (req, res) => {
+  try {
+    if (!req.file)
+      return res.status(400).json({ message: "The file is empty" });
+
+    if (!req.body.item)
+      return res.status(400).json({ message: "The item must not empty" });
+
+    data = {};
+    data.item = req.body.item;
+    data.file = "/" + req.file?.destination + "/" + req.file?.filename;
+
+    const certificate = await Certificate.updateOne(
+      {
+        _id: ObjectId(req.params.certificateId),
+      },
+      { $set: data }
+    );
+
+    certificateLogger.info(
+      `url: ${req.originalUrl}, certificate has been updated`
+    );
+
+    res.json({
+      message: "The certificate has been updated successfully.",
+    });
+  } catch (error) {
+    certificateLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+    res.status(500).json({ message: "There is something wrong." });
+  }
+};
+
+const deleteCertificate = async (req, res) => {
+  try {
+    const certificate = await Certificate.findOne({
+      _id: ObjectId(req.params.certificateId),
+    });
+
+    if (!certificate) {
+      return res.json({ message: "The certificate could not be found." });
+    }
+
+    const deleteCertificate = await Certificate.deleteOne({
+      _id: req.params.certificateId,
+    });
+
+    res.json(deleteCertificate);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  saveCertificate,
+  getCertificate,
+  deleteCertificate,
+  editCertificate,
+  upload,
+};

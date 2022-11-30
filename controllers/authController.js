@@ -191,7 +191,7 @@ const sendPhoneVerificationCode = async (req, res) => {
 const verifyPhoneNumber = async (req, res) => {
   if (req.body.code == "") {
     return res.status(400).json({
-      message: "You have to input code we sent to your phone.",
+      message: "You have to input code We sent to your phone.",
     });
   }
 
