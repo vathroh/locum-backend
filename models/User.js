@@ -100,10 +100,14 @@ const User = mongoose.Schema(
       type: String,
       default: "",
     },
-    preferences: {
-      type: Array,
-      default: [],
-    },
+    preferences: [
+      {
+        type: String,
+        default: [],
+        ref: "Preference",
+        exists: true,
+      },
+    ],
     forgot_password_code: {
       type: String,
     },

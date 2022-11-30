@@ -8,6 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const ObjectId = require("mongoose/lib/types/objectid.js");
 const Preferences = require("../models/Preference");
+const { listenerCount } = require("process");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -153,6 +154,9 @@ const preferences = async (req, res) => {
       })
       .lean();
 
+    if (!user)
+      return res.status(400).json({ message: "User params is invalid." });
+
     const preferenceIds = user.preferences;
 
     let preferences = [];
@@ -171,6 +175,31 @@ const preferences = async (req, res) => {
   }
 };
 
+const deletePreferences = async (req, res) => {
+  try {
+    const { preference_id } = req.body;
+    const user = await User.findById(req.params.userId);
+    if (!user)
+      return res.status(400).json({ message: "User params is invalid." });
+
+    let preferences = user.preferences;
+
+    preference_id.map((data) => {
+      const index = preferences.indexOf(data);
+      preferences.splice(index, 1);
+    });
+
+    const updatePreferences = await User.updateOne(
+      { _id: ObjectId(req.params.userId) },
+      { $set: { preferences: preferences } }
+    );
+
+    res.json(updatePreferences);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const postPreferences = async (req, res) => {
   try {
     const { preference_id } = req.body;
@@ -186,6 +215,23 @@ const postPreferences = async (req, res) => {
     const updatePreferences = await User.updateOne(
       { _id: ObjectId(req.params.userId) },
       { $set: { preferences: newPreferences } }
+    );
+
+    res.json(updatePreferences);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const editPreferences = async (req, res) => {
+  try {
+    const { preference_id } = req.body;
+    const user = await User.findById(req.params.userId);
+    const preferences = user.preferences;
+
+    const updatePreferences = await User.updateOne(
+      { _id: ObjectId(req.params.userId) },
+      { $set: { preferences: preference_id } }
     );
 
     res.json(updatePreferences);
@@ -347,7 +393,9 @@ module.exports = {
   preferences,
   getUserById,
   postPreferences,
+  editPreferences,
   personalDocument,
+  deletePreferences,
   personalInformation,
   updateProfilePicture,
   practicingInformation,

@@ -408,7 +408,7 @@ const getJobById = async (req, res) => {
 
 const getJobByClinicId = async (req, res) => {
   const page = parseInt(req.query.page) - 1 || 0;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 100;
   const offset = limit * page;
 
   try {
@@ -452,7 +452,7 @@ const getJobByClinicId = async (req, res) => {
 
 const upcomingByClinicId = async (req, res) => {
   const page = parseInt(req.query.page) - 1 || 0;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 100;
   const offset = limit * page;
 
   try {
@@ -506,7 +506,7 @@ const upcomingByClinicId = async (req, res) => {
 
 const needApprovedByClinicId = async (req, res) => {
   const page = parseInt(req.query.page) - 1 || 0;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 100;
   const offset = limit * page;
 
   try {
