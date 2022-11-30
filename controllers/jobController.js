@@ -11,6 +11,7 @@ const personal = require("../models/personalInormation");
 const personalInormation = require("../models/personalInormation");
 const Attendance = require("../models/AttendanceRecord");
 const Clinic = require("../models/Clinic");
+const { info } = require("winston");
 
 const getAllJobs = async (req, res) => {
   try {
@@ -740,28 +741,44 @@ const deleteJob = async (req, res) => {
 };
 
 const filteredJob = async (req, res) => {
+  // return res.json("halo");
   let filters = {};
+  filters.role = req.user.role;
 
-  // filters.prefered_gender = req.query.gender
-  // filters.price = { $gte: req.query.pricefrom, $lte: req.query.priceto }
+  if (req.query.datefrom) {
+    const datefrom = DateTime.parse(req.query.datefrom);
 
-  // work_time_start: req.query.timefrom,
-  // work_time_finish: req.query.timeto,
-  // date: { $gte: req.query.datefrom, $lte: req.query.dateto }
+    if (!req.query.dateto) {
+      return res.status(400).json({ message: "You must select date to " });
+    }
+
+    filters.date = {
+      $gte: new Date(req.query.datefrom),
+      $lt: new Date(req.query.datefrom),
+    };
+  }
+
+  let sorts = {};
+  if (req.query.order === "earlier_to_latest") {
+    sorts.order = 1;
+  } else {
+    sorts.order = -1;
+  }
+
+  if (req.query.rate === "lowtohigh") {
+    sorts.price = 1;
+  } else {
+    sorts.price = -1;
+  }
 
   await Job.find({ ...filters })
     .populate("clinic")
+    .short({ ...sorts })
     .then((jobs) => {
-      // jobs.filter((e) => e.clinic.location == req.query.location)
+      if (req.query.location)
+        jobs.filter((e) => e.clinic.location == req.query.location);
+
       a = jobs.filter((e) => e.clinic.clinicName.search(req.query.clinic) >= 0);
-      // for(let i=0; i<jobs.length; i++) {
-      //     for(let key in jobs[i]) {
-      //       if(jobs[i][key].indexOf(toSearch)!=-1) {
-      //         // if(!itemExists(results, objects[i])) results.push(objects[i]);
-      //       }
-      //     }
-      //   }
-      // jobs.filter((e) => e.match(/gem/))
 
       jobLogger.info(req.originalUrl);
       res.json(a);
@@ -777,8 +794,39 @@ const filteredJob = async (req, res) => {
 };
 
 const searchJob = async (req, res) => {
-  await Job.find()
+  let filters = {};
+  filters.role = req.user.role;
+
+  if (req.query.datefrom) {
+    if (!req.query.dateto) {
+      return res.status(400).json({ message: "You must select date to " });
+    }
+
+    const datefrom = DateTime.fromISO(req.query.datefrom).toMillis();
+    const dateto = DateTime.fromISO(req.query.dateto).toMillis();
+
+    filters.date = {
+      $gte: datefrom,
+      $lt: dateto,
+    };
+  }
+
+  let sorts = {};
+  if (req.query.order === "earlier_to_latest") {
+    sorts.work_time_start = 1;
+  } else {
+    sorts.work_time_start = -1;
+  }
+
+  if (req.query.rate === "lowtohigh") {
+    sorts.price = 1;
+  } else {
+    sorts.price = -1;
+  }
+
+  await Job.find({ ...filters })
     .populate("clinic")
+    .sort({ ...sorts })
     .then((jobs) => {
       let data = [];
       jobs.filter((e) => {

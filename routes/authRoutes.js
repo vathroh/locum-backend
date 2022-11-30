@@ -2,9 +2,11 @@ const { authJwtMiddleware } = require("../middleware/authMiddleware");
 const express = require("express");
 const router = express.Router();
 
-const { verifyPhoneNumber } = require("../controllers/authController.js");
+const {
+  verifyPhoneNumber,
+  sendPhoneVerificationCode,
+} = require("../controllers/authController.js");
 // forgotPassword,
-// sendPhoneVerificationCode,
 
 const {
   verifyEmail,
@@ -42,11 +44,11 @@ router.post(
   updatePhoneNumber
 );
 
-// router.post(
-//     "/send-phone-verification/:userId",
-//     authJwtMiddleware,
-//     sendPhoneVerificationCode
-// );
+router.post(
+  "/send-phone-verification/:userId",
+  authJwtMiddleware,
+  sendPhoneVerificationCode
+);
 
 router.post(
   "/update-password",
