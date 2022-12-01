@@ -164,7 +164,7 @@ const sendPhoneVerificationCode = async (req, res) => {
     client.messages
       .create({
         body: text,
-        from: "+13608001799",
+        from: process.env.TWILIO_PHONE_NUMBER,
         to: req.body.phone_number,
       })
       .then((message) => {
