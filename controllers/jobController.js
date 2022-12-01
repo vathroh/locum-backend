@@ -46,7 +46,9 @@ const getAllJobs = async (req, res) => {
 
 const getNewJobs = async (req, res) => {
   try {
-    await Job.find({ profession: req.user.role })
+    const now = DateTime.now().toMillis();
+
+    await Job.find({ profession: req.user.role, work_time_start: { $gt: now } })
       .sort({ createdAt: -1 })
       .lean()
       .populate({ path: "clinic", select: "clinicName Address" })
