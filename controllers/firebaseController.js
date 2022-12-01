@@ -220,6 +220,12 @@ const verifyEmail = async (req, res) => {
   try {
     const { email, verification_code } = req.body;
     const user = await User.findOne({ email: email });
+    if (!user)
+      return res
+        .status(500)
+        .json({
+          message: "No account with this email address. Please register",
+        });
 
     user.status = "Activated";
     user.email_verified = true;
