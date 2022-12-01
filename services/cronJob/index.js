@@ -3,15 +3,15 @@ const { DateTime } = require("luxon");
 const { seedJobs } = require("../../faker/job");
 const { setUrgentJob } = require("./setUrgentJob");
 
-cronJob.schedule("0 0 0 * * *", () => {
+cronJob.schedule("0 40 * * * *", () => {
   const now = DateTime.now().setZone("Asia/Jakarta").toFormat("HH:mm:ss");
   console.log(`job seed at ${now}`);
   seedJobs();
 });
 
-cronJob.schedule("* * * * * *", () => {
+cronJob.schedule("0 * * * * *", () => {
   const now = DateTime.now().setZone("Asia/Jakarta").toFormat("HH:mm:ss");
-  console.log(`job seed at ${now}`);
+  console.log(`${now}`);
 });
 
 cronJob.schedule("0 0 19 * * *", () => {
