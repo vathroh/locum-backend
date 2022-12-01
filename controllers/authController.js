@@ -168,8 +168,10 @@ const sendPhoneVerificationCode = async (req, res) => {
         to: req.body.phone_number,
       })
       .then((message) => {
-        console.log(message.sid);
-        res.json(message);
+        res.json({
+          data: { body: message.body, number: message.to },
+          message: `We have sent verification code to your phone. Please verify to add your phone number!`,
+        });
       });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -204,7 +206,7 @@ const verifyPhoneNumber = async (req, res) => {
     }
 
     user.phone_number_verified = true;
-    user.phoneNumber = req.body.phone_number;
+    user.phone_number = req.body.phone_number;
 
     if (user.phone_verification_code === req.body.code) {
       await User.updateOne({ _id: user._id }, { $set: user });
