@@ -6,58 +6,60 @@ const path = require("path");
 
 const mimeTypes = ["image/jpeg", "image/png", "image/gif"];
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "public/images/jobs");
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
+  destination: (req, file, cb) => {
+    cb(null, "public/images/jobs");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
 });
 
 const upload = multer({
-    storage: storage,
+  storage: storage,
 });
 
 const {
-    bookedBy,
-    updateJob,
-    deleteJob,
-    searchJob,
-    getNewJobs,
-    getJobById,
-    getAllJobs,
-    setFavorite,
-    getPastJobs,
-    filteredJob,
-    youMightLike,
-    getCurrentJob,
-    getExploreJobs,
-    getUpcomingJobs,
-    favoritesByUser,
-    getJobByClinicId,
-    postDirectListing,
-    postManualListing,
-    upcomingByClinicId,
-    postAutomatedListing,
-    getUpcomingDoctorJobs,
-    getCalendarJobByClinicId,
-    needApprovedByClinicId,
-    getUpcomingClinicalAssistantJobs,
+  bookedBy,
+  updateJob,
+  deleteJob,
+  searchJob,
+  getNewJobs,
+  getJobById,
+  getAllJobs,
+  setFavorite,
+  getPastJobs,
+  filteredJob,
+  youMightLike,
+  getCurrentJob,
+  getExploreJobs,
+  getUpcomingJobs,
+  favoritesByUser,
+  getJobByClinicId,
+  postDirectListing,
+  postManualListing,
+  upcomingByClinicId,
+  postAutomatedListing,
+  EmptySlotsByClinicId,
+  getUpcomingDoctorJobs,
+  getCalendarJobByClinicId,
+  needApprovedByClinicId,
+  getUpcomingClinicalAssistantJobs,
 } = require("../controllers/jobController.js");
 const { updateJobModel } = require("../services/updateModels/job.js");
 
 router.get("/update-model", updateJobModel);
 
 router.post(
-    "/post-automated-listing",
-    upload.single("image"),
-    postAutomatedListing
+  "/post-automated-listing",
+  upload.single("image"),
+  postAutomatedListing
 );
 router.post("/post-manual-listing", upload.single("image"), postManualListing);
 router.post("/post-direct-listing", upload.single("image"), postDirectListing);
 router.get("/calendar/:clinicId/:year/:month", getCalendarJobByClinicId);
 router.get("/clinical-assistant", getUpcomingClinicalAssistantJobs);
 router.get("/favorites-by-user/:userId", favoritesByUser);
+router.get("/empty-slot-by-clinic", EmptySlotsByClinicId);
 router.get("/need-approval", needApprovedByClinicId);
 router.get("/upcoming/clinic", upcomingByClinicId);
 router.post("/set-favorite/:jobId", setFavorite);
