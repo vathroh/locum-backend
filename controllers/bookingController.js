@@ -8,6 +8,7 @@ const { createEvent } = require("../services/googleCalendar/index");
 const User = require("../models/User.js");
 const { restart } = require("nodemon");
 const ObjectId = require("mongoose/lib/types/objectid.js");
+const { sendingEmail } = require("../services/sendingEmail");
 
 const createBooking = async (req, res) => {
   const jobId = await Job.findById(req.params.id);

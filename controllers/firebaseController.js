@@ -217,59 +217,65 @@ const sendingEmailVerificationCode = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
-  const { email, verification_code } = req.body;
-  const user = await User.findOne({ email: email });
+  try {
+    const { email, verification_code } = req.body;
+    const user = await User.findOne({ email: email });
 
-  user.status = "Activated";
-  user.email_verified = true;
+    user.status = "Activated";
+    user.email_verified = true;
 
-  authLogger.info(
-    `url: ${req.originalUrl}, process verification ${
-      req.body.email
-    } begin. data: ${JSON.stringify(req.body)} user:${JSON.stringify(user)}`
-  );
+    authLogger.info(
+      `url: ${req.originalUrl}, process verification ${
+        req.body.email
+      } begin. data: ${JSON.stringify(req.body)} user:${JSON.stringify(user)}`
+    );
 
-  if (verification_code == user.email_verification_code) {
-    await User.updateOne({ _id: user._id }, { $set: user });
+    if (verification_code == user.email_verification_code) {
+      await User.updateOne({ _id: user._id }, { $set: user });
 
-    admin
-      .auth()
-      .updateUser(user.firebaseUUID, {
-        disabled: false,
-        emailVerified: true,
-      })
-      .then(async () => {
-        authLogger.info(
-          `url: ${req.originalUrl}, ${req.body.email} has been verified.`
-        );
-        const currentUser = {};
-        currentUser._id = user._id ?? "";
-        currentUser.email = user.email ?? "";
-        currentUser.full_name = user.full_name ?? "";
-        currentUser.role = user.role ?? "";
-        currentUser.phone_number = user.phone_number ?? "";
-        currentUser.profile_pict = user.profile_pict ?? "";
+      admin
+        .auth()
+        .updateUser(user.firebaseUUID, {
+          disabled: false,
+          emailVerified: true,
+        })
+        .then(async () => {
+          authLogger.info(
+            `url: ${req.originalUrl}, ${req.body.email} has been verified.`
+          );
+          const currentUser = {};
+          currentUser._id = user._id ?? "";
+          currentUser.email = user.email ?? "";
+          currentUser.full_name = user.full_name ?? "";
+          currentUser.role = user.role ?? "";
+          currentUser.phone_number = user.phone_number ?? "";
+          currentUser.profile_pict = user.profile_pict ?? "";
 
-        const jwt = jwtObject(currentUser);
+          const jwt = jwtObject(currentUser);
 
-        req.session.isBolehMasuk = true;
-        req.session.idToken = jwt.idToken;
-        req.session.refreshToken = jwt.refreshToken;
+          req.session.isBolehMasuk = true;
+          req.session.idToken = jwt.idToken;
+          req.session.refreshToken = jwt.refreshToken;
 
-        authLogger.info(`url: ${req.originalUrl}, ${user._id} is logging in.`);
-        res.json(jwt);
-      })
-      .catch((error) => {
-        authLogger.info(`url: ${req.originalUrl}, ${error.message}`);
-        res.status(500).json({
-          message: "There is something wrong.",
+          authLogger.info(
+            `url: ${req.originalUrl}, ${user._id} is logging in.`
+          );
+          res.json(jwt);
+        })
+        .catch((error) => {
+          authLogger.info(`url: ${req.originalUrl}, ${error.message}`);
+          res.status(500).json({
+            message: "There is something wrong.",
+          });
         });
+    } else {
+      authLogger.error(`url: ${req.originalUrl}, wrong verification code `);
+      res.status(500).json({
+        message: "You input wrong verification code.",
       });
-  } else {
-    authLogger.error(`url: ${req.originalUrl}, wrong verification code `);
-    res.status(500).json({
-      message: "You input wrong verification code.",
-    });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
