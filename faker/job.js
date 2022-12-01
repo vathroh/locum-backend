@@ -11,7 +11,7 @@ const seedJobs = async () => {
     const clinics = await Clinic.find().select({ _id: 1 });
     const data = [];
     clinics.map((e) => {
-      const date = DateTime.now().plus({ days: 5 }).toISODate();
+      const date = DateTime.now().plus({ days: 6 }).toISODate();
 
       data.push({
         image: faker.helpers.arrayElement([
