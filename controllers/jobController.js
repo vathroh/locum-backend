@@ -150,7 +150,6 @@ const getExploreJobs = async (req, res) => {
       })
       .then((data) => {
         data.map((e, index) => {
-          console.log(e);
           statusJob(e, req);
           e.duration = Duration.fromMillis(
             e.work_time_finish - e.work_time_start
@@ -163,7 +162,6 @@ const getExploreJobs = async (req, res) => {
           return el.status == "Booking Opened";
         });
 
-        console.log(data);
         const output = formatData(OpenedStatus);
         jobLogger.info(req.originalUrl);
 
