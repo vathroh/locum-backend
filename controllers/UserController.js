@@ -189,7 +189,6 @@ const preferences = async (req, res) => {
     const promise = preferenceIds.map(async (item) => {
       let pref = await Preferences.findById(item);
       preferences.push(pref);
-      console.log(pref);
     });
 
     await Promise.all(promise);

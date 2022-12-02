@@ -499,7 +499,7 @@ const upcomingBookingByClinic = async (req, res) => {
 const pastBookingByClinic = async (req, res) => {
   try {
     const jobs = await Job.find({
-      work_time_start: { $lt: DateTime.now().toMilis() },
+      work_time_start: { $lt: DateTime.now().toMillis() },
       clinic: ObjectId(req.params.clinicId),
       assigned_to: { $ne: [] },
     });

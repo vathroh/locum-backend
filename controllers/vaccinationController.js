@@ -42,7 +42,6 @@ const saveVaccination = async (req, res) => {
         vaccinationLogger.info(`url: ${req.originalUrl}, data: ${data.item}`);
       } else {
         items.push(data.item);
-        console.log(data.item);
       }
     });
 

@@ -221,11 +221,9 @@ const verifyEmail = async (req, res) => {
     const { email, verification_code } = req.body;
     const user = await User.findOne({ email: email });
     if (!user)
-      return res
-        .status(500)
-        .json({
-          message: "No account with this email address. Please register",
-        });
+      return res.status(500).json({
+        message: "No account with this email address. Please register",
+      });
 
     user.status = "Activated";
     user.email_verified = true;
@@ -399,9 +397,6 @@ const afterGoogleSignin = async (req, res) => {
       const documents = await personalDocument.findOne({
         user_id: findUser._id,
       });
-
-      // return res.json(personal);
-      console.log(personal);
 
       const user = {};
       user._id = findUser._id;
