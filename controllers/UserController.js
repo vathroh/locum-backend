@@ -27,6 +27,10 @@ const getUsers = async (req, res) => {
       res.json(data);
     });
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -88,8 +92,15 @@ const getUserById = async (req, res) => {
     } else {
       data.toPage = "dashboard";
     }
+
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.json(data);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(404).json({ message: error.message });
   }
 };
@@ -100,6 +111,10 @@ const saveUser = async (req, res) => {
     const savedUser = await user.save();
     res.status(201).json(savedUser);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(400).json({ message: error.message });
   }
 };
@@ -127,8 +142,15 @@ const updateUser = async (req, res) => {
       { _id: req.params.id },
       { $set: req.body }
     );
+
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.status(200).json(updatedUser);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(400).json({ message: error.message });
   }
 };
@@ -140,6 +162,9 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "The data not found" });
     }
     const deletedUser = await User.deleteOne({ _id: req.params.id });
+
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.status(200).json(deletedUser);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -169,8 +194,14 @@ const preferences = async (req, res) => {
 
     await Promise.all(promise);
 
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.json(preferences);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(400).json({ message: error.message });
   }
 };
@@ -194,8 +225,14 @@ const deletePreferences = async (req, res) => {
       { $set: { preferences: preferences } }
     );
 
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.json(updatePreferences);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -217,8 +254,14 @@ const postPreferences = async (req, res) => {
       { $set: { preferences: newPreferences } }
     );
 
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.json(updatePreferences);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -234,8 +277,14 @@ const editPreferences = async (req, res) => {
       { $set: { preferences: preference_id } }
     );
 
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.json(updatePreferences);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -267,14 +316,23 @@ const personalInformation = async (req, res) => {
         { user_id: user._id },
         { $set: info }
       );
+
+      userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
       res.json(updated);
     } else {
       const personal = new Personal(info);
       const saved = await personal.save();
+
+      userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
       res.json(saved);
     }
   } catch (error) {
-    console.log(error);
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -298,7 +356,9 @@ const practicingInformation = async (req, res) => {
       valid_until: until,
     });
     const practicingInformation = await information.save();
-    userLogger.info(req.originalUrl);
+
+    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+
     res.json(practicingInformation);
   } catch (error) {
     userLogger.error(
@@ -379,6 +439,10 @@ const me = async (req, res) => {
     });
     res.json(user);
   } catch (error) {
+    userLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+
     res.status(500).json({ message: error.message });
   }
 };

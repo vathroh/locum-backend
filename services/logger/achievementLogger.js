@@ -1,27 +1,21 @@
 const { createLogger, transports, format } = require("winston");
-require("winston-mongodb");
 
 const achievementLogger = createLogger({
-    transports: [
-        new transports.MongoDB({
-            level: "info",
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "achievement",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "achievement",
-            level: "error",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "achievement",
-            level: "warning",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-    ],
+  format: format.combine(format.timestamp(), format.json()),
+  transports: [
+    new transports.File({
+      filename: "log/achievement.log",
+      level: "info",
+    }),
+    new transports.File({
+      filename: "log/achievement.log",
+      level: "error",
+    }),
+    new transports.File({
+      filename: "log/achievement.log",
+      level: "warning",
+    }),
+  ],
 });
 
 module.exports = { achievementLogger };

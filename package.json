@@ -42,7 +42,6 @@
     "react-cookie": "^4.1.1",
     "socket.io": "^4.5.4",
     "twilio": "^3.83.0",
-    "winston": "^3.8.2",
-    "winston-mongodb": "^5.1.0"
+    "winston": "^3.8.2"
   }
 }

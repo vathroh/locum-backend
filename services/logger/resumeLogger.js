@@ -1,27 +1,21 @@
 const { createLogger, transports, format } = require("winston");
-require("winston-mongodb");
 
 const resumeLogger = createLogger({
-    transports: [
-        new transports.MongoDB({
-            level: "info",
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "resume",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "resume",
-            level: "error",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "resume",
-            level: "warning",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-    ],
+  format: format.combine(format.timestamp(), format.json()),
+  transports: [
+    new transports.File({
+      filename: "log/resume.log",
+      level: "info",
+    }),
+    new transports.File({
+      filename: "log/resume.log",
+      level: "error",
+    }),
+    new transports.File({
+      filename: "log/resume.log",
+      level: "warning",
+    }),
+  ],
 });
 
 module.exports = { resumeLogger };

@@ -1,27 +1,21 @@
 const { createLogger, transports, format } = require("winston");
-require("winston-mongodb");
 
 const vaccinationLogger = createLogger({
-    transports: [
-        new transports.MongoDB({
-            level: "info",
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "vaccination",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "vaccination",
-            level: "error",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "vaccination",
-            level: "warning",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-    ],
+  format: format.combine(format.timestamp(), format.json()),
+  transports: [
+    new transports.File({
+      filename: "log/vaccination.log",
+      level: "info",
+    }),
+    new transports.File({
+      filename: "log/vaccination.log",
+      level: "error",
+    }),
+    new transports.File({
+      filename: "log/vaccination.log",
+      level: "warning",
+    }),
+  ],
 });
 
 module.exports = { vaccinationLogger };

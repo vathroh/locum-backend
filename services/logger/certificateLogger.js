@@ -1,27 +1,21 @@
 const { createLogger, transports, format } = require("winston");
-require("winston-mongodb");
 
 const certificateLogger = createLogger({
-    transports: [
-        new transports.MongoDB({
-            level: "info",
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "certificates",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "certificates",
-            level: "error",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-        new transports.MongoDB({
-            db: process.env.MONGO_DB_ATLAS,
-            collection: "certificates",
-            level: "warning",
-            format: format.combine(format.timestamp(), format.json()),
-        }),
-    ],
+  format: format.combine(format.timestamp(), format.json()),
+  transports: [
+    new transports.File({
+      filename: "log/certificate.log",
+      level: "info",
+    }),
+    new transports.File({
+      filename: "log/certificate.log",
+      level: "error",
+    }),
+    new transports.File({
+      filename: "log/certificate.log",
+      level: "warning",
+    }),
+  ],
 });
 
 module.exports = { certificateLogger };
