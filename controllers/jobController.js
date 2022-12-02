@@ -573,6 +573,7 @@ const needApprovedByClinicId = async (req, res) => {
     const totalRows = await Job.find({
       clinic: req.query.id,
       work_time_start: { $gte: now },
+      booked_by: { $ne: [] },
       assigned_to: [],
     }).count();
 
@@ -581,7 +582,66 @@ const needApprovedByClinicId = async (req, res) => {
     await Job.find({
       clinic: req.query.id,
       work_time_start: { $gte: now },
+      booked_by: { $ne: [] },
       assigned_to: [],
+    })
+      .skip(offset)
+      .limit(limit)
+      .lean()
+      .populate({ path: "clinic", select: "clinicName Address" })
+      .sort({ work_time_start: -1 })
+      .then((data) => {
+        data.map((e, index) => {
+          statusJob(e, req);
+          e.duration = Duration.fromMillis(
+            e.work_time_finish - e.work_time_start
+          )
+            .shiftTo("hours")
+            .toObject();
+        });
+
+        const output = formatData(data);
+        jobLogger.info(req.originalUrl);
+        res.json({
+          page: page + 1,
+          limit: limit,
+          totalRows: totalRows,
+          totalPage: totalPage,
+          data: output,
+        });
+      });
+  } catch (error) {
+    jobLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${
+        req.user._id
+      }, data : ${JSON.stringify(req.body)}`
+    );
+    res.status(404).json({ message: error.message });
+  }
+};
+
+const filledSlotsByClinicId = async (req, res) => {
+  const page = parseInt(req.query.page) - 1 || 0;
+  const limit = parseInt(req.query.limit) || 100;
+  const offset = limit * page;
+
+  try {
+    const now = DateTime.now().toMillis();
+
+    const totalRows = await Job.find({
+      clinic: req.query.id,
+      work_time_start: { $gte: now },
+      booked_by: { $ne: [] },
+      assigned_to: { $ne: [] },
+    }).count();
+
+    const totalPage = Math.ceil(totalRows / limit);
+
+    await Job.find({
+      clinic: req.query.id,
+      work_time_start: { $gte: now },
+      booked_by: { $ne: [] },
+      assigned_to: { $ne: [] },
     })
       .skip(offset)
       .limit(limit)
@@ -1212,6 +1272,7 @@ module.exports = {
   getJobByClinicId,
   upcomingByClinicId,
   EmptySlotsByClinicId,
+  filledSlotsByClinicId,
   getUpcomingDoctorJobs,
   getUpcomingClinicalAssistantJobs,
   getCalendarJobByClinicId,

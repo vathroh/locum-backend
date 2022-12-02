@@ -40,6 +40,7 @@ const {
   upcomingByClinicId,
   postAutomatedListing,
   EmptySlotsByClinicId,
+  filledSlotsByClinicId,
   getUpcomingDoctorJobs,
   getCalendarJobByClinicId,
   needApprovedByClinicId,
@@ -58,8 +59,9 @@ router.post("/post-manual-listing", upload.single("image"), postManualListing);
 router.post("/post-direct-listing", upload.single("image"), postDirectListing);
 router.get("/calendar/:clinicId/:year/:month", getCalendarJobByClinicId);
 router.get("/clinical-assistant", getUpcomingClinicalAssistantJobs);
-router.get("/favorites-by-user/:userId", favoritesByUser);
+router.get("/filled-slot-by-clinic", filledSlotsByClinicId);
 router.get("/empty-slot-by-clinic", EmptySlotsByClinicId);
+router.get("/favorites-by-user/:userId", favoritesByUser);
 router.get("/need-approval", needApprovedByClinicId);
 router.get("/upcoming/clinic", upcomingByClinicId);
 router.post("/set-favorite/:jobId", setFavorite);
