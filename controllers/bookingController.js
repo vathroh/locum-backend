@@ -508,8 +508,7 @@ const pastBookingByClinic = async (req, res) => {
     const totalRows = await Job.find({
       clinic: req.query.clinic_id,
       work_time_start: { $gte: now },
-      booked_by: { $ne: [] },
-      assigned_to: [],
+      assigned_to: { $ne: [] },
     }).count();
 
     const totalPage = Math.ceil(totalRows / limit);
