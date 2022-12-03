@@ -48,7 +48,11 @@ const getNewJobs = async (req, res) => {
   try {
     const now = DateTime.now().toMillis();
 
-    await Job.find({ profession: req.user.role, work_time_start: { $gt: now } })
+    await Job.find({
+      profession: req.user.role,
+      work_time_start: { $gt: now },
+      booked_by: { $nin: req.user._id },
+    })
       .sort({ createdAt: -1 })
       .lean()
       .populate({ path: "clinic", select: "clinicName Address" })
@@ -1013,6 +1017,7 @@ const youMightLike = async (req, res) => {
         clinic: {
           $nin: blaclistedClinics,
         },
+        booked_by: { $nin: req.user._id },
       })
         .populate({
           path: "clinic",
