@@ -9,6 +9,7 @@ const User = require("../models/User.js");
 const { restart } = require("nodemon");
 const ObjectId = require("mongoose/lib/types/objectid.js");
 const { sendingEmail } = require("../services/sendingEmail");
+const { jobLogger } = require("../services/logger/jobLogger");
 
 const createBooking = async (req, res) => {
   const jobId = await Job.findById(req.params.id);
@@ -497,14 +498,58 @@ const upcomingBookingByClinic = async (req, res) => {
 };
 
 const pastBookingByClinic = async (req, res) => {
+  const page = parseInt(req.query.page) - 1 || 0;
+  const limit = parseInt(req.query.limit) || 100;
+  const offset = limit * page;
+
   try {
+    const now = DateTime.now().toMillis();
+
+    const totalRows = await Job.find({
+      clinic: req.query.clinic_id,
+      work_time_start: { $gte: now },
+      booked_by: { $ne: [] },
+      assigned_to: [],
+    }).count();
+
+    const totalPage = Math.ceil(totalRows / limit);
+
     const jobs = await Job.find({
-      work_time_start: { $lt: DateTime.now().toMillis() },
-      clinic: ObjectId(req.params.clinicId),
+      clinic: req.query.clinic_id,
+      work_time_start: { $gte: now },
       assigned_to: { $ne: [] },
-    });
-    res.json(jobs);
+    })
+      .sort({ date: -1 })
+      .lean()
+      .populate({ path: "clinic", select: "clinicName Address" })
+      .then((data) => {
+        data.map((e, index) => {
+          statusJob(e, req);
+          e.duration = Duration.fromMillis(
+            e.work_time_finish - e.work_time_start
+          )
+            .shiftTo("hours")
+            .toObject();
+        });
+
+        const output = formatData(data);
+
+        jobLogger.info(req.originalUrl);
+
+        res.json({
+          page: page + 1,
+          limit: limit,
+          totalRows: totalRows,
+          totalPage: totalPage,
+          data: output,
+        });
+      });
   } catch (error) {
+    jobLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${
+        req.user._id
+      }, data : ${JSON.stringify(req.body)}`
+    );
     res.status(500).json({ message: error.message });
   }
 };

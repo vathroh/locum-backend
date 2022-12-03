@@ -599,7 +599,9 @@ const needApprovedByClinicId = async (req, res) => {
         });
 
         const output = formatData(data);
+
         jobLogger.info(req.originalUrl);
+
         res.json({
           page: page + 1,
           limit: limit,
