@@ -15,7 +15,7 @@ const setUrgentJob = async () => {
 
     const jobs72 = await Job.find({
       $and: [
-        { work_time_start: { $gte: now + 86400000 } },
+        { work_time_start: { $gte: now + 86401000 } },
         { work_time_start: { $lte: now + 259200000 + 10000 } },
       ],
     }).populate({ path: "clinic", select: "clinicName" });

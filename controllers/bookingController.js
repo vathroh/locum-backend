@@ -65,6 +65,8 @@ const deleteBooking = async (req, res) => {
 };
 
 const AssignTo = async (req, res) => {
+  // if(req.user.status !== "verified")
+
   const jobId = await Job.findById(req.params.id);
   if (!jobId) return res.status(404).json({ message: "The job is not found." });
 
@@ -102,6 +104,7 @@ const AssignTo = async (req, res) => {
         const emails = [];
         const userEmail = jobId.assigned_to.map(async (e) => {
           const user = await User.findById(e);
+          sendingEmail(e, summary, description, null);
           emails.push(user.email);
         });
         await Promise.all(userEmail);
