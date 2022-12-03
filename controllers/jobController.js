@@ -128,6 +128,7 @@ const getExploreJobs = async (req, res) => {
         $gte: DateTime.now().toMillis(),
       },
       profession: req.user.role,
+      booked_by: { $nin: req.user._id },
     })
       .sort({ date: 1 })
       .select({
