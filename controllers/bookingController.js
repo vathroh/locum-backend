@@ -104,7 +104,7 @@ const AssignTo = async (req, res) => {
         const emails = [];
         const userEmail = jobId.assigned_to.map(async (e) => {
           const user = await User.findById(e);
-          sendingEmail(e, summary, description, null);
+          sendingEmail(user.email, summary, description, null);
           emails.push(user.email);
         });
         await Promise.all(userEmail);
