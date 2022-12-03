@@ -225,7 +225,6 @@ const verifyEmail = async (req, res) => {
         message: "No account with this email address. Please register",
       });
 
-    user.status = "Activated";
     user.email_verified = true;
 
     authLogger.info(
@@ -625,32 +624,33 @@ const updateRoleUser = async (req, res) => {
 
     userId.role = role;
 
-    const startOfDay = DateTime.now().setZone("Asia/Singapore").startOf("day");
-
-    const endOfDay = DateTime.now().setZone("Asia/Singapore").endOf("day");
-
     if (role == "doctor") {
-      const count = await User.find({
-        role: "doctor",
-        createdAt: { $lte: endOfDay, $gte: startOfDay },
-      }).count();
+      let role_id = await genRoleId("LOC-");
+      const isExists = User.findOne({ role_id: role_id });
 
-      const number = parseInt(count) + 1;
-      const string = "LOC-" + now + "000";
-      const code = string.slice(0, 14 - number) + number;
-
-      userId.role_id = code;
+      if (!isExists) {
+        userId.role_id = role_id;
+      } else {
+        userId.role_id = await genRoleId("LOC-");
+      }
     } else if (role == "clinic_assistants") {
-      const count = await User.find({
-        role: "clinic_assistants",
-        createdAt: { $lte: endOfDay, $gte: startOfDay },
-      }).count();
+      let role_id = await genRoleId("CLA-");
+      const isExists = User.findOne({ role_id: role_id });
 
-      const number = parseInt(count) + 1;
-      const string = "CLA-" + now + "000";
-      const code = string.slice(0, 14 - number) + number;
+      if (!isExists) {
+        userId.role_id = role_id;
+      } else {
+        userId.role_id = await genRoleId("CLA-");
+      }
+    } else if (role == "clinic_admin" || role == "company_admin") {
+      let role_id = await genRoleId("CAA-");
+      const isExists = User.findOne({ role_id: role_id });
 
-      userId.role_id = code;
+      if (!isExists) {
+        userId.role_id = role_id;
+      } else {
+        userId.role_id = await genRoleId("CLA-");
+      }
     }
 
     const updatedUser = await User.updateOne(
@@ -757,6 +757,21 @@ const verifyForgotPassword = async (req, res) => {
       message: "You input wrong  code.",
     });
   }
+};
+
+const genRoleId = async (code) => {
+  const role_id = code + gen6Number();
+  const isExists = await User.findOne({ role_id: role_id });
+
+  if (!isExists) {
+    return role_id;
+  } else {
+    return code + gen6Number();
+  }
+};
+
+const gen6Number = () => {
+  return Math.random().toString().substr(2, 6);
 };
 
 module.exports = {

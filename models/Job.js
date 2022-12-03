@@ -30,6 +30,12 @@ const Job = mongoose.Schema(
       type: Number,
       requiered: true,
     },
+    urgent_price_24: {
+      type: Number,
+    },
+    urgent_price_72: {
+      type: Number,
+    },
     scope: [
       {
         type: String,

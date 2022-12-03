@@ -4,16 +4,16 @@ const { seedJobs } = require("../../faker/job");
 const { setUrgentJob } = require("./setUrgentJob");
 
 cronJob.schedule("0 0 0 * * *", () => {
-  const now = DateTime.now().setZone("Asia/Jakarta").toFormat("HH:mm:ss");
-  console.log(`job seed at ${now}`);
+  const now = DateTime.now().setZone("Asia/Singapore").toFormat("HH:mm:ss");
+  console.log(`job seed at ${now} Singapore Timezone`);
   seedJobs();
 });
 
 cronJob.schedule("0 0 * * * *", () => {
-  const now = DateTime.now().setZone("Asia/Jakarta").toFormat("HH:mm:ss");
-  console.log(`${now}`);
-});
-
-cronJob.schedule("0 0 19 * * *", () => {
   setUrgentJob();
+  console.log(
+    `jobs set to urgent at ${DateTime.now()
+      .setZone("Asia/Singapore")
+      .toFormat("HH:mm:ss")} Singapore Timezone`
+  );
 });

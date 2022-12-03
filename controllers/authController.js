@@ -123,7 +123,6 @@ const verifyEmail = async (req, res) => {
     });
   }
 
-  user.status = "activated";
   user.email_verified = true;
 
   if (req.body.verification_code == user.email_verification_code) {

@@ -67,6 +67,7 @@ const User = mongoose.Schema(
     status: {
       type: String,
       default: "created",
+      enum: ["created", "pending", "verified", "suspended", "deleted"],
     },
     blacklist: {
       type: Boolean,

@@ -1,5 +1,6 @@
 const Clinic = require("../models/Clinic.js");
 const ClinicGroup = require("../models/ClinicGroup.js");
+const { gen4RandomNumber } = require("../utils/genRandom/gen4RandomNumber.js");
 
 const getClinics = async (req, res) => {
   try {
@@ -20,10 +21,13 @@ const getClinicById = async (req, res) => {
 };
 
 const saveClinic = async (req, res) => {
-  const clinic = new Clinic(req.body);
   try {
+    const clinic = new Clinic(req.body);
+
+    clinic.code = await genClinicCode("CLI-");
+
     const savedClinic = await clinic.save();
-    res.status(201).json(savedClinic);
+    res.status(200).json(savedClinic);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -43,7 +47,6 @@ const updateClinic = async (req, res) => {
   }
 };
 
-// function Delete Clinic
 const deleteClinic = async (req, res) => {
   const cekId = await Clinic.findById(req.params.id);
   if (!cekId) return res.status(404).json({ message: "Data tidak ditemukan" });
@@ -87,6 +90,17 @@ const getClinicByUserId = async (req, res) => {
     res.json(clinics);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+genClinicCode = async (string) => {
+  const code = string + gen4RandomNumber();
+  const isExists = await Clinic.findOne({ code: code });
+
+  if (isExists) {
+    return code;
+  } else {
+    return string + gen4RandomNumber();
   }
 };
 
