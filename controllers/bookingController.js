@@ -30,10 +30,36 @@ const createBooking = async (req, res) => {
     updatedData.booked_by.push(req.user._id);
 
     try {
+      const conversation = await createConversation(
+        req.user._id,
+        req.body.user_id
+      );
+
+      const chatMessage = {
+        type: "locumCard",
+        text: "Hi! I want to schedule for a work appointment.",
+        conversation_id: conversation._id,
+        sender: req.user._id,
+        card: {
+          title: jobId.clinic.clinicName,
+          subtitle: "locum " + jobId.profession,
+          date: DateTime.fromMillis(jobId.work_time_start)
+            .setZone("Asia/Singapore")
+            .toFormat("cccc, dd MMMM yyyy"),
+          work_time_start: DateTime.fromMillis(jobId.work_time_start)
+            .setZone("Asia/Singapore")
+            .toLocaleString(DateTime.TIME_SIMPLE),
+          work_time_finish: DateTime.fromMillis(jobId.work_time_finish)
+            .setZone("Asia/Singapore")
+            .toLocaleString(DateTime.TIME_SIMPLE),
+        },
+      };
+
       const bookedJob = await Job.updateOne(
         { _id: req.params.id },
         { $set: updatedData }
       );
+
       res.json(bookedJob);
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -120,24 +146,13 @@ const AssignTo = async (req, res) => {
         );
 
         const chatMessage = {
-          type: "locumCard",
-          text: "Hi! I want to schedule for a work appointment.",
+          type: "badge",
+          text: clinic.clinicName + " Approved the booking",
           conversation_id: conversation._id,
           sender: req.user._id,
-          card: {
-            title: clinic.clinicName,
-            subtitle: "locum " + jobId.profession,
-            date: DateTime.fromMillis(jobId.work_time_start)
-              .setZone("Asia/Singapore")
-              .toFormat("cccc, dd MMMM yyyy"),
-            work_time_start: DateTime.fromMillis(jobId.work_time_start)
-              .setZone("Asia/Singapore")
-              .toLocaleString(DateTime.TIME_SIMPLE),
-            work_time_finish: DateTime.fromMillis(jobId.work_time_finish)
-              .setZone("Asia/Singapore")
-              .toLocaleString(DateTime.TIME_SIMPLE),
-          },
         };
+
+        console.log(chatMessage);
 
         await sendMessage(chatMessage);
 
