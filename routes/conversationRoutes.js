@@ -1,37 +1,15 @@
 const router = require("express").Router();
 const Conversation = require("../models/Conversation");
 const User = require("../models/User");
+const { createConversation } = require("../services/sendingChat");
 
 router.post("/", async (req, res) => {
   try {
-    const existConversation = await Conversation.findOne({
-      $and: [
-        {
-          members: {
-            $in: [req.body.sender_id],
-          },
-        },
-        {
-          members: {
-            $in: [req.body.receiver_id],
-          },
-        },
-      ],
-    });
-
-    if (!existConversation) {
-      const conversation = new Conversation({
-        members: [req.body.sender_id, req.body.receiver_id],
-      });
-
-      try {
-        res.status(200).json(await conversation.save());
-      } catch (error) {
-        res.status(500).json({ message: "error" });
-      }
-    } else {
-      res.json(existConversation);
-    }
+    const conv = await createConversation(
+      req.body.sender_id,
+      req.body.receiver_id
+    );
+    res.json(conv);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

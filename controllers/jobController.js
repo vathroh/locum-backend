@@ -52,6 +52,7 @@ const getNewJobs = async (req, res) => {
       profession: req.user.role,
       work_time_start: { $gt: now },
       booked_by: { $nin: req.user._id },
+      assigned_to: [],
     })
       .sort({ createdAt: -1 })
       .lean()
@@ -129,6 +130,7 @@ const getExploreJobs = async (req, res) => {
       },
       profession: req.user.role,
       booked_by: { $nin: req.user._id },
+      assigned_to: [],
     })
       .sort({ date: 1 })
       .select({
@@ -1019,6 +1021,7 @@ const youMightLike = async (req, res) => {
           $nin: blaclistedClinics,
         },
         booked_by: { $nin: req.user._id },
+        assigned_to: [],
       })
         .populate({
           path: "clinic",

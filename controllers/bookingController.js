@@ -11,6 +11,11 @@ const ObjectId = require("mongoose/lib/types/objectid.js");
 const { sendingEmail } = require("../services/sendingEmail");
 const { jobLogger } = require("../services/logger/jobLogger");
 
+const {
+  createConversation,
+  sendMessage,
+} = require("../services/sendingChat/index.js");
+
 const createBooking = async (req, res) => {
   const jobId = await Job.findById(req.params.id);
 
@@ -109,8 +114,32 @@ const AssignTo = async (req, res) => {
         });
         await Promise.all(userEmail);
 
-        // return res.json(emails);
-        // promisedRanks = await Promise.all(ranks);
+        const conversation = await createConversation(
+          req.user._id,
+          req.body.user_id
+        );
+
+        const chatMessage = {
+          type: "locumCard",
+          text: "Hi! I want to schedule for a work appointment.",
+          conversation_id: conversation._id,
+          sender: req.user._id,
+          card: {
+            title: clinic.clinicName,
+            subtitle: "locum " + jobId.profession,
+            date: DateTime.fromMillis(jobId.work_time_start)
+              .setZone("Asia/Singapore")
+              .toFormat("cccc, dd MMMM yyyy"),
+            work_time_start: DateTime.fromMillis(jobId.work_time_start)
+              .setZone("Asia/Singapore")
+              .toLocaleString(DateTime.TIME_SIMPLE),
+            work_time_finish: DateTime.fromMillis(jobId.work_time_finish)
+              .setZone("Asia/Singapore")
+              .toLocaleString(DateTime.TIME_SIMPLE),
+          },
+        };
+
+        await sendMessage(chatMessage);
 
         const assignment = await Job.updateOne(
           { _id: req.params.id },
