@@ -10,6 +10,7 @@ const { restart } = require("nodemon");
 const ObjectId = require("mongoose/lib/types/objectid.js");
 const { sendingEmail } = require("../services/sendingEmail");
 const { jobLogger } = require("../services/logger/jobLogger");
+const ClinicGroup = require("../models/ClinicGroup");
 
 const {
   createConversation,
@@ -17,7 +18,10 @@ const {
 } = require("../services/sendingChat/index.js");
 
 const createBooking = async (req, res) => {
-  const jobId = await Job.findById(req.params.id);
+  const jobId = await Job.findById(req.params.id).populate({
+    path: "clinic",
+    select: "clinicName Address",
+  });
 
   if (!jobId)
     return res.status(404).json({ message: "The listing is not found." });
@@ -30,30 +34,42 @@ const createBooking = async (req, res) => {
     updatedData.booked_by.push(req.user._id);
 
     try {
-      const conversation = await createConversation(
-        req.user._id,
-        req.body.user_id
-      );
+      let receiver = [];
+      const isAdminExist = await Clinic.findById(jobId.clinic);
+      receiver = isAdminExist?.user_id ?? [];
 
-      const chatMessage = {
-        type: "locumCard",
-        text: "Hi! I want to schedule for a work appointment.",
-        conversation_id: conversation._id,
-        sender: req.user._id,
-        card: {
-          title: jobId.clinic.clinicName,
-          subtitle: "locum " + jobId.profession,
-          date: DateTime.fromMillis(jobId.work_time_start)
-            .setZone("Asia/Singapore")
-            .toFormat("cccc, dd MMMM yyyy"),
-          work_time_start: DateTime.fromMillis(jobId.work_time_start)
-            .setZone("Asia/Singapore")
-            .toLocaleString(DateTime.TIME_SIMPLE),
-          work_time_finish: DateTime.fromMillis(jobId.work_time_finish)
-            .setZone("Asia/Singapore")
-            .toLocaleString(DateTime.TIME_SIMPLE),
-        },
-      };
+      const isOtherAdminExist = await ClinicGroup.findById(isAdminExist.group);
+      isOtherAdminExist?.user_id?.map(async (userId) => {
+        receiver.push(userId);
+
+        if (receiver.length > 0) {
+          const sendingChats = receiver.map(async (userId) => {
+            const conversation = await createConversation(req.user._id, userId);
+
+            const chatMessage = {
+              type: "locumCard",
+              text: "Hi! I want to schedule for a work appointment.",
+              conversation_id: conversation._id,
+              sender: req.user._id,
+              card: {
+                title: jobId.clinic.clinicName,
+                subtitle: "locum " + jobId.profession,
+                date: DateTime.fromMillis(jobId.work_time_start)
+                  .setZone("Asia/Singapore")
+                  .toFormat("cccc, dd MMMM yyyy"),
+                work_time_start: DateTime.fromMillis(jobId.work_time_start)
+                  .setZone("Asia/Singapore")
+                  .toLocaleString(DateTime.TIME_SIMPLE),
+                work_time_finish: DateTime.fromMillis(jobId.work_time_finish)
+                  .setZone("Asia/Singapore")
+                  .toLocaleString(DateTime.TIME_SIMPLE),
+              },
+            };
+          });
+
+          await Promise.all(sendingChats);
+        }
+      });
 
       const bookedJob = await Job.updateOne(
         { _id: req.params.id },
