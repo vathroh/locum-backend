@@ -2,7 +2,7 @@ const multer = require("multer");
 const { DateTime } = require("luxon");
 const ClinicGroup = require("../models/ClinicGroup");
 const Clinic = require("../models/Clinic");
-const { gen5RandomNumber } = require("../utils/genRandom/gen5RandomNumber");
+const { gen4RandomNumber } = require("../utils/genRandom/gen4RandomNumber");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -55,19 +55,29 @@ const getClinicsByGroup = async (req, res) => {
 
 const saveClinicGroup = async (req, res) => {
   try {
-    req.body.date_of_registration = DateTime.fromISO(
-      req.body.date_of_registration,
-      {
-        zone: "Asia/Singapore",
-      }
-    ).toMillis();
+    const isCompanyAdmin = await ClinicGroup.findOne({
+      user_id: { $in: [req.user._id] },
+    });
 
-    const company = new ClinicGroup(req.body);
+    if (!isCompanyAdmin) {
+      req.body.date_of_registration = DateTime.fromISO(
+        req.body.date_of_registration,
+        {
+          zone: "Asia/Singapore",
+        }
+      ).toMillis();
 
-    company.code = genCompanyCode("ORG-");
+      req.body.user_id = [req.user._id];
+      const company = new ClinicGroup(req.body);
+      company.code = await genCompanyCode("ORG-");
 
-    const savedCompany = await company.save();
-    res.status(200).json(savedClinic);
+      const savedCompany = await company.save();
+      return res.status(200).json(savedCompany);
+    } else {
+      return res
+        .status(500)
+        .json({ message: "You already registered to a company" });
+    }
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -156,7 +166,7 @@ const deleteClinic = async (req, res) => {
 };
 
 genCompanyCode = async (string) => {
-  const code = string + gen5RandomNumber();
+  const code = string + gen4RandomNumber();
   const isExists = await ClinicGroup.findOne({ code: code });
 
   if (isExists) {

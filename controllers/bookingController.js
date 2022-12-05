@@ -44,8 +44,6 @@ const createBooking = async (req, res) => {
 
         const uniqueReceiver = [...new Set(receiver.map((item) => item))];
 
-        console.log(`receiver: ${receiver}`);
-
         if (uniqueReceiver.length > 0) {
           const sendingChats = uniqueReceiver.map(async (userId) => {
             const conversation = await createConversation(req.user._id, userId);
@@ -171,8 +169,6 @@ const AssignTo = async (req, res) => {
           conversation_id: conversation._id,
           sender: req.user._id,
         };
-
-        console.log(chatMessage);
 
         await sendMessage(chatMessage);
 
