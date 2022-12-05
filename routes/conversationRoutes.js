@@ -17,29 +17,29 @@ router.post("/", async (req, res) => {
 
 router.get("/to", async (req, res) => {
   try {
-    const conv = await createConversation(req.query.userId, req.user._id);
+    if (req.query.userId) {
+      const conv = await createConversation(req.query.userId, req.user._id);
 
-    console.log(conv);
+      const user = await User.findById(req.query.userId)
+        .select({
+          role_id: 1,
+          role: 1,
+          full_name: 1,
+          profile_pict: 1,
+        })
+        .lean();
 
-    const user = await User.findById(req.query.userId)
-      .select({
-        role_id: 1,
-        role: 1,
-        full_name: 1,
-        profile_pict: 1,
-      })
-      .lean();
+      if (!user) return res.status(404).json({ message: "User not found." });
 
-    if (!user) return res.status(404).json({ message: "User not found." });
+      user.conversation_id = conv._id;
+      if (!user.profile_pict) {
+        user.profile_pict = "";
+      } else {
+        user.profile_pict = process.env.BASE_URL + user.profile_pict;
+      }
 
-    user.conversation_id = conv._id;
-    if (!user.profile_pict) {
-      user.profile_pict = "";
-    } else {
-      user.profile_pict = process.env.BASE_URL + user.profile_pict;
+      res.json(user);
     }
-
-    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
