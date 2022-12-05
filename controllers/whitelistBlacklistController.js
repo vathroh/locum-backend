@@ -90,10 +90,10 @@ const setWhitelist = async (req, res) => {
     if (!whitelist) {
       const savedData = await newWhitelist.save();
       res.json({
-        message: "You have successfully added this person to exclusion.",
+        message: "You have successfully added this person to inclusion.",
       });
     } else {
-      res.json({ message: "This person has been added to exclusion." });
+      res.json({ message: "This person has been added to inclusion." });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -109,7 +109,7 @@ const removeFromWhitelist = async (req, res) => {
 
     if (!whitelist) {
       return res.status(404).json({
-        message: "The person you want to remove is not found on exclusion list",
+        message: "The person you want to remove is not found on Inclusion list",
       });
     }
     const deletedUser = await Whitelist.deleteOne({ _id: whitelist.id });

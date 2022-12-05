@@ -42,8 +42,12 @@ const createBooking = async (req, res) => {
       isOtherAdminExist?.user_id?.map(async (userId) => {
         receiver.push(userId);
 
-        if (receiver.length > 0) {
-          const sendingChats = receiver.map(async (userId) => {
+        const uniqueReceiver = [...new Set(receiver.map((item) => item))];
+
+        console.log(`receiver: ${receiver}`);
+
+        if (uniqueReceiver.length > 0) {
+          const sendingChats = uniqueReceiver.map(async (userId) => {
             const conversation = await createConversation(req.user._id, userId);
 
             const chatMessage = {
@@ -65,9 +69,9 @@ const createBooking = async (req, res) => {
                   .toLocaleString(DateTime.TIME_SIMPLE),
               },
             };
-          });
 
-          await Promise.all(sendingChats);
+            await sendMessage(chatMessage);
+          });
         }
       });
 

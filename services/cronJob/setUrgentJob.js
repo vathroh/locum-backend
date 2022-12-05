@@ -11,6 +11,7 @@ const setUrgentJob = async () => {
         { work_time_start: { $gte: now } },
         { work_time_start: { $lte: now + 86400000 + 10000 } },
       ],
+      assigned_to: [],
     }).populate({ path: "clinic", select: "clinicName" });
 
     const jobs72 = await Job.find({
@@ -18,6 +19,7 @@ const setUrgentJob = async () => {
         { work_time_start: { $gte: now + 86401000 } },
         { work_time_start: { $lte: now + 259200000 + 10000 } },
       ],
+      assigned_to: [],
     }).populate({ path: "clinic", select: "clinicName" });
 
     jobs24.map(async (item) => {
@@ -25,7 +27,7 @@ const setUrgentJob = async () => {
         await Job.updateOne(
           { _id: item._id },
           {
-            $set: { isUrgent: true, price: item.urgent_price_24 ?? item.price },
+            $set: { isUrgent: true },
           }
         );
         setUrgentLogger.info(
@@ -43,7 +45,7 @@ const setUrgentJob = async () => {
         await Job.updateOne(
           { _id: item._id },
           {
-            $set: { isUrgent: true, price: item.urgent_price_72 ?? item.price },
+            $set: { isUrgent: true },
           }
         );
         setUrgentLogger.info(
