@@ -15,42 +15,29 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/:userId", async (req, res) => {
+router.get("/to", async (req, res) => {
   try {
-    const conversation = await Conversation.find({
-      members: {
-        $in: [req.params.userId],
-      },
-    })
-      .lean()
-      .then(async (data) => {
-        let userIds = [];
-        data.map((e) => {
-          e.members.map((l) => {
-            if (l !== req.params.userId) {
-              userIds.push({
-                _id: e._id,
-                user_id: l,
-              });
-            }
-          });
-        });
+    const conv = await createConversation(req.query.userId, req.user._id);
 
-        const conv = userIds.map(async (d) => {
-          const user = await User.findById(d.user_id).select({
-            full_name: 1,
-            _id: 1,
-            profile_pict: 1,
-          });
-          return {
-            _id: d._id,
-            user: user,
-          };
-        });
+    const user = await User.findById(req.query.userId)
+      .select({
+        role_id: 1,
+        role: 1,
+        full_name: 1,
+        profile_pict: 1,
+      })
+      .lean();
 
-        promisedConv = await Promise.all(conv);
-        res.json(promisedConv);
-      });
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    user.conversation_id = conv._id;
+    if (!user.profile_pict) {
+      user.profile_pict = "";
+    } else {
+      user.profile_pict = process.env.BASE_URL + user.profile_pict;
+    }
+
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -99,6 +86,47 @@ router.get("/users/:userId", async (req, res) => {
     await Promise.all(getUsers);
 
     res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get("/:userId", async (req, res) => {
+  try {
+    const conversation = await Conversation.find({
+      members: {
+        $in: [req.params.userId],
+      },
+    })
+      .lean()
+      .then(async (data) => {
+        let userIds = [];
+        data.map((e) => {
+          e.members.map((l) => {
+            if (l !== req.params.userId) {
+              userIds.push({
+                _id: e._id,
+                user_id: l,
+              });
+            }
+          });
+        });
+
+        const conv = userIds.map(async (d) => {
+          const user = await User.findById(d.user_id).select({
+            full_name: 1,
+            _id: 1,
+            profile_pict: 1,
+          });
+          return {
+            _id: d._id,
+            user: user,
+          };
+        });
+
+        promisedConv = await Promise.all(conv);
+        res.json(promisedConv);
+      });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
