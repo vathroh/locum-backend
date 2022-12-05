@@ -19,6 +19,8 @@ router.get("/to", async (req, res) => {
   try {
     const conv = await createConversation(req.query.userId, req.user._id);
 
+    console.log(conv);
+
     const user = await User.findById(req.query.userId)
       .select({
         role_id: 1,
