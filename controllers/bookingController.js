@@ -23,8 +23,21 @@ const createBooking = async (req, res) => {
     select: "clinicName Address",
   });
 
+  const hasAppointment = await Job.findOne({
+    assigned_to: { $in: [req.user._id] },
+    work_time_start: {
+      $gte: jobId.work_time_start,
+      $lte: jobId.work_time_finish,
+    },
+  });
+
   if (!jobId)
     return res.status(404).json({ message: "The listing is not found." });
+
+  if (hasAppointment)
+    return res
+      .status(404)
+      .json({ message: "You have an appointment at this slot time." });
 
   let hasUserBooked = jobId.booked_by.includes(req.user._id);
 
@@ -50,7 +63,7 @@ const createBooking = async (req, res) => {
 
             const chatMessage = {
               type: "locumCard",
-              text: "Hi! I want to schedule for a work appointment.",
+              text: "Hi! I have booked this slot.",
               conversation_id: conversation._id,
               sender: req.user._id,
               card: {
@@ -118,6 +131,14 @@ const AssignTo = async (req, res) => {
 
   const jobId = await Job.findById(req.params.id);
   if (!jobId) return res.status(404).json({ message: "The job is not found." });
+
+  const hasAppointment = await Job.findOne({
+    assigned_to: { $in: [req.user._id] },
+    work_time_start: {
+      $gte: jobId.work_time_start,
+      $lte: jobId.work_time_finish,
+    },
+  });
 
   let assignmentAmount = jobId.assigned_to?.length;
 
@@ -616,6 +637,42 @@ const pastBookingByClinic = async (req, res) => {
   }
 };
 
+const sendInterviewRequest = async (req, res) => {
+  try {
+    const conversation = await createConversation(req.user._id, req.body.to);
+    const jobId = await Job.findById(req.body.jobId);
+
+    if (!jobId)
+      return res.status(404).json({ message: "The listing can not be found." });
+
+    const chatMessage = {
+      type: "locumCard",
+      text: "Hi! I want to schedule for a work appointment.",
+      conversation_id: conversation._id,
+      sender: req.user._id,
+      card: {
+        title: jobId.clinic.clinicName,
+        subtitle: "locum " + jobId.profession,
+        date: DateTime.fromMillis(jobId.work_time_start)
+          .setZone("Asia/Singapore")
+          .toFormat("cccc, dd MMMM yyyy"),
+        work_time_start: DateTime.fromMillis(jobId.work_time_start)
+          .setZone("Asia/Singapore")
+          .toLocaleString(DateTime.TIME_SIMPLE),
+        work_time_finish: DateTime.fromMillis(jobId.work_time_finish)
+          .setZone("Asia/Singapore")
+          .toLocaleString(DateTime.TIME_SIMPLE),
+      },
+    };
+
+    await sendMessage(chatMessage);
+    res.json({ message: "The interview request has been sent." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const upcomingBookingsBymonth = async (req, res) => {};
 
 const completedBookingsByMonth = async (req, res) => {};
@@ -628,8 +685,9 @@ module.exports = {
   upcomingAssignmentsByUserId,
   countUpcomingAssignmentsByUserId,
   upcomingUnassignmentByUserId,
-  upcomingBookingByClinic,
   countCompletedJobsByUser,
+  upcomingBookingByClinic,
+  sendInterviewRequest,
   completedJobsByUser,
   canceledJobsByUser,
   rejectBooking,

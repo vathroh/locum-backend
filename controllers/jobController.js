@@ -12,6 +12,7 @@ const personalInormation = require("../models/personalInormation");
 const Attendance = require("../models/AttendanceRecord");
 const Clinic = require("../models/Clinic");
 const { info } = require("winston");
+const ObjectId = require("mongoose/lib/types/objectid.js");
 
 const getAllJobs = async (req, res) => {
   try {
@@ -798,8 +799,16 @@ const postDirectListing = (req, res) => {
 const saveJob = async (req, res) => {
   if (!req.file)
     return res.status(400).json({ message: "The image must not empty." });
+
+  const clinic = await Clinic.findById(req.body.clinic).select({ initials: 1 });
+  const count = await Job.find({ clinic: ObjectId(req.body.clinic) }).count();
+  const number = parseInt(count) + 1;
+  const string = clinic.initials + "-000000";
+
   let data = req.body;
   data.image = "/" + req.file?.destination + "/" + req.file?.filename;
+  data.code = string.slice(0, 10 - number.toString().length) + number;
+
   data.work_time_start = DateTime.fromISO(
     req.body.date + "T" + req.body.work_time_start,
     { zone: "Asia/Singapore" }

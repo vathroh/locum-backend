@@ -8,6 +8,11 @@ const Clinic = mongoose.Schema(
       required: true,
       unique: true,
     },
+    initials: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     logo: {
       type: String,
       required: true,
@@ -31,7 +36,7 @@ const Clinic = mongoose.Schema(
     location: {
       type: String,
       required: true,
-      enum: ["Central", "East", "North", "North-east", "West"],
+      enum: ["central", "east", "north", "north-east", "west"],
     },
     type: [
       {

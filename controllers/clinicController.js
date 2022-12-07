@@ -1,6 +1,19 @@
 const Clinic = require("../models/Clinic.js");
 const ClinicGroup = require("../models/ClinicGroup.js");
+const { genClinicInitials } = require("../utils/genClinicInitial/index.js");
 const { gen4RandomNumber } = require("../utils/genRandom/gen4RandomNumber.js");
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images/clinic");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const getClinics = async (req, res) => {
   try {
@@ -21,10 +34,15 @@ const getClinicById = async (req, res) => {
 };
 
 const saveClinic = async (req, res) => {
-  try {
-    const clinic = new Clinic(req.body);
+  if (!req.file)
+    return res.status(400).json({ message: "The logo must not empty." });
 
+  try {
+    const initials = await genClinicInitials(req.body.clinicName);
+    const clinic = new Clinic(req.body);
+    clinic.logo = "/" + req.file?.destination + "/" + req.file?.filename;
     clinic.code = await genClinicCode("CLI-");
+    clinic.initials = initials;
 
     const savedClinic = await clinic.save();
     res.status(200).json(savedClinic);
@@ -105,6 +123,7 @@ genClinicCode = async (string) => {
 };
 
 module.exports = {
+  upload,
   getClinics,
   getClinicById,
   saveClinic,

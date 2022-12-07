@@ -4,6 +4,12 @@ const mongoose = require("mongoose");
 // Buat Schema
 const Job = mongoose.Schema(
   {
+    code: {
+      type: String,
+      size: 3,
+      required: true,
+      unique: true,
+    },
     clinic: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Clinic",
