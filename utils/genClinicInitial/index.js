@@ -66,7 +66,7 @@ const genClinicInitials = async (string) => {
           parts.push(arr[2].charAt(k).toUpperCase());
           code = parts.join("");
           console.log(code);
-          if (!codes.includes(code)) return code;
+          if (!codes.includes(code) && code.length === 3) return code;
           parts = [];
         }
       }

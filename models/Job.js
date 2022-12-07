@@ -100,9 +100,10 @@ const Job = mongoose.Schema(
     favorites: {
       type: Array,
     },
-    isUrgent: {
-      type: Boolean,
-      default: false,
+    urgent_status: {
+      type: String,
+      default: "normal",
+      enum: ["normal", "72", "24"],
     },
     listing_type: {
       type: String,

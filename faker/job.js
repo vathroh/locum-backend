@@ -10,10 +10,17 @@ const seedJobs = async () => {
     // return res.json(faker.image.business());
     const clinics = await Clinic.find().select({ _id: 1 });
     const data = [];
-    clinics.map((e) => {
+    clinics.map(async (e) => {
       const date = DateTime.now().plus({ days: 6 }).toISODate();
 
+      const count = await Job.find({
+        clinic: ObjectId(req.body.clinic),
+      }).count();
+      const number = parseInt(count) + 1;
+      const string = e.initials + "-000000";
+
       data.push({
+        code: string.slice(0, 10 - number.toString().length) + number,
         image: faker.helpers.arrayElement([
           "/public/images/1663816528905-istockphoto-138205019-612x612.jpg",
           "/public/images/jobs/1665109795766-doctors-standing.jpg",
@@ -38,6 +45,8 @@ const seedJobs = async () => {
             zone: "Asia/Singapore",
           }).toMillis() ?? 0,
         price: 200,
+        urgent_price_24: 370,
+        urgent_price_72: 270,
         profession: faker.helpers.arrayElement([
           "doctor",
           "clinical assistant",

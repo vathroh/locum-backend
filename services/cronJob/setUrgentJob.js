@@ -27,7 +27,7 @@ const setUrgentJob = async () => {
         await Job.updateOne(
           { _id: item._id },
           {
-            $set: { isUrgent: true },
+            $set: { urgent_status: "24" },
           }
         );
         setUrgentLogger.info(
@@ -45,7 +45,7 @@ const setUrgentJob = async () => {
         await Job.updateOne(
           { _id: item._id },
           {
-            $set: { isUrgent: true },
+            $set: { urgent_status: "72" },
           }
         );
         setUrgentLogger.info(
