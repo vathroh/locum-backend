@@ -4,6 +4,7 @@ const Clinic = require("../models/Clinic.js");
 const Job = require("../models/Job.js");
 const { DateTime } = require("luxon");
 const mongoose = require("mongoose");
+const { jobs_v2 } = require("googleapis");
 
 const getData = async (req, res) => {
   const attendance = await Record.findOne({
@@ -151,6 +152,8 @@ const checkout = async (req, res) => {
 const afterCheckout = async (req, res) => {
   try {
     const job = await Job.findById(req.params.jobId).lean();
+    if (!job) return res.status(404).json({ message: "The Slot not found." });
+
     const workHour = job.work_time_finish - job.work_time_start;
     let clinic = await Clinic.findById(job.clinic).lean();
     const comments = clinic.comments;
@@ -160,14 +163,28 @@ const afterCheckout = async (req, res) => {
       datetime: DateTime.now().toMillis(),
     });
 
-    await Clinic.updateOne({ _id: job.clinic }, { comments: comments });
-    await Record.updateOne(
+    await Clinic.updateOne(
+      { _id: job.clinic },
+      { $set: { comments: comments } }
+    );
+
+    const record1 = await Record.findOne({
+      job_id: req.params.jobId,
+      user_id: req.user._id,
+    });
+
+    if (!record1)
+      return res.status(404).json({ message: "You may have not checkin yet" });
+
+    const record = await Record.updateOne(
       { job_id: req.params.jobId, user_id: req.user._id },
       {
-        overtime: req.body.overtime,
-        totalWorkHour: (req.body.overtime * 60000 + workHour) / 3600000,
-      },
-      { remarks: req.body.remarks }
+        $set: {
+          overtime: req.body.overtime,
+          totalWorkHour: (req.body.overtime * 60000 + workHour) / 3600000,
+          remarks: req.body.remarks,
+        },
+      }
     );
 
     res.json({ message: "Thank You. Have a nice day." });

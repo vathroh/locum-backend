@@ -45,6 +45,16 @@ const seedJobs = async () => {
         prefered_gender: faker.helpers.arrayElement(["male", "female"]),
         scope: ["Family Medicine"],
         job_description: ["Able to see children 7 years old."],
+        break: {
+          start:
+            DateTime.fromISO(date + "T" + "12:00", {
+              zone: "Asia/Singapore",
+            }).toMillis() ?? 0,
+          finish:
+            DateTime.fromISO(date + "T" + "13:00", {
+              zone: "Asia/Singapore",
+            }).toMillis() ?? 0,
+        },
       });
     });
 

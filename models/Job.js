@@ -54,6 +54,14 @@ const Job = mongoose.Schema(
         required: true,
       },
     ],
+    break: {
+      start: {
+        type: Number,
+      },
+      finish: {
+        type: Number,
+      },
+    },
     preferences: [
       {
         type: String,
