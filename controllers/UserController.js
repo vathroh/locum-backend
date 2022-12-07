@@ -143,7 +143,7 @@ const updateUser = async (req, res) => {
       { $set: req.body }
     );
 
-    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+    userLogger.info(`url: ${req.originalUrl}, data: ${cekId._id})}`);
 
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -163,7 +163,7 @@ const deleteUser = async (req, res) => {
     }
     const deletedUser = await User.deleteOne({ _id: req.params.id });
 
-    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+    userLogger.info(`url: ${req.originalUrl}, data: ${cekId._id})}`);
 
     res.status(200).json(deletedUser);
   } catch (error) {

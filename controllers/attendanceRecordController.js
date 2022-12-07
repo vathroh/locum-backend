@@ -71,11 +71,6 @@ const getNewAttendance = async (req, res) => {
 };
 
 const checkin = async (req, res) => {
-  const isExists = await Clinic.findById(req.params.jobId);
-
-  if (!isExists)
-    return res.status(404).json({ message: "The Slot is not available" });
-
   try {
     const data = await getData(req, res);
     if (data.status === "Ready") {
@@ -125,10 +120,6 @@ const checkin = async (req, res) => {
 };
 
 const checkout = async (req, res) => {
-  const isExists = await Clinic.findById(req.params.jobId);
-  if (!isExists)
-    return res.status(404).json({ message: "The Slot is not available" });
-
   try {
     const data = await getData(req, res);
     if (data.status === "Ready") {
