@@ -32,6 +32,7 @@ const {
   youMightLike,
   getCurrentJob,
   getExploreJobs,
+  getCurrentSlot,
   getUpcomingJobs,
   favoritesByUser,
   getJobByClinicId,
@@ -55,6 +56,8 @@ router.post(
   upload.single("image"),
   postAutomatedListing
 );
+
+router.get("/current-slot", getCurrentSlot);
 router.post("/post-manual-listing", upload.single("image"), postManualListing);
 router.post("/post-direct-listing", upload.single("image"), postDirectListing);
 router.get("/calendar/:clinicId/:year/:month", getCalendarJobByClinicId);

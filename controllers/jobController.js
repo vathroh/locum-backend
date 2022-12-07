@@ -1278,6 +1278,62 @@ const getCurrentJob = async (req, res) => {
   }
 };
 
+const getCurrentSlot = async (req, res) => {
+  const startOfDay = DateTime.now()
+    .setZone("Asia/Singapore")
+    .startOf("day")
+    .toMillis();
+
+  const endOfDay = DateTime.now()
+    .setZone("Asia/Singapore")
+    .endOf("day")
+    .toMillis();
+
+  try {
+    const jobs = await Job.find({
+      assigned_to: {
+        $in: [req.user._id],
+      },
+      clinic: ObjectId(req.query.clinicId),
+      $or: [
+        {
+          work_time_start: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+          },
+        },
+        {
+          work_time_finish: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+          },
+        },
+      ],
+    })
+      .lean()
+      .populate({ path: "clinic", select: "clinicName Address" })
+      .then((data) => {
+        data.map((e, index) => {
+          statusJob(e, req);
+          e.duration = Duration.fromMillis(
+            e.work_time_finish - e.work_time_start
+          )
+            .shiftTo("hours")
+            .toObject();
+        });
+
+        const output = formatData(data);
+        jobLogger.info(req.originalUrl);
+        res.json(output);
+      });
+  } catch (error) {
+    jobLogger.error(
+      `url: ${req.originalUrl}, error: ${error.message}, user:${req.user._id}`
+    );
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   saveJob,
   updateJob,
@@ -1286,6 +1342,7 @@ module.exports = {
   getNewJobs,
   getJobById,
   getPastJobs,
+  getCurrentSlot,
   getUpcomingJobs,
   getJobByClinicId,
   upcomingByClinicId,
