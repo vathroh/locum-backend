@@ -26,8 +26,8 @@ const createBooking = async (req, res) => {
   const hasAppointment = await Job.findOne({
     assigned_to: { $in: [req.user._id] },
     work_time_start: {
-      $gte: jobId.work_time_start,
-      $lte: jobId.work_time_finish,
+      $gt: jobId.work_time_start,
+      $lt: jobId.work_time_finish,
     },
   });
 
@@ -135,8 +135,8 @@ const AssignTo = async (req, res) => {
   const hasAppointment = await Job.findOne({
     assigned_to: { $in: [req.user._id] },
     work_time_start: {
-      $gte: jobId.work_time_start,
-      $lte: jobId.work_time_finish,
+      $gt: jobId.work_time_start,
+      $lt: jobId.work_time_finish,
     },
   });
 
