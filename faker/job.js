@@ -4,23 +4,26 @@ const Clinic = require("../models/Clinic.js");
 const { faker } = require("@faker-js/faker");
 const logger = require("../services/logger/jobSeederLogger");
 const { sendingEmail } = require("../services/sendingEmail");
+const ObjectId = require("mongoose/lib/types/objectid.js");
 
 const seedJobs = async () => {
   try {
     // return res.json(faker.image.business());
-    const clinics = await Clinic.find().select({ _id: 1 });
+    const clinics = await Clinic.find().select({ _id: 1, initials: 1 });
     const data = [];
-    clinics.map(async (e) => {
+
+    const array = clinics.map(async (e) => {
       const date = DateTime.now().plus({ days: 6 }).toISODate();
 
       const count = await Job.find({
-        clinic: ObjectId(req.body.clinic),
+        clinic: ObjectId(e.clinic),
       }).count();
+
       const number = parseInt(count) + 1;
       const string = e.initials + "-000000";
+      const code = string.slice(0, 10 - number.toString().length) + number;
 
-      data.push({
-        code: string.slice(0, 10 - number.toString().length) + number,
+      await data.push({
         image: faker.helpers.arrayElement([
           "/public/images/1663816528905-istockphoto-138205019-612x612.jpg",
           "/public/images/jobs/1665109795766-doctors-standing.jpg",
@@ -51,7 +54,6 @@ const seedJobs = async () => {
           "doctor",
           "clinical assistant",
         ]),
-        prefered_gender: faker.helpers.arrayElement(["male", "female"]),
         scope: ["Family Medicine"],
         job_description: ["Able to see children 7 years old."],
         break: {
@@ -66,6 +68,8 @@ const seedJobs = async () => {
         },
       });
     });
+
+    await Promise.all(array);
 
     data.map(async (el) => {
       const job = new Job(el);

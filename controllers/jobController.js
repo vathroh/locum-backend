@@ -1137,7 +1137,6 @@ const formatData = (data) => {
       date: e.date ?? "",
       work_time_start: e.work_time_start ?? 0,
       work_time_finish: e.work_time_finish ?? 0,
-      price: e.price ?? 0,
       scope: e.scope ?? [],
       job_description: e.job_description ?? "",
       booked_by: e.booked_by ?? [],
@@ -1147,6 +1146,12 @@ const formatData = (data) => {
       status: e.status ?? "",
       isFavorite: e.isFavorite ?? false,
       image: process.env.BASE_URL + e.image ?? "",
+      price:
+        e.urgent_status == "24"
+          ? e.urgent_status == "72"
+            ? e.urgent_price_24
+            : e.urgent_price_72
+          : e.price,
       duration: Duration.fromMillis(e.work_time_finish - e.work_time_start)
         .shiftTo("hours")
         .toObject(),
