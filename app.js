@@ -85,7 +85,7 @@ require("./services/cronJob");
 const users = [];
 
 io.on("connection", (socket) => {
-  // console.log(`User ${socket.id} has Joined`);
+  console.log(`User ${socket.id} has Joined`);
 
   socket.on("join_room", (data) => {
     socket.join(data);
@@ -94,7 +94,7 @@ io.on("connection", (socket) => {
 
   socket.on("message", (data) => {
     socket.to(data.to).emit("receive_message", data);
-    // console.log(data);
+    console.log(data);
   });
 
   socket.on("disconnect", () => {

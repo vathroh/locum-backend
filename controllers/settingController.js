@@ -52,9 +52,16 @@ const getSetting = async (req, res) => {
 
 const setSetting = async (req, res) => {
   try {
-    const setting = await Setting.findOne({ user_id: req.user._id });
+    const setting = await Setting.find({ user_id: req.user._id });
 
-    if (!setting) insertUser(req, res);
+    console.log(setting);
+
+    if (setting.length == 0) {
+      const setting = new Setting({
+        user_id: req.user._id,
+      });
+      await setting.save();
+    }
 
     if (req.query.sync_google_calendar) {
       const sync_google_calendar = setting.sync_google_calendar;
@@ -98,7 +105,7 @@ const setSetting = async (req, res) => {
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
     }
 
-    const newSetting = await Setting.findOne({ _id: setting._id });
+    const newSetting = await Setting.findOne({ user_id: req.user._id });
     return res.json(newSetting);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -108,12 +115,12 @@ const setSetting = async (req, res) => {
 const insertUser = async (req, res) => {
   try {
     const setting = new Setting({
-      userId: req.user._id,
+      user_id: req.user._id,
     });
     const savedSetting = await setting.save();
-    res.json(savedSetting);
+    return savedSetting;
   } catch (error) {
-    res.status(500).json(error.message);
+    return error.message;
   }
 };
 
