@@ -21,9 +21,9 @@ const seedJobs = async () => {
 
       const number = parseInt(count) + 1;
       const string = e.initials + "-000000";
-      const code = string.slice(0, 10 - number.toString().length) + number;
 
       await data.push({
+        code: string.slice(0, 10 - number.toString().length) + number,
         image: faker.helpers.arrayElement([
           "/public/images/1663816528905-istockphoto-138205019-612x612.jpg",
           "/public/images/jobs/1665109795766-doctors-standing.jpg",
