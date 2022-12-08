@@ -3,7 +3,7 @@ const { DateTime } = require("luxon");
 const { seedJobs } = require("../../faker/job");
 const { setUrgentJob } = require("./setUrgentJob");
 
-cronJob.schedule("0 0 5 * * *", () => {
+cronJob.schedule("0 10 7 * * *", () => {
   const now = DateTime.now().setZone("Asia/Singapore").toFormat("HH:mm:ss");
   // console.log(`job seed at ${now} Singapore Timezone`);
   seedJobs();
