@@ -41,10 +41,16 @@ const getSetting = async (req, res) => {
   try {
     const setting = await Setting.findOne({ user_id: req.user._id });
 
-    if (!setting)
-      return res.status(404).json({ message: "Setting not found." });
+    if (!setting) {
+      const setting = new Setting({
+        user_id: req.user._id,
+      });
+      await setting.save();
+    }
 
-    res.json(setting);
+    const newsetting = await Setting.findOne({ user_id: req.user._id });
+
+    res.json(newsetting);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -54,8 +60,6 @@ const setSetting = async (req, res) => {
   try {
     const setting = await Setting.find({ user_id: req.user._id });
 
-    console.log(setting);
-
     if (setting.length == 0) {
       const setting = new Setting({
         user_id: req.user._id,
@@ -63,43 +67,43 @@ const setSetting = async (req, res) => {
       await setting.save();
     }
 
-    if (req.query.sync_google_calendar) {
+    if (req.body.sync_google_calendar) {
       const sync_google_calendar = setting.sync_google_calendar;
       setting.sync_google_calendar = !sync_google_calendar;
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
     }
 
-    if (req.query.general_notifications) {
+    if (req.body.general_notifications) {
       const generalNotifications = setting.general_notifications;
       setting.general_notifications = !generalNotifications;
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
     }
 
-    if (req.query.sound) {
+    if (req.body.sound) {
       const sound = setting.sound;
       setting.sound = !sound;
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
     }
 
-    if (req.query.vibration) {
+    if (req.body.vibration) {
       const vibration = setting.vibration;
       setting.vibration = !vibration;
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
     }
 
-    if (req.query.app_update) {
+    if (req.body.app_update) {
       const app_update = setting.app_update;
       setting.app_update = !app_update;
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
     }
 
-    if (req.query.upcoming_appointment) {
+    if (req.body.upcoming_appointment) {
       const upcomingAppointment = setting.upcoming_appointment;
       setting.upcoming_appointment = !upcomingAppointment;
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
     }
 
-    if (req.query.canceled_appointment) {
+    if (req.body.canceled_appointment) {
       const canceledAppointment = setting.canceled_appointment;
       setting.canceled_appointment = !canceledAppointment;
       await Setting.updateOne({ _id: setting._id }, { $set: setting });
