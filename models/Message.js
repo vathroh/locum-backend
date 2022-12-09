@@ -18,9 +18,11 @@ const MessageSchema = new mongoose.Schema(
     },
     conversation_id: {
       type: String,
+      required: true,
     },
     sender: {
       type: String,
+      required: true,
     },
     card: {
       title: {

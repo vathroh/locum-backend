@@ -86,9 +86,27 @@ require("./services/cronJob");
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
 const users = [];
+const connected_clients = new Map();
 
 wss.on("connection", function connection(ws) {
   console.log("A new client Connected!");
+
+  // NOTE: only for demonstration, will cause collisions.  Use a UUID or some other identifier that's actually unique.
+  const this_stream_id = Array.from(connected_clients.values()).length;
+
+  // Keep track of the stream, so that we can send all of them messages.
+  connected_clients.set(this_stream_id, ws);
+
+  // Attach event handler to mark this client as alive when pinged.
+  ws.is_alive = true;
+  ws.on("pong", () => {
+    ws.is_alive = true;
+  });
+
+  // When the stream is closed, clean up the stream reference.
+  ws.on("close", function () {
+    connected_clients.delete(this_stream_id);
+  });
 
   ws.on("message", function incoming(message) {
     console.log("received: %s", message);
@@ -101,6 +119,17 @@ wss.on("connection", function connection(ws) {
     });
   });
 });
+
+setInterval(function ping() {
+  Array.from(connected_clients.values()).forEach(function each(client_stream) {
+    if (!client_stream.is_alive) {
+      client_stream.terminate();
+      return;
+    }
+    client_stream.is_alive = false;
+    client_stream.ping();
+  });
+}, 1000);
 
 // io.on("connection", (socket) => {
 //   console.log(`User ${socket.id} has Joined`);
