@@ -7,19 +7,22 @@ const port = process.env.PORT;
 const path = require("path");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const { Server } = require("socket.io");
+// const { Server } = require("socket.io");
+const WebSocket = require("ws");
 
 const app = express();
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    allowedHeaders: ["Access-Control-Allow-Credentials"],
-    credentials: false,
-    rejectUnauthorized: false,
-  },
-});
+const wss = new WebSocket.Server({ server: server });
+
+// const io = new Server(server, {
+//   cors: {
+//     origin: "*",
+//     allowedHeaders: ["Access-Control-Allow-Credentials"],
+//     credentials: false,
+//     rejectUnauthorized: false,
+//   },
+// });
 
 var allowedOrigins = [
   "http://localhost:3000",
@@ -84,25 +87,40 @@ require("./services/cronJob");
 
 const users = [];
 
-io.on("connection", (socket) => {
-  console.log(`User ${socket.id} has Joined`);
+wss.on("connection", function connection(ws) {
+  console.log("A new client Connected!");
+  ws.send("Welcome New Client!");
 
-  socket.on("join_room", (data) => {
-    socket.join(data);
-    // console.log(`User with ID: ${socket.id} joined room: ${data}`);
-  });
+  ws.on("message", function incoming(message) {
+    console.log("received: %s", message);
 
-  socket.on("message", (data) => {
-    socket.to(data.to).emit("receive_message", data);
-    console.log(data);
-  });
-
-  socket.on("disconnect", () => {
-    socket.broadcast.emit("user-disconnected", `${socket.id} has disconnected`);
-    const user = users.findIndex((user) => user.socket_id == socket.id);
-    // console.log(`${socket.id} has disconnected`);
+    wss.clients.forEach(function each(client) {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
   });
 });
+
+// io.on("connection", (socket) => {
+//   console.log(`User ${socket.id} has Joined`);
+
+//   socket.on("join_room", (data) => {
+//     socket.join(data);
+//     // console.log(`User with ID: ${socket.id} joined room: ${data}`);
+//   });
+
+//   socket.on("message", (data) => {
+//     socket.to(data.to).emit("receive_message", data);
+//     console.log(data);
+//   });
+
+//   socket.on("disconnect", () => {
+//     socket.broadcast.emit("user-disconnected", `${socket.id} has disconnected`);
+//     const user = users.findIndex((user) => user.socket_id == socket.id);
+//     // console.log(`${socket.id} has disconnected`);
+//   });
+// });
 
 server.listen(port, () =>
   console.log(`Server is running on http://localhost:${port}`)
