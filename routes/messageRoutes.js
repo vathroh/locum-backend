@@ -30,6 +30,7 @@ router.get("/:conversationId", async (req, res) => {
       .lean();
 
     const data = [];
+
     messages.map((message) => {
       const msg = {};
       msg._id = message._id ?? "";
@@ -44,7 +45,7 @@ router.get("/:conversationId", async (req, res) => {
       data.push(msg);
     });
 
-    res.json({
+    return res.json({
       page: page + 1,
       limit: limit,
       totalRows: totalRows,
