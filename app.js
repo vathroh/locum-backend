@@ -76,9 +76,9 @@ app.use(
   })
 );
 
-app.get("/socket.io/socket.io.js", (req, res) => {
-  res.sendFile(__dirname + "/node_modules/socket.io/client-dist/socket.io.js");
-});
+// app.get("/socket.io/socket.io.js", (req, res) => {
+//   res.sendFile(__dirname + "/node_modules/socket.io/client-dist/socket.io.js");
+// });
 
 require("./routes")(app);
 require("./services/cronJob");
@@ -89,14 +89,14 @@ const users = [];
 
 wss.on("connection", function connection(ws) {
   console.log("A new client Connected!");
-  ws.send("Welcome New Client!");
 
   ws.on("message", function incoming(message) {
     console.log("received: %s", message);
+    // ws.send(message.toString("utf8"));
 
     wss.clients.forEach(function each(client) {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message);
+        client.send(message.toString("utf8"));
       }
     });
   });
