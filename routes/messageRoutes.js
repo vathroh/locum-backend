@@ -12,15 +12,14 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/:conversationId", async (req, res) => {
-  console.log(req.query);
   try {
     const totalRows = await Message.find({
       conversation_id: req.params.conversationId,
     }).count();
 
+    const limit = parseInt(req.query.limit) || 100;
     const totalPage = Math.ceil(totalRows / limit);
     const page = parseInt(req.query.page) - 1 || totalPage;
-    const limit = parseInt(req.query.limit) || 100;
     const offset = limit * page;
 
     const messages = await Message.find({
@@ -53,7 +52,7 @@ router.get("/:conversationId", async (req, res) => {
       data: data,
     });
   } catch (error) {
-    res.json(500).json({ message: error });
+    res.json(500).json({ message: error.message });
   }
 });
 
