@@ -128,12 +128,10 @@ const deleteBooking = async (req, res) => {
 
 const AssignTo = async (req, res) => {
   const user_id = ObjectId.isValid(req.body.user_id);
-  if (!user_id)
-    return res.status(400).json({ message: "user_id is not a valid" });
+  if (!user_id) return res.status(400).json({ message: "user_id is invalid" });
 
   const job_id = ObjectId.isValid(req.params.id);
-  if (!job_id)
-    return res.status(400).json({ message: "job_id is not a valid" });
+  if (!job_id) return res.status(400).json({ message: "job_id is invalid" });
 
   const jobId = await Job.findById(req.params.id);
   if (!jobId) return res.status(404).json({ message: "The job is not found." });
