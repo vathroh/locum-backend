@@ -39,6 +39,8 @@ router.get("/:conversationId", async (req, res) => {
       msg.sender = message.sender ?? "";
       msg.card = message.card ?? {};
       msg.text = message.text ?? "";
+      msg.is_deleted = message.is_deleted ?? false;
+      msg.is_read = message.is_read ?? false;
       msg.createdAt = message.createdAt ?? "";
       msg.updatedAt = message.updatedAt ?? "";
 

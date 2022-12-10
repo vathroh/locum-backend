@@ -26,7 +26,7 @@ const createBooking = async (req, res) => {
   const hasAppointment = await Job.findOne({
     assigned_to: { $in: [req.user._id] },
     work_time_start: {
-      $gt: jobId.work_time_start,
+      $gte: jobId.work_time_start,
       $lt: jobId.work_time_finish,
     },
   });
@@ -127,18 +127,33 @@ const deleteBooking = async (req, res) => {
 };
 
 const AssignTo = async (req, res) => {
-  // if(req.user.status !== "verified")
+  const user_id = ObjectId.isValid(req.body.user_id);
+  if (!user_id)
+    return res.status(400).json({ message: "user_id is not a valid" });
+
+  const job_id = ObjectId.isValid(req.params.id);
+  if (!job_id)
+    return res.status(400).json({ message: "job_id is not a valid" });
 
   const jobId = await Job.findById(req.params.id);
   if (!jobId) return res.status(404).json({ message: "The job is not found." });
 
+  const user = await User.findById(req.body.user_id);
+  if (!user) return res.status(404).json({ message: "User is not found" });
+
   const hasAppointment = await Job.findOne({
-    assigned_to: { $in: [req.user._id] },
+    assigned_to: { $in: [req.body.user_id] },
     work_time_start: {
-      $gt: jobId.work_time_start,
+      $gte: jobId.work_time_start,
       $lt: jobId.work_time_finish,
     },
   });
+
+  if (hasAppointment)
+    return res.status(400).json({
+      message:
+        "The person you aprroved already has an appointment. Please choose another one.",
+    });
 
   let assignmentAmount = jobId.assigned_to?.length;
 

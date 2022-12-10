@@ -44,6 +44,14 @@ const MessageSchema = new mongoose.Schema(
     text: {
       type: String,
     },
+    is_read: {
+      type: Boolean,
+      default: false,
+    },
+    is_deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
