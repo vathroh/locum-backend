@@ -18,6 +18,12 @@ const {
 } = require("../services/sendingChat/index.js");
 
 const createBooking = async (req, res) => {
+  const user_id = ObjectId.isValid(req.body.user_id);
+  if (!user_id) return res.status(400).json({ message: "user_id is invalid" });
+
+  const job_id = ObjectId.isValid(req.params.id);
+  if (!job_id) return res.status(400).json({ message: "job_id is invalid" });
+
   const jobId = await Job.findById(req.params.id).populate({
     path: "clinic",
     select: "clinicName Address",
@@ -270,6 +276,7 @@ const upcomingBookingsByUserId = async (req, res) => {
       .sort({ date: 1 })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -321,6 +328,7 @@ const upcomingUnassignmentByUserId = async (req, res) => {
       .sort({ date: 1 })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -373,6 +381,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
       .sort({ date: 1 })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -395,6 +404,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
       })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -445,6 +455,7 @@ const completedJobsByUser = async (req, res) => {
     })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -493,6 +504,7 @@ const canceledJobsByUser = async (req, res) => {
     })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -553,6 +565,7 @@ const upcomingBookingByClinic = async (req, res) => {
     })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,

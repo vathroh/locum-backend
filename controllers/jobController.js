@@ -136,6 +136,7 @@ const getExploreJobs = async (req, res) => {
       .sort({ date: 1 })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -203,6 +204,7 @@ const getUpcomingDoctorJobs = async (req, res) => {
       })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -267,6 +269,7 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
       })
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -351,6 +354,7 @@ const getJobById = async (req, res) => {
     let job = await Job.findById(req.params.id)
       .select({
         _id: 1,
+        code: 1,
         clinic: 1,
         price: 1,
         job_scope: 1,
@@ -1133,6 +1137,7 @@ const formatData = (data) => {
   return data.map((e) => {
     return {
       _id: e._id,
+      code: e.code ?? "",
       clinic: e.clinic ?? "",
       date: e.date ?? "",
       work_time_start: e.work_time_start ?? 0,
