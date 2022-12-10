@@ -9,6 +9,7 @@ const path = require("path");
 const ObjectId = require("mongoose/lib/types/objectid.js");
 const Preferences = require("../models/Preference");
 const { listenerCount } = require("process");
+const Preference = require("../models/Preference");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -39,6 +40,7 @@ const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select({
       full_name: 1,
+      role_id: 1,
       profile_pict: 1,
       phone_number: 1,
       email: 1,
@@ -62,8 +64,18 @@ const getUserById = async (req, res) => {
       user_id: user._id,
     });
 
+    const preferences = [];
+    const getPreferences = user.preferences.map(async (preference) => {
+      await Preference.findById(preference).then((data) => {
+        preferences.push(data.item);
+      });
+    });
+
+    await Promise.all(getPreferences);
+
     const data = {
       _id: user._id,
+      role_id: user.role.id,
       full_name: user.full_name ?? "",
       profile_pict:
         user.profile_pict == "" ? "" : process.env.BASE_URL + user.profile_pict,
@@ -72,7 +84,7 @@ const getUserById = async (req, res) => {
       role: user.role ?? "",
       about_me: user.about_me ?? "",
       certification: user.certification ?? [],
-      preferences: user.preferences ?? [],
+      preferences: preferences ?? [],
       resume: user.resume ?? "",
       achievement: user.achievement ?? [],
     };
