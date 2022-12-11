@@ -19,7 +19,7 @@ const seedJobs = async () => {
         clinic: ObjectId(e._id),
       }).count();
 
-      console.log(count);
+      console.log(`${e._id} - ${count}`);
 
       const number = parseInt(count) + 1;
       const string = e.initials + "-000000";
