@@ -16,8 +16,10 @@ const seedJobs = async () => {
       const date = DateTime.now().plus({ days: 6 }).toISODate();
 
       const count = await Job.find({
-        clinic: ObjectId(e.clinic),
+        clinic: ObjectId(e._id),
       }).count();
+
+      console.log(count);
 
       const number = parseInt(count) + 1;
       const string = e.initials + "-000000";
@@ -71,18 +73,18 @@ const seedJobs = async () => {
 
     await Promise.all(array);
 
-    data.map(async (el) => {
-      const job = new Job(el);
-      const savedJob = await job.save();
-    });
+    // data.map(async (el) => {
+    //   const job = new Job(el);
+    //   const savedJob = await job.save();
+    // });
 
-    const now = DateTime.now().toISO();
-    sendingEmail(
-      "romfatur@gmail.com",
-      "Seed Job collection",
-      `Halo, The job has been seed at ${now}`,
-      null
-    );
+    // const now = DateTime.now().toISO();
+    // sendingEmail(
+    //   "romfatur@gmail.com",
+    //   "Seed Job collection",
+    //   `Halo, The job has been seed at ${now}`,
+    //   null
+    // );
 
     logger.jobSeederLogger.log(
       "info",

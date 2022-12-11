@@ -1183,6 +1183,18 @@ const formatData = (data) => {
       date: e.date ?? "",
       work_time_start: e.work_time_start ?? 0,
       work_time_finish: e.work_time_finish ?? 0,
+      break: {
+        start: e.break.start
+          ? DateTime.fromMillis(e.break.start)
+              .setZone("Asia/Singapore")
+              .toLocaleString(DateTime.TIME_SIMPLE)
+          : "",
+        finish: e.break.finish
+          ? DateTime.fromMillis(e.break.finish)
+              .setZone("Asia/Singapore")
+              .toLocaleString(DateTime.TIME_SIMPLE)
+          : "",
+      },
       scope: e.scope ?? [],
       job_description: e.job_description ?? "",
       booked_by: e.booked_by ?? [],
