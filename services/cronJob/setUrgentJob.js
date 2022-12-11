@@ -23,39 +23,35 @@ const setUrgentJob = async () => {
     }).populate({ path: "clinic", select: "clinicName" });
 
     jobs24.map(async (item) => {
-      if (item.isUrgent == false) {
-        await Job.updateOne(
-          { _id: item._id },
-          {
-            $set: { urgent_status: "24" },
-          }
-        );
-        setUrgentLogger.info(
-          JSON.stringify({
-            _id: item._id,
-            clinic_id: item.clinic._id,
-            clinicName: item.clinic.clinicName,
-          })
-        );
-      }
+      await Job.updateOne(
+        { _id: item._id },
+        {
+          $set: { urgent_status: "24" },
+        }
+      );
+      setUrgentLogger.info(
+        JSON.stringify({
+          _id: item._id,
+          clinic_id: item.clinic._id,
+          clinicName: item.clinic.clinicName,
+        })
+      );
     });
 
     jobs72.map(async (item) => {
-      if (item.isUrgent == false) {
-        await Job.updateOne(
-          { _id: item._id },
-          {
-            $set: { urgent_status: "72" },
-          }
-        );
-        setUrgentLogger.info(
-          JSON.stringify({
-            _id: item._id,
-            clinic_id: item.clinic._id,
-            clinicName: item.clinic.clinicName,
-          })
-        );
-      }
+      await Job.updateOne(
+        { _id: item._id },
+        {
+          $set: { urgent_status: "72" },
+        }
+      );
+      setUrgentLogger.info(
+        JSON.stringify({
+          _id: item._id,
+          clinic_id: item.clinic._id,
+          clinicName: item.clinic.clinicName,
+        })
+      );
     });
 
     setUrgentLogger.info(
