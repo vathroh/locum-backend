@@ -458,9 +458,37 @@ const me = async (req, res) => {
   }
 };
 
+const findUser = async (req, res) => {
+  try {
+    const filters = {};
+
+    if (req.query.mcr) {
+      filters.mcr = req.query.mcr;
+    }
+
+    if (req.query.role_id) {
+      filters.role_id = req.query.role_id;
+    }
+
+    const user = await User.findOne({ ...filters }).select({
+      full_name: 1,
+      email: 1,
+      phone_number: 1,
+      role: 1,
+      role_id: 1,
+      status: 1,
+      profile_picture: 1,
+    });
+    return res.json(user);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   me,
   upload,
+  findUser,
   getUsers,
   saveUser,
   updateUser,

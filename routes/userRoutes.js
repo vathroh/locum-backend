@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   me,
   upload,
+  findUser,
   getUsers,
   saveUser,
   getUserById,
@@ -74,6 +75,7 @@ router.post("/update-model", updateUserModel);
 router.post("/set-exclusion", setBlacklist);
 router.post("/set-inclusion", setWhitelist);
 router.get("/me", me);
+router.get("/find", findUser);
 router.delete("/:id", deleteUser);
 router.patch("/:id", updateUser);
 router.get("/:id", getUserById);
