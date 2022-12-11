@@ -52,6 +52,16 @@ const createBooking = async (req, res) => {
 
     updatedData.booked_by.push(req.user._id);
 
+    if (jobId.listing_type === "automated_listing") {
+      const locum = await User.findById(req.user._id);
+      results = [];
+      jobId.preferences.map((item) => {
+        if (locum.preferences.includes(item)) results.push(true);
+      });
+
+      if (results.includes(false)) updatedData.assigned_to.push(req.user._id);
+    }
+
     try {
       let receiver = [];
       const isAdminExist = await Clinic.findById(jobId.clinic);
