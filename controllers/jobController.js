@@ -980,7 +980,48 @@ const searchJob = async (req, res) => {
           data.push(e);
         }
       });
-
+      jobs.filter((e) => {
+        let clinic = e.clinic.clinicAddress.toLowerCase();
+        if (clinic.search(req.query.keyword.toLowerCase()) > -1) {
+          data.push(e);
+        }
+      });
+      jobs.filter((e) => {
+        let clinic = e.clinic.description.toLowerCase();
+        if (clinic.search(req.query.keyword.toLowerCase()) > -1) {
+          data.push(e);
+        }
+      });
+      jobs.filter((e) => {
+        let clinic = e.clinic.code?.toLowerCase();
+        if (clinic?.search(req.query.keyword.toLowerCase()) > -1) {
+          data.push(e);
+        }
+      });
+      jobs.filter((e) => {
+        let clinic = e.clinic.initials?.toLowerCase();
+        if (clinic?.search(req.query.keyword.toLowerCase()) > -1) {
+          data.push(e);
+        }
+      });
+      jobs.filter((e) => {
+        let clinic = e.clinic?.type?.join(" ").toLowerCase();
+        if (clinic?.search(req.query.keyword.toLowerCase()) > -1) {
+          data.push(e);
+        }
+      });
+      jobs.filter((e) => {
+        let clinic = e.scope?.join(" ").toLowerCase();
+        if (clinic?.search(req.query.keyword.toLowerCase()) > -1) {
+          data.push(e);
+        }
+      });
+      jobs.filter((e) => {
+        let clinic = e.job_description?.join(" ").toLowerCase();
+        if (clinic?.search(req.query.keyword.toLowerCase()) > -1) {
+          data.push(e);
+        }
+      });
       const unique = [...new Set(data.map((item) => item))];
 
       unique.map((e, index) => {
@@ -1038,7 +1079,7 @@ const youMightLike = async (req, res) => {
       })
         .populate({
           path: "clinic",
-          select: "clinicName Address whitelist",
+          select: "clinicName clinicAddress whitelist",
         })
         .lean();
       jobs = newjobs;
@@ -1053,7 +1094,7 @@ const youMightLike = async (req, res) => {
       })
         .populate({
           path: "clinic",
-          select: "clinicName Address whitelist",
+          select: "clinicName clinicAddress whitelist",
         })
         .lean();
 
