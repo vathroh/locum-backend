@@ -3,6 +3,7 @@ const ClinicGroup = require("../models/ClinicGroup.js");
 const { genClinicInitials } = require("../utils/genClinicInitial/index.js");
 const { gen4RandomNumber } = require("../utils/genRandom/gen4RandomNumber.js");
 const multer = require("multer");
+const User = require("../models/User.js");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -122,8 +123,53 @@ genClinicCode = async (string) => {
   }
 };
 
+const getAdmin = async (req, res) => {
+  try {
+    const users = [];
+    const clinic = await Clinic.findById(req.query.clinicId);
+    const company = await ClinicGroup.findById(clinic.group);
+
+    // return res.json(clinic);
+
+    const clinicAdmin = clinic.user_id?.map(async (userId) => {
+      const user = await User.findById(userId).select({
+        full_name: 1,
+        email: 1,
+        phone_number: 1,
+        role: 1,
+        role_id: 1,
+        status: 1,
+        profile_picture: 1,
+      });
+      if (user !== null) users.push(user);
+    });
+
+    await Promise.all(clinicAdmin);
+
+    const companyAdmin = company.user_id?.map(async (userId) => {
+      const user = await User.findById(userId).select({
+        full_name: 1,
+        email: 1,
+        phone_number: 1,
+        role: 1,
+        role_id: 1,
+        status: 1,
+        profile_picture: 1,
+      });
+      if (user !== null) users.push(user);
+    });
+
+    await Promise.all(companyAdmin);
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   upload,
+  getAdmin,
   getClinics,
   getClinicById,
   saveClinic,
