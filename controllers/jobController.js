@@ -704,6 +704,7 @@ const bookedBy = async (req, res) => {
           full_name: 1,
           profile_pict: 1,
           role: 1,
+          role_id: 1,
         })
         .lean();
 
