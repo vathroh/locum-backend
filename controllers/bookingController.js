@@ -77,9 +77,17 @@ const createBooking = async (req, res) => {
           const sendingChats = uniqueReceiver.map(async (userId) => {
             const conversation = await createConversation(req.user._id, userId);
 
+            if (jobId.listing_type === "automated_listing") {
+              const type = "badge";
+              const text = `has been approved the booking.`;
+            } else if (jobId.listing_type === "manual_listing") {
+              const type = "locumCard";
+              const text = "Hi! I have booked this slot.";
+            }
+
             const chatMessage = {
-              type: "locumCard",
-              text: "Hi! I have booked this slot.",
+              type: type,
+              text: text,
               conversation_id: conversation._id,
               sender: req.user._id,
               card: {
@@ -96,6 +104,8 @@ const createBooking = async (req, res) => {
                   .toLocaleString(DateTime.TIME_SIMPLE),
               },
             };
+
+            console.log(chatMessage);
 
             await sendMessage(chatMessage);
           });

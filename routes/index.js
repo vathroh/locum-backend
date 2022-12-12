@@ -28,6 +28,7 @@ module.exports = function (app) {
   app.use("/settings", authJwtMiddleware, require("./settingRoutes"));
   app.use("/booking", authJwtMiddleware, require("./bookingRoutes"));
   app.use("/comment", authJwtMiddleware, require("./commentRoutes"));
+  app.use("/device", authJwtMiddleware, require("./deviceRoutes"));
   app.use("/resume", authJwtMiddleware, require("./resumeRoutes"));
   app.use("/google-calendar", require("./googleCalendarRoutes"));
   app.use("/jobs", authJwtMiddleware, require("./jobRoutes.js"));

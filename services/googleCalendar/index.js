@@ -76,8 +76,8 @@ const listEvents = () => {
       calendarId: "primary",
       singleEvents: true,
       orderBy: "startTime",
-      timeMin: "2022-10-20T12:53:56.000Z",
-      timeMax: "2022-10-26T12:53:56.000Z",
+      timeMin: "2022-11-20T12:53:56.000Z",
+      timeMax: "2022-12-26T12:53:56.000Z",
     },
     (err, data) => {
       // console.log(data.data.items);
@@ -162,4 +162,4 @@ const freeBusy = () => {
   );
 };
 
-module.exports = { getEvent, createEvent };
+module.exports = { getEvent, createEvent, listEvents };
