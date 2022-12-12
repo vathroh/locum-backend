@@ -20,6 +20,12 @@ const getDeviceById = async (req, res) => {
 
 const saveDevice = async (req, res) => {
   try {
+    const isExists = await Device.findOne({
+      user_id: req.body.user_id,
+      device_id: req.body.device_id,
+    });
+    if (isExists) return res.json({ message: "Device already exists" });
+
     const device = new Device(req.body);
     const savedDevice = await device.save();
     res.status(200).json(savedDevice);
