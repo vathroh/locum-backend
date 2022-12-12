@@ -14,6 +14,9 @@ const CalendarSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    google_calendar_id: {
+      type: String,
+    },
     event: {
       type: String,
       required: true,

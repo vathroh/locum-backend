@@ -120,16 +120,22 @@ const updateEvent = () => {
   // getEvent();
 };
 
-const deleteEvent = () => {
-  calendar.events.delete(
+const deleteEvent = async (id) => {
+  let cb = {};
+  const cal = await calendar.events.delete(
     {
       calendarId: "primary",
-      eventId: "nh6neq6fnctcbvjasu3m2bfmdg",
+      eventId: id,
     },
     (err, data) => {
-      //   console.log(data);
+      if (err) {
+        error = err;
+      }
+      cb = data;
     }
   );
+
+  return cb;
 };
 
 const freeBusy = () => {
@@ -162,4 +168,4 @@ const freeBusy = () => {
   );
 };
 
-module.exports = { getEvent, createEvent, listEvents };
+module.exports = { getEvent, createEvent, listEvents, deleteEvent };

@@ -1,8 +1,13 @@
 const router = require("express").Router();
-const { getEvent, createEvent } = require("../services/googleCalendar/index");
 const { google } = require("googleapis");
 const { DateTime } = require("luxon");
 const { OAuth2 } = google.auth;
+
+const {
+  getEvent,
+  createEvent,
+  deleteEvent,
+} = require("../services/googleCalendar/index");
 
 const oAuth2Client = new OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -63,6 +68,10 @@ router.get("/:eventId", (req, res) => {
 router.post("/create-event", (req, res) => {
   const wer = createEvent();
   res.json(wer);
+});
+
+router.delete("/", (req, res) => {
+  deleteEvent(req.body.google_calendar_id);
 });
 
 module.exports = router;

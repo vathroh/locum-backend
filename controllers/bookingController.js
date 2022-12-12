@@ -4,7 +4,6 @@ const { DateTime, Duration } = require("luxon");
 const { saveEvent } = require("./calendarController.js");
 const Clinic = require("../models/Clinic.js");
 const { statusJob, formatData } = require("./jobController");
-const { createEvent } = require("../services/googleCalendar/index");
 const User = require("../models/User.js");
 const { restart } = require("nodemon");
 const ObjectId = require("mongoose/lib/types/objectid.js");
@@ -13,9 +12,15 @@ const { jobLogger } = require("../services/logger/jobLogger");
 const ClinicGroup = require("../models/ClinicGroup");
 
 const {
+  createEvent,
+  deleteEvent,
+} = require("../services/googleCalendar/index");
+
+const {
   createConversation,
   sendMessage,
 } = require("../services/sendingChat/index.js");
+const Calendar = require("../models/Calendar.js");
 
 const createBooking = async (req, res) => {
   const user_id = ObjectId.isValid(req.body.user_id);
@@ -139,6 +144,13 @@ const deleteBooking = async (req, res) => {
     updatedData.booked_by.pop(req.user._id);
 
     try {
+      const calendar = Calendar.findOne({ job_id: req.params.id });
+
+      if (calendar.google_calendar_id)
+        await deleteEvent(calendar.google_calendar_id);
+
+      await Calendar.deleteOne({ job_id: req.params.id });
+
       const bookedJob = await Job.updateOne(
         { _id: req.params.id },
         { $set: updatedData }
