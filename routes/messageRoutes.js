@@ -27,8 +27,7 @@ router.get("/:conversationId", async (req, res) => {
       minus = 0;
     }
 
-    const offset = limit * (page - 1) - minus;
-    console.log(req.query.page);
+    const offset = limit * (page - 1) + minus;
 
     return res.json({
       page: page,
