@@ -29,14 +29,6 @@ router.get("/:conversationId", async (req, res) => {
 
     const offset = limit * (page - 1) - minus;
 
-    return res.json({
-      page: page,
-      offset: offset,
-      limit: limit,
-      totalPage: totalPage,
-      totalRows: totalRows,
-    });
-
     const messages = await Message.find({
       conversation_id: req.params.conversationId,
     })
@@ -86,8 +78,15 @@ router.get("/mobile/:conversationId", async (req, res) => {
 
     const limit = parseInt(req.query.limit) || 100;
     const totalPage = Math.ceil(totalRows / limit);
-    const page = parseInt(req.query.page) - 1 || totalPage - 1;
-    const offset = limit * page;
+    const page = parseInt(req.query.page) || totalPage;
+
+    let minus = limit - (totalRows % limit);
+
+    if (totalRows < limit || page == 1) {
+      minus = 0;
+    }
+
+    const offset = limit * (page - 1) - minus;
 
     const messages = await Message.find({
       conversation_id: req.params.conversationId,
