@@ -141,16 +141,24 @@ const deleteBooking = async (req, res) => {
   if (hasUserBooked) {
     let updatedData = jobId;
 
-    updatedData.booked_by.pop(req.user._id);
+    const book = updatedData.booked_by.filter((user) => {
+      user !== req.body.user_id;
+    });
+
+    const assigned = updatedData.assigned_to.filter((user) => {
+      user !== req.body.user_id;
+    });
+
+    updatedData.booked_by = book;
+    updatedData.assigned_to = assigned;
+
+    const calendar = await Calendar.findOne({
+      job_id: jobId._id,
+    });
+
+    if (calendar) await Calendar.deleteOne({ _id: calendar._id });
 
     try {
-      const calendar = Calendar.findOne({ job_id: req.params.id });
-
-      if (calendar.google_calendar_id)
-        await deleteEvent(calendar.google_calendar_id);
-
-      await Calendar.deleteOne({ job_id: req.params.id });
-
       const bookedJob = await Job.updateOne(
         { _id: req.params.id },
         { $set: updatedData }
