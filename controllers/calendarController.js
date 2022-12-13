@@ -84,22 +84,23 @@ const getEventByUserId = async (req, res) => {
 const getEventsByUserByMonth = async (req, res) => {
   try {
     const now = DateTime.now().setZone("Asia/Singapore");
-    let month = 0;
-    let year = 0;
+    let month = 1;
+    let year = 1;
 
     if (req.query.month) {
-      month = req.query.month;
+      month = parseInt(req.query.month);
     } else {
       month = now.month;
     }
 
     if (req.query.year) {
-      year = req.query.month;
+      year = parseInt(req.query.year);
     } else {
       year = now.year;
     }
 
     const date = DateTime.utc(year, month, 15).setZone("Asia/Singapore");
+
     const start = date.startOf("month").toMillis();
     const end = date.endOf("month").toMillis();
 
