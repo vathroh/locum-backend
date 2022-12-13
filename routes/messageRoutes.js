@@ -21,13 +21,13 @@ router.get("/:conversationId", async (req, res) => {
     const totalPage = Math.ceil(totalRows / limit);
     const page = parseInt(req.query.page) || totalPage;
 
-    let minus = totalRows % limit;
+    let minus = limit - (totalRows % limit);
 
-    if (totalRows < limit) {
+    if (totalRows < limit || page == 1) {
       minus = 0;
     }
 
-    const offset = limit * (page - 1) + minus;
+    const offset = limit * (page - 1) - minus;
 
     return res.json({
       page: page,
