@@ -21,8 +21,7 @@ const getCertificateitemById = async (req, res) => {
 const saveCertificateitem = async (req, res) => {
   try {
     const isExists = await Certificateitem.findOne({
-      user_id: req.body.user_id,
-      certificateItem_id: req.body.certificateItem_id,
+      item: req.body.item,
     });
     if (isExists) return res.json(isExists);
 

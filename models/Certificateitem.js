@@ -2,12 +2,7 @@ const mongoose = require("mongoose");
 const exists = require("mongoose-exists");
 
 const CertificateitemSchema = mongoose.Schema({
-  user_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    refer: "User",
-    exists: true,
-  },
-  device_id: {
+  item: {
     type: String,
     required: true,
   },
