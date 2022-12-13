@@ -13,6 +13,7 @@ const Attendance = require("../models/AttendanceRecord");
 const Clinic = require("../models/Clinic");
 const { info } = require("winston");
 const ObjectId = require("mongoose/lib/types/objectid.js");
+const Preference = require("../models/Preference.js");
 
 const getAllJobs = async (req, res) => {
   try {
@@ -377,7 +378,7 @@ const getJobById = async (req, res) => {
         path: "clinic",
         select: "clinicName Address description type",
       })
-      .exec((err, data) => {
+      .exec(async (err, data) => {
         statusJob(data, req);
         data.image = process.env.BASE_URL + data.image;
         data.work_time_start = DateTime.fromMillis(data.work_time_start)
@@ -392,6 +393,14 @@ const getJobById = async (req, res) => {
         data.date = DateTime.fromMillis(data.date)
           .setZone("Asia/Singapore")
           .toFormat("dd LLLL yyyy");
+
+        const preferences = [];
+        const getPreferences = data.preferences.map(async (preference) => {
+          const item = await Preference.findById(preference);
+          preferences.push(item.item);
+        });
+        await Promise.all(getPreferences);
+        data.preferences = preferences;
 
         if (data.favorites) {
           if (data.favorites.includes(req.user._id)) {
