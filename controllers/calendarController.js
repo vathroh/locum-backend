@@ -105,6 +105,10 @@ const getEventsByUserByMonth = async (req, res) => {
 
     const calendar = await Calendar.find({
       start: { $gte: start, $lte: end },
+      $or: [
+        { user_id: req.query.user_id },
+        { attendees: { $in: [req.query.user_id] } },
+      ],
     })
       .select({
         start: 1,
