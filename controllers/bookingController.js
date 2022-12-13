@@ -10,7 +10,6 @@ const ObjectId = require("mongoose/lib/types/objectid.js");
 const { sendingEmail } = require("../services/sendingEmail");
 const { jobLogger } = require("../services/logger/jobLogger");
 const ClinicGroup = require("../models/ClinicGroup");
-const { deleteEvent } = require("../services/googleCalendar");
 
 const {
   createEvent,
