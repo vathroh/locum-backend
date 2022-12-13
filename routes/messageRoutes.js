@@ -59,7 +59,7 @@ router.get("/:conversationId", async (req, res) => {
     });
 
     res.json({
-      page: page + 1,
+      page: page,
       limit: limit,
       totalRows: totalRows,
       totalPage: totalPage,
@@ -99,7 +99,7 @@ router.get("/mobile/:conversationId", async (req, res) => {
 
     messages.map((message) => {
       const msg = {};
-      msg.page = page + 1;
+      msg.page = page;
       msg.service = "chat";
       msg.to = "";
       msg._id = message._id ?? "";
