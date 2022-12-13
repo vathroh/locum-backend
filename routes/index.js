@@ -19,6 +19,12 @@ module.exports = function (app) {
     require("./attendanceRecordRoutes")
   );
 
+  app.use(
+    "/certificate-item",
+    authJwtMiddleware,
+    require("./certificateItemRoutes")
+  );
+
   app.use("/achievement", authJwtMiddleware, require("./achievementRoutes"));
   app.use("/certificates", authJwtMiddleware, require("./certificateRoutes"));
   app.use("/clinic-group", authJwtMiddleware, require("./clinicGroupRoutes"));
