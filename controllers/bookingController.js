@@ -10,6 +10,7 @@ const ObjectId = require("mongoose/lib/types/objectid.js");
 const { sendingEmail } = require("../services/sendingEmail");
 const { jobLogger } = require("../services/logger/jobLogger");
 const ClinicGroup = require("../models/ClinicGroup");
+const { deleteEvent } = require("../services/googleCalendar");
 
 const {
   createEvent,
@@ -157,6 +158,9 @@ const deleteBooking = async (req, res) => {
     });
 
     if (calendar) await Calendar.deleteOne({ _id: calendar._id });
+
+    if (calendar?.google_calendar_id)
+      await deleteEvent(calendar.google_calendar_id);
 
     try {
       const bookedJob = await Job.updateOne(

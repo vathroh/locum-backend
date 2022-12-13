@@ -129,7 +129,7 @@ const deleteEvent = async (id) => {
     },
     (err, data) => {
       if (err) {
-        error = err;
+        cb = err;
       }
       cb = data;
     }
