@@ -224,7 +224,7 @@ const AssignTo = async (req, res) => {
         data.event = "Appointment at " + clinic.clinicName;
 
         const summary = data.event;
-        const location = clinic.Address;
+        const location = clinic.clinicAddress;
         const description = "You have appointmen at " + clinic.clinicName;
         const eventStartTime = DateTime.fromMillis(
           jobId.work_time_start
@@ -233,10 +233,27 @@ const AssignTo = async (req, res) => {
           jobId.work_time_finish
         ).toISO();
 
+        const subject = `Your slot has been confirmed for ${DateTime.fromMillis(
+          jobId.work_time_start
+        )
+          .setZone("Asia/Singapore")
+          .toFormat("dd LLLL yyyy")}`;
+
+        const emailBody = `Your slot has been confirmed!
+        Clinic: ${clinic.clinicName}
+        Address:${clinic.clinicAddress}
+        Date: ${DateTime.fromMillis(jobId.work_time_start)
+          .setZone("Asia/Singapore")
+          .toFormat("dd LLLL yyyy")}
+        Time: ${DateTime.fromMillis(jobId.work_time_start)
+          .setZone("Asia/Singapore")
+          .toLocaleString(DateTime.TIME_SIMPLE)}
+        Thank you!`;
+
         const emails = [];
         const userEmail = jobId.assigned_to.map(async (e) => {
           const user = await User.findById(e);
-          sendingEmail(user.email, summary, description, null);
+          sendingEmail(user.email, subject, emailBody, null);
           emails.push(user.email);
         });
         await Promise.all(userEmail);
