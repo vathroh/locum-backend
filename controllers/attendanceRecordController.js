@@ -5,6 +5,8 @@ const Job = require("../models/Job.js");
 const { DateTime } = require("luxon");
 const mongoose = require("mongoose");
 const { jobs_v2 } = require("googleapis");
+const { Settings } = require("luxon");
+Settings.defaultZoneName = "Asia/Singapore";
 
 const getData = async (req, res) => {
   const attendance = await Record.findOne({
@@ -193,9 +195,42 @@ const afterCheckout = async (req, res) => {
   }
 };
 
+const getAppointmentUserByDay = async (req, res) => {
+  try {
+    const year = parseInt(req.query.year);
+    const month = parseInt(req.query.month);
+    const day = parseInt(req.query.date);
+
+    const date = DateTime.local(year, month, day, {
+      zone: "Asia/Singapore",
+    });
+
+    const startOfDay = date.startOf("day").toMillis();
+    const endOfDay = date.endOf("day").toMillis();
+
+    const job = await Job.find({
+      clinic: req.query.clinicId,
+      $or: [
+        { work_time_start: { $gte: startOfDay, $lt: endOfDay } },
+        { work_time_finish: { $gte: startOfDay, $lt: endOfDay } },
+      ],
+    }).select({ assigned_to: 1 });
+
+    const getUsers = job.map((item) => {
+      console.log(item.assigned_to);
+    });
+
+    // const user = job.assigned_to;
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   checkin,
   checkout,
   afterCheckout,
   getNewAttendance,
+  getAppointmentUserByDay,
 };

@@ -260,15 +260,18 @@ const AssignTo = async (req, res) => {
           { $set: updatedData }
         );
 
-        await saveEvent(data);
-        createEvent(
+        const googleCalendar = await createEvent(
           summary,
           location,
           description,
           eventStartTime,
           eventEndTime,
-          emails
+          emails,
+          data
         );
+
+        // await saveEvent(data);
+
         res.json(assignment);
       } catch (error) {
         res.status(400).json({ message: error.message });

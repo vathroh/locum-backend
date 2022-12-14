@@ -2,6 +2,7 @@ const { google } = require("googleapis");
 const { DateTime } = require("luxon");
 const { OAuth2 } = google.auth;
 const { googleCalendarLogger } = require("../logger/googleCalendarLogging");
+const { saveEvent } = require("../../controllers/calendarController");
 
 const oAuth2Client = new OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -14,13 +15,14 @@ oAuth2Client.setCredentials({
 
 const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-const createEvent = (
+const createEvent = async (
   summary,
   location,
   description,
   eventStartTime,
   eventEndTime,
-  emails
+  emails,
+  calData
 ) => {
   const attendees = [];
   emails.map((e) => {
@@ -56,15 +58,20 @@ const createEvent = (
           };
         }
 
-        console.log("google calendar event created");
+        calData.google_calendar_id = data.data.id;
+
+        saveEvent(calData);
+        console.log(data.data);
+
+        // console.log(data);
 
         googleCalendarLogger.info(
           `success creating event: ${JSON.stringify(event)}`
         );
-
-        return { message: "Calendar event successfully created." };
       }
     );
+    resolve(data);
+    console.log(data);
   } catch (error) {
     return error;
   }
