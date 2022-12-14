@@ -705,8 +705,13 @@ const bookedBy = async (req, res) => {
     const job = await Job.findById(req.query.jobId);
 
     const users = [];
+    const booked_by = job.booked_by;
 
-    const promisedUser = job.booked_by.map(async (item) => {
+    job.rejected.map((item) => {
+      booked_by.push(item);
+    });
+
+    const promisedUser = booked_by.map(async (item) => {
       const user = await User.findById(item)
         .select({
           _id: 1,
