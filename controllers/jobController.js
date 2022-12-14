@@ -746,7 +746,9 @@ const bookedBy = async (req, res) => {
         }
       });
 
-      if (isHasAppointment) {
+      if (job.rejected.includes(item)) {
+        user.booked_status = "rejected";
+      } else if (isHasAppointment) {
         user.booked_status = "hasAppointment";
       } else if (prefs.includes(false) && !isHasAppointment) {
         user.booked_status = "notMeetPreferences";
@@ -755,6 +757,9 @@ const bookedBy = async (req, res) => {
       } else {
         user.booked_status = "";
       }
+
+      console.log(user);
+      console.log(job.rejected);
 
       user.profile_pict =
         user.profile_pict !== ""
