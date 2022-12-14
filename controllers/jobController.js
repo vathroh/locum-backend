@@ -701,6 +701,7 @@ const filledSlotsByClinicId = async (req, res) => {
 
 const bookedBy = async (req, res) => {
   try {
+    const now = DateTime.now().toMillis();
     const job = await Job.findById(req.query.jobId);
 
     const users = [];
@@ -714,8 +715,46 @@ const bookedBy = async (req, res) => {
           profile_pict: 1,
           role: 1,
           role_id: 1,
+          preferences: 1,
         })
         .lean();
+
+      const isHasAppointment = await Job.findOne({
+        assigned_to: { $in: [item] },
+        $or: [
+          {
+            work_time_start: {
+              $gte: job.work_time_start,
+              $lt: job.work_time_finish,
+            },
+          },
+          {
+            work_time_finish: {
+              $gte: job.work_time_start,
+              $lt: job.work_time_finish,
+            },
+          },
+        ],
+      });
+
+      const prefs = [];
+      job.preferences.map((item) => {
+        if (user.preferences.includes(item)) {
+          prefs.push(true);
+        } else {
+          prefs.push(false);
+        }
+      });
+
+      if (isHasAppointment) {
+        user.booked_status = "hasAppointment";
+      } else if (prefs.includes(false) && !isHasAppointment) {
+        user.booked_status = "notMeetPreferences";
+      } else if (!prefs.includes(false) && !isHasAppointment) {
+        user.booked_status = "meetPreferences";
+      } else {
+        user.booked_status = "";
+      }
 
       user.profile_pict =
         user.profile_pict !== ""
