@@ -307,6 +307,32 @@ const rejectBooking = async (req, res) => {
   }
 };
 
+const removeRejected = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId).lean();
+
+    booked_by = job.booked_by;
+    booked_by.push(req.body.user_id);
+
+    const newRejected = job.rejected.filter((item) => {
+      return item !== req.body.user_id;
+    });
+
+    await Job.updateOne(
+      { _id: req.params.jobId },
+      { $set: { booked_by: booked_by, rejected: newRejected } }
+    )
+      .then((data) => {
+        res.json(data);
+      })
+      .catch((error) => {
+        res.status(500).json({ message: error.message });
+      });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const upcomingBookingsByUserId = async (req, res) => {
   const today = moment().startOf("day");
   try {
@@ -759,6 +785,7 @@ module.exports = {
   sendInterviewRequest,
   completedJobsByUser,
   canceledJobsByUser,
+  removeRejected,
   rejectBooking,
   AssignTo,
 };

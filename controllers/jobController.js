@@ -758,9 +758,6 @@ const bookedBy = async (req, res) => {
         user.booked_status = "";
       }
 
-      console.log(user);
-      console.log(job.rejected);
-
       user.profile_pict =
         user.profile_pict !== ""
           ? process.env.BASE_URL + user.profile_pict
