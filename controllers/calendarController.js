@@ -131,6 +131,15 @@ const getEventsByUserByMonth = async (req, res) => {
       const events = [];
       calendar.map(async (cal) => {
         if (cal.start >= i && cal.start <= i + 86400000) {
+          if (
+            cal.start > now.startOf("day").toMillis() &&
+            cal.start < now.endOf("day")
+          ) {
+            cal.currentDate = true;
+          } else {
+            cal.currentDate = false;
+          }
+
           cal.start =
             DateTime.fromMillis(cal.start)
               .setZone("Asia/Singapore")
@@ -142,6 +151,7 @@ const getEventsByUserByMonth = async (req, res) => {
           cal.type = cal.type ?? "";
           cal.link = cal.link ?? "";
           cal.attendees = cal.attendees ?? [];
+
           events.push(cal);
         }
       });
