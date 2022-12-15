@@ -20,7 +20,7 @@ const getAllJobs = async (req, res) => {
     await Job.find()
       .sort({ date: 1 })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
@@ -58,7 +58,7 @@ const getNewJobs = async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
@@ -96,7 +96,7 @@ const getUpcomingJobs = async (req, res) => {
     await Job.find({ work_time_start: { $gte: DateTime.now().toMillis() } })
       .sort({ date: 1 })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
@@ -156,7 +156,7 @@ const getExploreJobs = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .then((data) => {
         data.map((e, index) => {
@@ -201,7 +201,7 @@ const getUpcomingDoctorJobs = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .select({
         _id: 1,
@@ -266,7 +266,7 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .select({
         _id: 1,
@@ -324,7 +324,7 @@ const getPastJobs = async (req, res) => {
     const jobs = await Job.find({ date: { $lte: today.toDate() } })
       .sort({ date: -1 })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
@@ -376,7 +376,7 @@ const getJobById = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address description type",
+        select: "clinicName clinicAddress description type",
       })
       .exec(async (err, data) => {
         statusJob(data, req);
@@ -437,7 +437,7 @@ const getJobByClinicId = async (req, res) => {
     const totalPage = Math.ceil(totalRows / limit);
     await Job.find({ clinic: req.query.id })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .sort({ work_time_start: -1 })
       .skip(offset)
       .limit(limit)
@@ -493,7 +493,7 @@ const upcomingByClinicId = async (req, res) => {
       .skip(offset)
       .limit(limit)
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .sort({ work_time_start: -1 })
       .then((data) => {
         data.map((e, index) => {
@@ -549,7 +549,7 @@ const EmptySlotsByClinicId = async (req, res) => {
       .skip(offset)
       .limit(limit)
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .sort({ work_time_start: -1 })
       .then((data) => {
         data.map((e, index) => {
@@ -612,7 +612,7 @@ const needApprovedByClinicId = async (req, res) => {
       .skip(offset)
       .limit(limit)
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .sort({ work_time_start: -1 })
       .then((data) => {
         data.map((e, index) => {
@@ -672,7 +672,7 @@ const filledSlotsByClinicId = async (req, res) => {
       .skip(offset)
       .limit(limit)
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .sort({ work_time_start: -1 })
       .then((data) => {
         data.map((e, index) => {
@@ -1305,7 +1305,7 @@ const favoritesByUser = async (req, res) => {
       favorites: { $in: [req.params.userId] },
     })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
@@ -1384,7 +1384,7 @@ const getCurrentJob = async (req, res) => {
       },
     })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
@@ -1440,7 +1440,7 @@ const getCurrentSlot = async (req, res) => {
       ],
     })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);

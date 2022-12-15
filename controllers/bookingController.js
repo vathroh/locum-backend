@@ -31,7 +31,7 @@ const createBooking = async (req, res) => {
 
   const jobId = await Job.findById(req.params.id).populate({
     path: "clinic",
-    select: "clinicName Address",
+    select: "clinicName clinicAddress",
   });
 
   const hasAppointment = await Job.findOne({
@@ -384,7 +384,7 @@ const upcomingBookingsByUserId = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .then((data) => {
         data.map((e, index) => {
@@ -436,7 +436,7 @@ const upcomingUnassignmentByUserId = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .then((data) => {
         data.map((e, index) => {
@@ -489,7 +489,7 @@ const upcomingAssignmentsByUserId = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .select({
         _id: 1,
@@ -563,7 +563,7 @@ const completedJobsByUser = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .then((data) => {
         data.map((e, index) => {
@@ -612,7 +612,7 @@ const canceledJobsByUser = async (req, res) => {
       .lean()
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .then((data) => {
         data.map((e, index) => {
@@ -672,7 +672,7 @@ const upcomingBookingByClinic = async (req, res) => {
       })
       .populate({
         path: "clinic",
-        select: "clinicName Address",
+        select: "clinicName clinicAddress",
       })
       .then((data) => {
         data.map((e, index) => {
@@ -719,7 +719,7 @@ const pastBookingByClinic = async (req, res) => {
     })
       .sort({ date: -1 })
       .lean()
-      .populate({ path: "clinic", select: "clinicName Address" })
+      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
