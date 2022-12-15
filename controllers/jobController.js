@@ -873,6 +873,7 @@ const saveJob = async (req, res) => {
   let data = req.body;
   data.image = "/" + req.file?.destination + "/" + req.file?.filename;
   data.code = string.slice(0, 10 - number.toString().length) + number;
+  data.break = {}
 
   data.work_time_start = DateTime.fromISO(
     req.body.date + "T" + req.body.work_time_start,
@@ -884,9 +885,28 @@ const saveJob = async (req, res) => {
     { zone: "Asia/Singapore" }
   ).toMillis();
 
+
+
+  data.break.start = req.body.break_start ? DateTime.fromISO(
+    req.body.date + "T" + req.body.break_start,
+    { zone: "Asia/Singapore" }
+  ).toMillis() : 0
+
+  data.break.finish = req.body.break_finish?DateTime.fromISO(
+    req.body.date + "T" + req.body.break_finish,
+    { zone: "Asia/Singapore" }
+  ).toMillis():0
+
+  const a = DateTime.fromISO(
+    req.body.date + "T" + req.body.break_start,
+    { zone: "Asia/Singapore" }
+  ).toMillis()
+
+
   data.date = DateTime.fromISO(req.body.date, {
     zone: "Asia/Singapore",
   }).toMillis();
+
 
   const job = new Job(data);
 

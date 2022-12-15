@@ -219,7 +219,7 @@ const getAppointmentUserByDay = async (req, res) => {
       .select({ assigned_to: 1 })
       .lean();
 
-    job.users = [];
+    const users = [];
     const getUsers = job.map(async (item) => {
       item.users = [];
 
@@ -232,17 +232,17 @@ const getAppointmentUserByDay = async (req, res) => {
           })
           .lean();
         user.job_id = item._id;
-        item.users.push(user);
+        users.push(user);
       });
 
       await Promise.all(pushUsers);
-      job.users.push(item.users);
+      // users.push(item.users);
     });
 
     await Promise.all(getUsers);
 
     // const user = job.assigned_to;
-    res.json(job);
+    res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
