@@ -167,11 +167,14 @@ const getAdmin = async (req, res) => {
   }
 };
 
-// const formatData = (data) => {
-//   return {
-
-//   }
-// }
+const formatData = (data) => {
+  return {
+    _id: data._id,
+    code: data.code,
+    clinicName: data.clinicName,
+    clinicAddress: data.clinicAddress,
+  };
+};
 
 module.exports = {
   upload,
