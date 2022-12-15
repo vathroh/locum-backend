@@ -177,7 +177,7 @@ const getAdmin = async (req, res) => {
 const formatData = (data) => {
   return {
     _id: data._id,
-    logo: data.logo ? process.env.BASE_URL + logo : "",
+    logo: data.logo ? process.env.BASE_URL + data.logo : "",
     code: data.code,
     clinicName: data.clinicName,
     clinicAddress: data.clinicAddress,
