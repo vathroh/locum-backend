@@ -1237,6 +1237,7 @@ const statusJob = (e, req) => {
 
 const formatData = (data) => {
   return data.map((e) => {
+    console.log(e.clinic);
     return {
       _id: e._id,
       code: e.code ?? "",
@@ -1244,7 +1245,6 @@ const formatData = (data) => {
         _id: e.clinic._id,
         clinicName: e.clinic.clinicName ?? "",
         clinicAddress: e.clinic.clinicAddress ?? "",
-        code: e.clinic.code ?? "",
       },
       date: e.date ?? "",
       work_time_start: e.work_time_start ?? 0,
