@@ -1240,7 +1240,12 @@ const formatData = (data) => {
     return {
       _id: e._id,
       code: e.code ?? "",
-      clinic: e.clinic ?? "",
+      clinic: {
+        _id: e.clinic._id,
+        clinicName: e.clinic.clinicName ?? "",
+        clinicAddress: e.clinic.clinicAddress ?? "",
+        code: e.clinic.code ?? "",
+      },
       date: e.date ?? "",
       work_time_start: e.work_time_start ?? 0,
       work_time_finish: e.work_time_finish ?? 0,

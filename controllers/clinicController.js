@@ -167,6 +167,12 @@ const getAdmin = async (req, res) => {
   }
 };
 
+// const formatData = (data) => {
+//   return {
+
+//   }
+// }
+
 module.exports = {
   upload,
   getAdmin,

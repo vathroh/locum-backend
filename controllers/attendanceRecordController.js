@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const { jobs_v2 } = require("googleapis");
 const { Settings } = require("luxon");
 Settings.defaultZoneName = "Asia/Singapore";
+const User = require("../models/User");
 
 const getData = async (req, res) => {
   const attendance = await Record.findOne({
@@ -22,7 +23,7 @@ const getData = async (req, res) => {
     image: job.image ? process.env.BASE_URL + job.image : "",
     clinic_name: job.clinic.clinicName ?? "",
     scope: job.scope ?? "",
-    address: job.clinic.Address,
+    address: job.clinic.clinicAddress,
     price: job.price ?? "",
     date: job.date
       ? DateTime.fromMillis(job.date)
@@ -214,11 +215,31 @@ const getAppointmentUserByDay = async (req, res) => {
         { work_time_start: { $gte: startOfDay, $lt: endOfDay } },
         { work_time_finish: { $gte: startOfDay, $lt: endOfDay } },
       ],
-    }).select({ assigned_to: 1 });
+    })
+      .select({ assigned_to: 1 })
+      .lean();
 
-    const getUsers = job.map((item) => {
-      console.log(item.assigned_to);
+    job.users = [];
+    const getUsers = job.map(async (item) => {
+      item.users = [];
+
+      const pushUsers = item.assigned_to.map(async (userId) => {
+        const user = await User.findById(userId)
+          .select({
+            full_name: 1,
+            role: 1,
+            role_id: 1,
+          })
+          .lean();
+        user.job_id = item._id;
+        item.users.push(user);
+      });
+
+      await Promise.all(pushUsers);
+      job.users.push(item.users);
     });
+
+    await Promise.all(getUsers);
 
     // const user = job.assigned_to;
     res.json(job);

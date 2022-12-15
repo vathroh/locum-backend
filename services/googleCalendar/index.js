@@ -61,9 +61,6 @@ const createEvent = async (
         calData.google_calendar_id = data.data.id;
 
         saveEvent(calData);
-        console.log(data.data);
-
-        // console.log(data);
 
         googleCalendarLogger.info(
           `success creating event: ${JSON.stringify(event)}`
