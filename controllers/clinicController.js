@@ -83,8 +83,15 @@ const getOtherOutlet = async (req, res) => {
     const clinics = await Clinic.find({
       _id: { $ne: clinic._id },
       group: clinic.group,
+    }).lean();
+
+    const data = clinics.map((item) => {
+      return formatData(item);
     });
-    res.json(clinics);
+
+    console.log(data);
+
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -170,9 +177,13 @@ const getAdmin = async (req, res) => {
 const formatData = (data) => {
   return {
     _id: data._id,
+    logo: data.logo ? process.env.BASE_URL + logo : "",
     code: data.code,
     clinicName: data.clinicName,
     clinicAddress: data.clinicAddress,
+    location: data.location,
+    description: data.description,
+    type: data.type,
   };
 };
 

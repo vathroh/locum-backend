@@ -58,8 +58,8 @@ const getBlacklistByClinic = async (req, res) => {
     const blacklist = await Blacklist.find({
       clinic_id: req.query.clinic_id,
     })
-      .populate({ path: "user_id", select: "full_name" })
-      .populate({ path: "added_by", select: "full_name" });
+      .populate({ path: "user_id", select: "full_name  role_id" })
+      .populate({ path: "added_by", select: "full_name  role_id" });
 
     res.json(blacklist);
   } catch (error) {
@@ -124,8 +124,8 @@ const getWhitelistByClinic = async (req, res) => {
     const whitelist = await Whitelist.find({
       clinic_id: req.query.clinic_id,
     })
-      .populate({ path: "user_id", select: "full_name" })
-      .populate({ path: "added_by", select: "full_name" });
+      .populate({ path: "user_id", select: "full_name role_id" })
+      .populate({ path: "added_by", select: "full_name role_id" });
 
     res.json(whitelist);
   } catch (error) {
