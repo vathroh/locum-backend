@@ -81,88 +81,103 @@ const getEventByUserId = async (req, res) => {
   }
 };
 
-const getEventsByUserByMonth = async (req, res) => {
+const getEventsByClinicByMonth = async (req, res) => {
   try {
-    const now = DateTime.now().setZone("Asia/Singapore");
-    let month = 1;
-    let year = 1;
+    const userId = req.user._id;
+    const monthQuery = parseInt(req.query.month);
+    const yearQuery = parseInt(req.query.year);
+    const filters = {
+      clinic_id: req.query.clinicId,
+    };
+    const getevents = await events(filters, userId, monthQuery, yearQuery);
 
-    if (req.query.month) {
-      month = parseInt(req.query.month);
-    } else {
-      month = now.month;
-    }
-
-    if (req.query.year) {
-      year = parseInt(req.query.year);
-    } else {
-      year = now.year;
-    }
-
-    const date = DateTime.utc(year, month, 15).setZone("Asia/Singapore");
-
-    const start = date.startOf("month").toMillis();
-    const end = date.endOf("month").toMillis();
-
-    const calendar = await Calendar.find({
-      start: { $gte: start, $lte: end },
-      $or: [
-        { user_id: req.query.user_id },
-        { attendees: { $in: [req.query.user_id] } },
-      ],
-    })
-      .select({
-        start: 1,
-        finish: 1,
-        type: 1,
-        event: 1,
-        link: 1,
-        job_id: 1,
-        attendees: 1,
-      })
-      .lean();
-
-    const dates = [];
-
-    for (i = start; i < end; ) {
-      const date = DateTime.fromMillis(i)
-        .setZone("Asia/Singapore")
-        .toFormat("dd LLL");
-      const events = [];
-      calendar.map(async (cal) => {
-        if (cal.start >= i && cal.start <= i + 86400000) {
-          if (
-            cal.start > now.startOf("day").toMillis() &&
-            cal.start < now.endOf("day")
-          ) {
-            cal.currentDate = true;
-          } else {
-            cal.currentDate = false;
-          }
-
-          cal.start =
-            DateTime.fromMillis(cal.start)
-              .setZone("Asia/Singapore")
-              .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
-          cal.finish =
-            DateTime.fromMillis(cal.finish)
-              .setZone("Asia/Singapore")
-              .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
-          cal.type = cal.type ?? "";
-          cal.link = cal.link ?? "";
-          cal.attendees = cal.attendees ?? [];
-
-          events.push(cal);
-        }
-      });
-      dates.push({ date: date, events: events });
-      i = i + 86400000;
-    }
-
-    res.json(dates);
+    res.json(getevents);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+const getEventsByUserByMonth = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const monthQuery = parseInt(req.query.month);
+    const yearQuery = parseInt(req.query.year);
+    const filters = {
+      $or: [{ user_id: userId }, { attendees: { $in: [userId] } }],
+    };
+    const getevents = await events(filters, userId, monthQuery, yearQuery);
+
+    res.json(getevents);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const events = async (filters, userId, monthQuery, yearQuery) => {
+  const now = DateTime.now().setZone("Asia/Singapore");
+  let month = monthQuery || now.month;
+  let year = yearQuery || now.year;
+
+  const date = DateTime.utc(year, month, 15).setZone("Asia/Singapore");
+  const start = date.startOf("month").toMillis();
+  const end = date.endOf("month").toMillis();
+
+  filters.start = { $gte: start, $lte: end };
+
+  const calendar = await Calendar.find({
+    start: { $gte: start, $lte: end },
+    $or: [{ user_id: userId }, { attendees: { $in: [userId] } }],
+    // ...filters,
+  })
+    .select({
+      start: 1,
+      finish: 1,
+      type: 1,
+      event: 1,
+      link: 1,
+      job_id: 1,
+      attendees: 1,
+    })
+    .lean();
+
+  const dates = [];
+
+  for (i = start; i < end; ) {
+    const date = DateTime.fromMillis(i)
+      .setZone("Asia/Singapore")
+      .toFormat("dd LLL");
+    const events = [];
+    calendar.map(async (cal) => {
+      if (cal.start >= i && cal.start <= i + 86400000) {
+        if (
+          cal.start > now.startOf("day").toMillis() &&
+          cal.start < now.endOf("day")
+        ) {
+          cal.currentDate = true;
+        } else {
+          cal.currentDate = false;
+        }
+
+        cal.start =
+          DateTime.fromMillis(cal.start)
+            .setZone("Asia/Singapore")
+            .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
+        cal.finish =
+          DateTime.fromMillis(cal.finish)
+            .setZone("Asia/Singapore")
+            .toLocaleString(DateTime.TIME_SIMPLE) ?? "";
+        cal.type = cal.type ?? "";
+        cal.link = cal.link ?? "";
+        cal.attendees = cal.attendees ?? [];
+
+        events.push(cal);
+      }
+    });
+    dates.push({ date: date, events: events });
+    i = i + 86400000;
+  }
+
+  return dates;
 };
 
 const get3DaysEventByUserId = async (req, res) => {

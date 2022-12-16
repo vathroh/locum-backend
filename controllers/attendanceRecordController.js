@@ -9,13 +9,13 @@ const { Settings } = require("luxon");
 Settings.defaultZoneName = "Asia/Singapore";
 const User = require("../models/User");
 
-const getData = async (req, res) => {
+const getData = async (jobId, userId) => {
   const attendance = await Record.findOne({
-    job_id: req.params.jobId,
-    user_id: mongoose.Types.ObjectId(req.user._id),
+    job_id: jobId,
+    user_id: mongoose.Types.ObjectId(userId),
   });
 
-  const job = await Job.findById(req.params.jobId).populate("clinic").lean();
+  const job = await Job.findById(jobId).populate("clinic").lean();
 
   const now = DateTime.now().toMillis();
 
@@ -42,7 +42,7 @@ const getData = async (req, res) => {
       : "",
   };
 
-  if (job.assigned_to.includes(req.user._id)) {
+  if (job.assigned_to.includes(userId)) {
     if (attendance) {
       if (
         Math.abs(job.work_time_start - now) > 3600000 &&
@@ -76,79 +76,119 @@ const getNewAttendance = async (req, res) => {
 
 const checkin = async (req, res) => {
   try {
-    const data = await getData(req, res);
-    if (data.status === "Ready") {
-      const job = await Job.findById(req.params.jobId);
+    const jobId = req.params.jobId;
+    const userId = req.user._id;
+    const checkin = await setCheckin(jobId, userId);
 
-      const attendance = await Record.find({
-        job_id: req.params.jobId,
-        user_id: req.user._id,
-      }).lean();
-
-      if (attendance.length === 0) {
-        const record = new Record({
-          job_id: req.params.jobId,
-          user_id: req.user._id,
-          clinic_id: job.clinic,
-          check_in: DateTime.now().toMillis(),
-        });
-        const savedRecord = record.save();
-      } else {
-        attendance.check_in = DateTime.now().toMillis();
-        const updatedRecord = await Record.updateOne(
-          {
-            job_id: req.params.jobId,
-            user_id: req.user._id,
-          },
-          { $set: attendance }
-        );
-      }
-
-      res.json({ message: "You are successfully check-in" });
-    } else if (data.status === "In Progress") {
-      res.status(403).json({
-        message: "You have checkin.",
-      });
-    } else if (data.status === "Completed") {
-      res.status(403).json({
-        message: "You have completed this job.",
-      });
-    } else {
-      res.status(403).json({
-        message: "You are not allowed to checkin. Please check the job.",
-      });
-    }
+    res.status(checkin.status).json(checkin.message);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const checkout = async (req, res) => {
+const checkinByAdmin = async (req, res) => {
   try {
-    const data = await getData(req, res);
-    if (data.status === "Ready") {
-      res.status(403).json({
-        message: "You have to checkin before checkout!",
-      });
-    } else if (data.status === "Completed") {
-      res.status(403).json({ message: "You have checkout" });
-    } else if (data.status === "In Progress") {
-      const attendance = await Record.findOneAndUpdate(
-        {
-          job_id: req.params.jobId,
-          user_id: req.user._id,
-        },
-        { check_out: DateTime.now().toMillis() }
-      );
-      await Job.updateOne({ _id: req.params.jobId }, { completed: true });
-      return res.json({ message: "You are successfully check-out" });
-    } else {
-      res.status(403).json({
-        message: "You are not allowed to checkout. Please check the job!",
-      });
-    }
+    const jobId = req.params.jobId;
+    const userId = req.body.user_id;
+    const checkin = await setCheckin(jobId, userId);
+
+    res.status(checkin.status).json(checkin.message);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+const setCheckin = async (jobId, userId) => {
+  const data = await getData(jobId, userId);
+  if (data.status === "Ready") {
+    const job = await Job.findById(jobId);
+
+    const attendance = await Record.find({
+      job_id: jobId,
+      user_id: userId,
+    }).lean();
+
+    if (attendance.length === 0) {
+      const record = new Record({
+        job_id: jobId,
+        user_id: userId,
+        clinic_id: job.clinic,
+        check_in: DateTime.now().toMillis(),
+      });
+      const savedRecord = record.save();
+    } else {
+      attendance.check_in = DateTime.now().toMillis();
+      const updatedRecord = await Record.updateOne(
+        {
+          job_id: jobId,
+          user_id: userId,
+        },
+        { $set: attendance }
+      );
+    }
+
+    res.json({ message: "You are successfully check-in" });
+  } else if (data.status === "In Progress") {
+    return { status: 403, message: "You have checkin." };
+  } else if (data.status === "Completed") {
+    return { status: 403, message: "You have completed this job." };
+  } else {
+    return {
+      status: 403,
+      message: "You are not allowed to checkin. Please check the job.",
+    };
+  }
+};
+
+const checkout = async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const userId = req.user._id;
+    const checkout = await setCheckout(jobId, userId);
+
+    console.log(checkout);
+
+    res.status(checkout.status).json(checkout.message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const checkoutByAdmin = async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const userId = req.body.userId;
+    const checkout = await setCheckout(jobId, userId);
+
+    res.status(checkout.status).json(checkout.message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const setCheckout = async (jobId, userId) => {
+  const data = await getData(jobId, userId);
+  if (data.status === "Ready") {
+    res.status(403).json({
+      message: "You have to checkin before checkout!",
+    });
+  } else if (data.status === "Completed") {
+    return { status: 403, message: "You have checkout" };
+  } else if (data.status === "In Progress") {
+    const attendance = await Record.findOneAndUpdate(
+      {
+        job_id: jobId,
+        user_id: userId,
+      },
+      { check_out: DateTime.now().toMillis() }
+    );
+    await Job.updateOne({ _id: jobId }, { completed: true });
+    return { message: "You are successfully check-out", status: 200 };
+  } else {
+    return {
+      status: 403,
+      message: "You are not allowed to checkout. Please check the job!",
+    };
   }
 };
 
@@ -252,6 +292,8 @@ module.exports = {
   checkin,
   checkout,
   afterCheckout,
+  checkinByAdmin,
+  checkoutByAdmin,
   getNewAttendance,
   getAppointmentUserByDay,
 };

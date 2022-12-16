@@ -135,24 +135,6 @@ const getExploreJobs = async (req, res) => {
       assigned_to: [],
     })
       .sort({ date: 1 })
-      .select({
-        _id: 1,
-        code: 1,
-        clinic: 1,
-        price: 1,
-        job_scope: 1,
-        date: 1,
-        work_time_start: 1,
-        work_time_finish: 1,
-        scope: 1,
-        job_description: 1,
-        image: 1,
-        booked_by: 1,
-        assigned_to: 1,
-        completed: 1,
-        canceled_by: 1,
-        favorites: 1,
-      })
       .lean()
       .populate({
         path: "clinic",
@@ -203,24 +185,6 @@ const getUpcomingDoctorJobs = async (req, res) => {
         path: "clinic",
         select: "clinicName clinicAddress",
       })
-      .select({
-        _id: 1,
-        code: 1,
-        clinic: 1,
-        price: 1,
-        job_scope: 1,
-        date: 1,
-        work_time_start: 1,
-        work_time_finish: 1,
-        scope: 1,
-        job_description: 1,
-        image: 1,
-        booked_by: 1,
-        assigned_to: 1,
-        completed: 1,
-        canceled_by: 1,
-        favorites: 1,
-      })
       .then((data) => {
         data.map((e, index) => {
           statusJob(e, req);
@@ -267,24 +231,6 @@ const getUpcomingClinicalAssistantJobs = async (req, res) => {
       .populate({
         path: "clinic",
         select: "clinicName clinicAddress",
-      })
-      .select({
-        _id: 1,
-        code: 1,
-        clinic: 1,
-        price: 1,
-        job_scope: 1,
-        date: 1,
-        work_time_start: 1,
-        work_time_finish: 1,
-        scope: 1,
-        job_description: 1,
-        image: 1,
-        booked_by: 1,
-        assigned_to: 1,
-        completed: 1,
-        canceled_by: 1,
-        favorites: 1,
       })
       .then((data) => {
         data.map((e, index) => {
@@ -353,26 +299,6 @@ const getPastJobs = async (req, res) => {
 const getJobById = async (req, res) => {
   try {
     let job = await Job.findById(req.params.id)
-      .select({
-        _id: 1,
-        code: 1,
-        clinic: 1,
-        price: 1,
-        job_scope: 1,
-        date: 1,
-        work_time_start: 1,
-        work_time_finish: 1,
-        scope: 1,
-        job_description: 1,
-        image: 1,
-        preferences: 1,
-        booked_by: 1,
-        assigned_to: 1,
-        canceled_by: 1,
-        completed: 1,
-        canceled_by: 1,
-        favorites: 1,
-      })
       .lean()
       .populate({
         path: "clinic",
@@ -393,6 +319,15 @@ const getJobById = async (req, res) => {
         data.date = DateTime.fromMillis(data.date)
           .setZone("Asia/Singapore")
           .toFormat("dd LLLL yyyy");
+
+        if (data.urgent_status == "24") {
+          data.price = data.urgent_price_24;
+        } else if (data.urgent_status == "72") {
+          data.price = data.urgent_price_72;
+        }
+
+        delete data.urgent_price_24;
+        delete data.urgent_price_72;
 
         const preferences = [];
         const getPreferences = data.preferences.map(async (preference) => {
@@ -873,7 +808,7 @@ const saveJob = async (req, res) => {
   let data = req.body;
   data.image = "/" + req.file?.destination + "/" + req.file?.filename;
   data.code = string.slice(0, 10 - number.toString().length) + number;
-  data.break = {}
+  data.break = {};
 
   data.work_time_start = DateTime.fromISO(
     req.body.date + "T" + req.body.work_time_start,
@@ -885,28 +820,25 @@ const saveJob = async (req, res) => {
     { zone: "Asia/Singapore" }
   ).toMillis();
 
+  data.break.start = req.body.break_start
+    ? DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
+        zone: "Asia/Singapore",
+      }).toMillis()
+    : 0;
 
+  data.break.finish = req.body.break_finish
+    ? DateTime.fromISO(req.body.date + "T" + req.body.break_finish, {
+        zone: "Asia/Singapore",
+      }).toMillis()
+    : 0;
 
-  data.break.start = req.body.break_start ? DateTime.fromISO(
-    req.body.date + "T" + req.body.break_start,
-    { zone: "Asia/Singapore" }
-  ).toMillis() : 0
-
-  data.break.finish = req.body.break_finish?DateTime.fromISO(
-    req.body.date + "T" + req.body.break_finish,
-    { zone: "Asia/Singapore" }
-  ).toMillis():0
-
-  const a = DateTime.fromISO(
-    req.body.date + "T" + req.body.break_start,
-    { zone: "Asia/Singapore" }
-  ).toMillis()
-
+  const a = DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
+    zone: "Asia/Singapore",
+  }).toMillis();
 
   data.date = DateTime.fromISO(req.body.date, {
     zone: "Asia/Singapore",
   }).toMillis();
-
 
   const job = new Job(data);
 
@@ -943,6 +875,7 @@ const deleteJob = async (req, res) => {
     const jobId = await Job.findById(req.params.id);
     if (!jobId)
       return res.status(404).json({ message: "The job is not found." });
+
     const deletedJob = await Job.updateOne(
       { _id: req.params.id },
       { $set: req.body }
@@ -1257,7 +1190,6 @@ const statusJob = (e, req) => {
 
 const formatData = (data) => {
   return data.map((e) => {
-    console.log(e.clinic);
     return {
       _id: e._id,
       code: e.code ?? "",
