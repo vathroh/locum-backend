@@ -83,13 +83,12 @@ const getEventByUserId = async (req, res) => {
 
 const getEventsByClinicByMonth = async (req, res) => {
   try {
-    const userId = req.user._id;
     const monthQuery = parseInt(req.query.month);
     const yearQuery = parseInt(req.query.year);
     const filters = {
       clinic_id: req.query.clinicId,
     };
-    const getevents = await events(filters, userId, monthQuery, yearQuery);
+    const getevents = await events(filters, monthQuery, yearQuery);
 
     res.json(getevents);
   } catch (error) {
@@ -105,7 +104,7 @@ const getEventsByUserByMonth = async (req, res) => {
     const filters = {
       $or: [{ user_id: userId }, { attendees: { $in: [userId] } }],
     };
-    const getevents = await events(filters, userId, monthQuery, yearQuery);
+    const getevents = await events(filters, monthQuery, yearQuery);
 
     res.json(getevents);
   } catch (error) {
@@ -113,7 +112,7 @@ const getEventsByUserByMonth = async (req, res) => {
   }
 };
 
-const events = async (filters, userId, monthQuery, yearQuery) => {
+const events = async (filters, monthQuery, yearQuery) => {
   const now = DateTime.now().setZone("Asia/Singapore");
   let month = monthQuery || now.month;
   let year = yearQuery || now.year;
@@ -126,8 +125,7 @@ const events = async (filters, userId, monthQuery, yearQuery) => {
 
   const calendar = await Calendar.find({
     start: { $gte: start, $lte: end },
-    $or: [{ user_id: userId }, { attendees: { $in: [userId] } }],
-    // ...filters,
+    ...filters,
   })
     .select({
       start: 1,
