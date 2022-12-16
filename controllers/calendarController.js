@@ -99,7 +99,7 @@ const getEventsByClinicByMonth = async (req, res) => {
 
 const getEventsByUserByMonth = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.query.user_id;
     const monthQuery = parseInt(req.query.month);
     const yearQuery = parseInt(req.query.year);
     const filters = {
@@ -256,6 +256,7 @@ const deleteEvent = async (req, res) => {
 module.exports = {
   getEventsByUserByMonth,
   get3DaysEventByUserId,
+  getEventsByClinicByMonth,
   getEvents,
   getEventById,
   getEventByUserId,
