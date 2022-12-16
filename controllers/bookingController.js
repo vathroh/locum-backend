@@ -82,12 +82,15 @@ const createBooking = async (req, res) => {
           const sendingChats = uniqueReceiver.map(async (userId) => {
             const conversation = await createConversation(req.user._id, userId);
 
+            const type = "";
+            const text = "";
+
             if (jobId.listing_type === "automated_listing") {
-              const type = "badge";
-              const text = `has been approved the booking.`;
+              type = "badge";
+              text = `has been approved the booking.`;
             } else if (jobId.listing_type === "manual_listing") {
-              const type = "locumCard";
-              const text = "Hi! I have booked this slot.";
+              type = "locumCard";
+              text = "Hi! I have booked this slot.";
             }
 
             const chatMessage = {
@@ -436,16 +439,6 @@ const upcomingAssignmentsByUserId = async (req, res) => {
       .populate({
         path: "clinic",
         select: "clinicName clinicAddress",
-      })
-      .select({
-        _id: 1,
-        code: 1,
-        clinic: 1,
-        price: 1,
-        job_scope: 1,
-        date: 1,
-        work_time_start: 1,
-        work_time_finish: 1,
       })
       .then((data) => {
         data.map((e, index) => {
