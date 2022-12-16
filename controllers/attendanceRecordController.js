@@ -79,7 +79,8 @@ const checkin = async (req, res) => {
   try {
     const jobId = req.params.jobId;
     const userId = req.user._id;
-    const checkin = await setCheckin(jobId, userId);
+    const time = DateTime.now().toMillis();
+    const checkin = await setCheckin(jobId, userId, time);
 
     res.status(checkin.status).json(checkin.message);
   } catch (error) {
@@ -91,7 +92,15 @@ const checkinByAdmin = async (req, res) => {
   try {
     const jobId = req.params.jobId;
     const userId = req.body.user_id;
-    const checkin = await setCheckin(jobId, userId);
+
+    const job = await Job.findById(jobId);
+    const date = DateTime.fromMillis(job.date).toFormat("yyyy-MM-dd");
+    const timeQuery = req.body.time;
+    const time = DateTime.fromISO(date + "T" + timeQuery, {
+      zone: "Asia/Singapore",
+    }).toMillis();
+
+    const checkin = await setCheckin(jobId, userId, time);
 
     res.status(checkin.status).json(checkin.message);
   } catch (error) {
@@ -99,7 +108,7 @@ const checkinByAdmin = async (req, res) => {
   }
 };
 
-const setCheckin = async (jobId, userId) => {
+const setCheckin = async (jobId, userId, time) => {
   const data = await getData(jobId, userId);
   if (data.status === "Ready") {
     const job = await Job.findById(jobId);
@@ -114,11 +123,11 @@ const setCheckin = async (jobId, userId) => {
         job_id: jobId,
         user_id: userId,
         clinic_id: job.clinic,
-        check_in: DateTime.now().toMillis(),
+        check_in: time,
       });
       const savedRecord = record.save();
     } else {
-      attendance.check_in = DateTime.now().toMillis();
+      attendance.check_in = time;
 
       await Record.updateOne(
         {
@@ -161,7 +170,15 @@ const checkoutByAdmin = async (req, res) => {
   try {
     const jobId = req.params.jobId;
     const userId = req.body.user_id;
-    const checkout = await setCheckout(jobId, userId);
+
+    const job = await Job.findById(jobId);
+    const date = DateTime.fromMillis(job.date).toFormat("yyyy-MM-dd");
+    const timeQuery = req.body.time;
+    const time = DateTime.fromISO(date + "T" + timeQuery, {
+      zone: "Asia/Singapore",
+    }).toMillis();
+
+    const checkout = await setCheckout(jobId, userId, time);
 
     res.status(checkout.status).json(checkout.message);
   } catch (error) {
@@ -176,7 +193,7 @@ const setCheckout = async (jobId, userId) => {
       message: "You have to checkin before checkout!",
     });
   } else if (data.status === "Completed") {
-    return { status: 403, message: "You have checkout" };
+    return { status: 403, message: "You have already checkout" };
   } else if (data.status === "In Progress") {
     const attendance = await Record.findOneAndUpdate(
       {
@@ -186,7 +203,7 @@ const setCheckout = async (jobId, userId) => {
       { check_out: DateTime.now().toMillis() }
     );
     await Job.updateOne({ _id: jobId }, { completed: true });
-    return { message: "You are successfully check-out", status: 200 };
+    return { message: "You have successfully check-out", status: 200 };
   } else {
     return {
       status: 403,
