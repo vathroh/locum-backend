@@ -42,7 +42,7 @@ const getData = async (jobId, userId) => {
       : "",
   };
 
-  if (job.assigned_to.includes(userId)) {
+  if (job.assigned_to?.includes(userId)) {
     if (attendance) {
       if (
         Math.abs(job.work_time_start - now) > 3600000 &&
@@ -62,6 +62,7 @@ const getData = async (jobId, userId) => {
   } else {
     data.status = "Not Applicable";
   }
+
   return data;
 };
 
@@ -118,7 +119,8 @@ const setCheckin = async (jobId, userId) => {
       const savedRecord = record.save();
     } else {
       attendance.check_in = DateTime.now().toMillis();
-      const updatedRecord = await Record.updateOne(
+
+      await Record.updateOne(
         {
           job_id: jobId,
           user_id: userId,
@@ -127,15 +129,18 @@ const setCheckin = async (jobId, userId) => {
       );
     }
 
-    res.json({ message: "You are successfully check-in" });
+    return {
+      status: 200,
+      message: "You have checkin successfully.",
+    };
   } else if (data.status === "In Progress") {
     return { status: 403, message: "You have checkin." };
   } else if (data.status === "Completed") {
-    return { status: 403, message: "You have completed this job." };
+    return { status: 403, message: "The slot has been completed." };
   } else {
     return {
       status: 403,
-      message: "You are not allowed to checkin. Please check the job.",
+      message: "Please Check the slot.",
     };
   }
 };
@@ -146,8 +151,6 @@ const checkout = async (req, res) => {
     const userId = req.user._id;
     const checkout = await setCheckout(jobId, userId);
 
-    console.log(checkout);
-
     res.status(checkout.status).json(checkout.message);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -157,7 +160,7 @@ const checkout = async (req, res) => {
 const checkoutByAdmin = async (req, res) => {
   try {
     const jobId = req.params.jobId;
-    const userId = req.body.userId;
+    const userId = req.body.user_id;
     const checkout = await setCheckout(jobId, userId);
 
     res.status(checkout.status).json(checkout.message);
