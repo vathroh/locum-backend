@@ -151,20 +151,6 @@ const updateClinic = async (req, res) => {
   }
 };
 
-const deleteClinic = async (req, res) => {
-  try {
-    const cekId = await ClinicGroup.findById(req.params.id);
-    if (!cekId)
-      return res.status(404).json({ message: "Data tidak ditemukan" });
-    const deletedClinic = await ClinicGroup.deleteOne({
-      _id: req.params.id,
-    });
-    res.status(200).json(deletedClinic);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
 genCompanyCode = async (string) => {
   const code = string + gen4RandomNumber();
   const isExists = await ClinicGroup.findOne({ code: code });

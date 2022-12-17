@@ -85,71 +85,8 @@ require("./services/cronJob");
 // app.use('/quee/send', require('./services/rabbitmq/producer.js'))
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
-const users = [];
-const connected_clients = new Map();
-
-wss.on("connection", function connection(ws) {
-  console.log("A new client Connected!");
-
-  // NOTE: only for demonstration, will cause collisions.  Use a UUID or some other identifier that's actually unique.
-  const this_stream_id = Array.from(connected_clients.values()).length;
-
-  // Keep track of the stream, so that we can send all of them messages.
-  connected_clients.set(this_stream_id, ws);
-
-  // Attach event handler to mark this client as alive when pinged.
-  ws.is_alive = true;
-  ws.on("pong", () => {
-    ws.is_alive = true;
-  });
-
-  // When the stream is closed, clean up the stream reference.
-  ws.on("close", function () {
-    connected_clients.delete(this_stream_id);
-  });
-
-  ws.on("message", function incoming(message) {
-    console.log("received: %s", message);
-    ws.send(message.toString("utf8"));
-
-    wss.clients.forEach(function each(client) {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message.toString("utf8"));
-      }
-    });
-  });
-});
-
-setInterval(function ping() {
-  Array.from(connected_clients.values()).forEach(function each(client_stream) {
-    if (!client_stream.is_alive) {
-      client_stream.terminate();
-      return;
-    }
-    client_stream.is_alive = false;
-    client_stream.ping();
-  });
-}, 1000);
-
-// io.on("connection", (socket) => {
-//   console.log(`User ${socket.id} has Joined`);
-
-//   socket.on("join_room", (data) => {
-//     socket.join(data);
-//     // console.log(`User with ID: ${socket.id} joined room: ${data}`);
-//   });
-
-//   socket.on("message", (data) => {
-//     socket.to(data.to).emit("receive_message", data);
-//     console.log(data);
-//   });
-
-//   socket.on("disconnect", () => {
-//     socket.broadcast.emit("user-disconnected", `${socket.id} has disconnected`);
-//     const user = users.findIndex((user) => user.socket_id == socket.id);
-//     // console.log(`${socket.id} has disconnected`);
-//   });
-// });
+const { socket } = require("./services/websocket");
+socket(wss, WebSocket);
 
 server.listen(port, () =>
   console.log(`Server is running on http://localhost:${port}`)
