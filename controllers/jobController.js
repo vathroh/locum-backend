@@ -14,6 +14,7 @@ const Clinic = require("../models/Clinic");
 const { info } = require("winston");
 const ObjectId = require("mongoose/lib/types/objectid.js");
 const Preference = require("../models/Preference.js");
+const { setUrgentJobStatus } = require("../utils/job/setUrgentJob/index.js");
 
 const getAllJobs = async (req, res) => {
   try {
@@ -306,7 +307,7 @@ const getJobById = async (req, res) => {
       })
       .exec(async (err, data) => {
         statusJob(data, req);
-        data.image = process.env.BASE_URL + data.image;
+        data.image = data.image ? process.env.BASE_URL + data.image : "";
         data.work_time_start = DateTime.fromMillis(data.work_time_start)
           .setZone("Asia/Singapore")
           .toLocaleString(DateTime.TIME_SIMPLE);
@@ -781,19 +782,25 @@ const postAutomatedListing = (req, res) => {
   saveJob(req, res);
 };
 
-const postDirectListing = (req, res) => {
-  const user = User.findOne({ code: req.body.shared_to });
+const postDirectListing = async (req, res) => {
+  req.body.listing_type = "direct_listing";
+  const data = await sharedTo(req.body);
+  req.body = data;
+
+  await saveJob(req, res);
+};
+
+const sharedTo = async (data) => {
+  const user = await User.findOne({ role_id: data.shared_to });
   const assigned_to = [];
   const booked_by = [];
 
-  booked_by.push(user._id);
-  assigned_to.push(user._id);
+  booked_by.push(user._id.toString());
+  assigned_to.push(user._id.toString());
 
-  req.body.listing_type = "direct_listing";
-  req.body.assigned_to = assigned_to;
-  req.body.booked_by = booked_by;
-
-  saveJob(req, res);
+  data.booked_by = booked_by;
+  data.assigned_to = assigned_to;
+  return data;
 };
 
 const saveJob = async (req, res) => {
@@ -803,13 +810,31 @@ const saveJob = async (req, res) => {
   const clinic = await Clinic.findById(req.body.clinic).select({ initials: 1 });
   const count = await Job.find({ clinic: ObjectId(req.body.clinic) }).count();
   const number = parseInt(count) + 1;
-  const string = clinic.initials + "-000000";
+  const string = clinic?.initials + "-000000";
 
+  req.body.code = string.slice(0, 10 - number.toString().length) + number;
+
+  const data = await postData(req, res);
+
+  const job = new Job(data);
+
+  try {
+    const savedJob = await job.save();
+    res.status(200).json(savedJob);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+const postData = async (req, res) => {
   let data = req.body;
-  data.image = "/" + req.file?.destination + "/" + req.file?.filename;
-  data.code = string.slice(0, 10 - number.toString().length) + number;
-  data.break = {};
+  if (req.file) {
+    data.image = "/" + req.file?.destination + "/" + req.file?.filename;
+  } else {
+    delete data.image;
+  }
 
+  data.break = {};
   data.work_time_start = DateTime.fromISO(
     req.body.date + "T" + req.body.work_time_start,
     { zone: "Asia/Singapore" }
@@ -840,23 +865,25 @@ const saveJob = async (req, res) => {
     zone: "Asia/Singapore",
   }).toMillis();
 
-  const job = new Job(data);
-
-  try {
-    const savedJob = await job.save();
-    res.status(200).json(savedJob);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+  let body = data;
+  if (data.listing_type == "direct_listing") {
+    body = await sharedTo(data);
   }
+
+  setUrgentJobStatus(body);
+
+  return body;
 };
 
 const updateJob = async (req, res) => {
   const jobId = await Job.findById(req.params.id);
-  if (!jobId) return res.status(404).json({ message: "The job is not found." });
+  if (!jobId)
+    return res.status(404).json({ message: "The slot is not found." });
   try {
+    const data = await postData(req, res);
     const updatedJob = await Job.updateOne(
       { _id: req.params.id },
-      { $set: req.body }
+      { $set: data }
     );
     jobLogger.info(req.originalUrl);
     res.status(200).json(updatedJob);

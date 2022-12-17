@@ -79,9 +79,10 @@ router.get("/bookedby", bookedBy);
 router.get("/past", getPastJobs);
 router.get("/search", searchJob);
 router.delete("/:id", deleteJob);
-router.patch("/:id", updateJob);
 router.get("/new", getNewJobs);
 router.get("/:id", getJobById);
 router.get("/", getAllJobs);
+
+router.put("/edit/:id", upload.single("image"), updateJob);
 
 module.exports = router;
