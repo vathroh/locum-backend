@@ -53,9 +53,16 @@ const saveClinic = async (req, res) => {
 };
 
 const updateClinic = async (req, res) => {
-  const cekId = await Clinic.findById(req.params.id);
-  if (!cekId) return res.status(404).json({ message: "Data tidak ditemukan" });
   try {
+    const cekId = await Clinic.findById(req.params.id);
+    if (!cekId) return res.status(404).json({ message: "Clinic not found." });
+
+    if (req.file) {
+      req.body.logo = "/" + req.file?.destination + "/" + req.file?.filename;
+    } else {
+      delete req.body.logo;
+    }
+
     const updatedClinic = await Clinic.updateOne(
       { _id: req.params.id },
       { $set: req.body }

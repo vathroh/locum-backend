@@ -21,8 +21,8 @@ router.get("/get-by-user", getClinicByUserId);
 router.get("/admin", getAdmin);
 router.get("/", getClinics);
 router.get("/:id", getClinicById);
-router.post("/", upload.single("logo"), saveClinic);
-router.patch("/:id", updateClinic);
 router.delete("/:id", deleteClinic);
+router.post("/", upload.single("logo"), saveClinic);
+router.put("/:id", upload.single("logo"), updateClinic);
 
 module.exports = router;
