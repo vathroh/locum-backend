@@ -2,9 +2,10 @@ const { sendMessage } = require("../../sendingChat");
 
 const saveMessage = async (data) => {
   //   console.log(data);
+  delete data._id;
 
+  console.log(data);
   const savedMessage = await sendMessage(data);
-  console.log(savedMessage);
   return savedMessage;
 };
 
