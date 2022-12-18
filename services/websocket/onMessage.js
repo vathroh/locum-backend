@@ -2,21 +2,18 @@ const { saveMessage } = require("./chatting");
 const { saveUserOnline } = require("./onlineUser");
 const { deleteUser } = require("../../utils/onlineUser");
 
-const uniqid = require("uniqid");
-
 let user = {};
 const users = [];
 
 const onMessage = (ws, wss, WebSocket) => {
-  const socketId = uniqid();
   ws.on("message", async function incoming(message) {
     const data = JSON.parse(message.toString());
 
     if (data.service === "onlineUser") {
       ws.user = data.userId;
-      ws.socketId = socketId;
+      ws.socketId = data.socketId;
 
-      user = { user: data.userId, socket: socketId };
+      user = { user: data.userId, socket: data.socketId };
       users.push(user);
       await saveUserOnline(user);
       console.log(user);

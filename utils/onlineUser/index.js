@@ -13,8 +13,9 @@ const saveUser = async (data) => {
 };
 
 const deleteUser = async (data) => {
+  console.log(data);
   const user = await OnlineUser.findOne(data);
-  if (user) await OnlineUser.deleteMany(user);
+  if (user) await OnlineUser.deleteMany({ socketId: user.socketId });
 };
 
 module.exports = { saveUser, deleteUser };
