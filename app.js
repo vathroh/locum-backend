@@ -86,7 +86,8 @@ require("./services/cronJob");
 // app.use('/quee/receive', require('./services/rabbitmq/subcriber.js'))
 
 const { socket } = require("./services/websocket");
-socket(wss, WebSocket);
+const socketUsers = [];
+socket(wss, WebSocket, socketUsers);
 
 server.listen(port, () =>
   console.log(`Server is running on http://localhost:${port}`)
