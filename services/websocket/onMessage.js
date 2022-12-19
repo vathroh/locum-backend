@@ -26,8 +26,8 @@ const onMessage = (ws, wss, WebSocket) => {
     }
 
     ws.on("close", function () {
-      console.log("user is leaving");
       const user = { user: ws.user, socket: ws.socketId };
+      console.log(`${ws?.socketId} is leaving`);
       deleteUser(user);
     });
   });

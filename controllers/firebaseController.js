@@ -407,8 +407,8 @@ const afterGoogleSignin = async (req, res) => {
 
       if (user.email_verified == false) {
         toPage = "email";
-      } else if (user.phone_number == "") {
-        toPage = "phone_number";
+        // } else if (user.phone_number == "") {
+        //   toPage = "phone_number";
       } else if (user.role == "user") {
         toPage = "role";
       } else if (user.role == "doctor" && !personal) {

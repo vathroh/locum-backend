@@ -91,8 +91,8 @@ const getUserById = async (req, res) => {
 
     if (user.email_verified == false) {
       data.toPage = "email";
-    } else if (user.phone_number == "") {
-      data.toPage = "phone_number";
+      // } else if (user.phone_number == "") {
+      //   data.toPage = "phone_number";
     } else if (user.role == "user") {
       data.toPage = "role";
     } else if (data.role == "doctor" && !personalInfo) {
