@@ -189,9 +189,7 @@ const checkoutByAdmin = async (req, res) => {
 const setCheckout = async (jobId, userId) => {
   const data = await getData(jobId, userId);
   if (data.status === "Ready") {
-    res.status(403).json({
-      message: "You have to checkin before checkout!",
-    });
+    return { status: 403, message: "You have to checkin before checkout!" };
   } else if (data.status === "Completed") {
     return { status: 403, message: "You have already checkout" };
   } else if (data.status === "In Progress") {
