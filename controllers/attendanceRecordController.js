@@ -88,14 +88,41 @@ const checkin = async (req, res) => {
   }
 };
 
+function convertTime12To24(time) {
+  let timeQuery = "00:00";
+  const timeSplit = time.split(" ");
+  const ampm = timeSplit[1];
+
+  if (ampm === "AM") {
+    const thetime = timeSplit[0].split(":");
+
+    if (thetime[0] == "12") {
+      timeQuery = "00:" + thetime[1];
+    } else {
+      timeQuery = timeSplit[0];
+    }
+  } else if (ampm === "PM") {
+    const thetime = timeSplit[0].split(":");
+    const hour = parseInt(thetime[0]) + 12;
+
+    if (thetime[0] == "12") {
+      timeQuery = "12:" + thetime[1];
+    } else {
+      timeQuery = hour + ":" + thetime[1];
+    }
+  }
+  return timeQuery;
+}
+
 const checkinByAdmin = async (req, res) => {
   try {
     const jobId = req.params.jobId;
     const userId = req.body.user_id;
 
+    timeQuery = convertTime12To24(req.body.time);
+
     const job = await Job.findById(jobId);
     const date = DateTime.fromMillis(job.date).toFormat("yyyy-MM-dd");
-    const timeQuery = req.body.time;
     const time = DateTime.fromISO(date + "T" + timeQuery, {
       zone: "Asia/Singapore",
     }).toMillis();
@@ -173,7 +200,7 @@ const checkoutByAdmin = async (req, res) => {
 
     const job = await Job.findById(jobId);
     const date = DateTime.fromMillis(job.date).toFormat("yyyy-MM-dd");
-    const timeQuery = req.body.time;
+    timeQuery = convertTime12To24(req.body.time);
     const time = DateTime.fromISO(date + "T" + timeQuery, {
       zone: "Asia/Singapore",
     }).toMillis();
