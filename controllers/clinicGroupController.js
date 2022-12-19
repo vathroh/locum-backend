@@ -3,6 +3,7 @@ const { DateTime } = require("luxon");
 const ClinicGroup = require("../models/ClinicGroup");
 const Clinic = require("../models/Clinic");
 const { gen4RandomNumber } = require("../utils/genRandom/gen4RandomNumber");
+const User = require("../models/User");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -131,6 +132,14 @@ const documents = async (req, res) => {
       { _id: req.params.groupId },
       { $set: { documents: data } }
     );
+
+    // JUST FOR STAGIN ONLY
+
+    await User.updateOne(
+      { _id: req.user._id },
+      { $set: { role: "company_admin" } }
+    );
+
     res.status(200).json(updatedClinic);
   } catch (error) {
     res.status(400).json({ message: error.message });
