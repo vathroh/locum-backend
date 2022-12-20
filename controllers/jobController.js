@@ -368,10 +368,18 @@ const getJobByClinicId = async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   const offset = limit * page;
 
+  let filters = {};
+  filters.clinic = req.query.id;
+
+  if (req.query.profession) {
+    filters.profession = req.query.profession;
+  }
+
   try {
-    const totalRows = await Job.find({ clinic: req.query.id }).count();
+    const totalRows = await Job.find({ ...filters }).count();
     const totalPage = Math.ceil(totalRows / limit);
-    await Job.find({ clinic: req.query.id })
+
+    await Job.find({ ...filters })
       .lean()
       .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .sort({ work_time_start: -1 })
@@ -414,17 +422,20 @@ const upcomingByClinicId = async (req, res) => {
 
   try {
     const now = DateTime.now().toMillis();
+    let filters = {};
+    filters.clinic = req.query.id;
+    filters.work_time_start = { $gte: now };
 
-    const totalRows = await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
-    }).count();
+    if (req.query.profession) {
+      filters.profession = req.query.profession;
+    }
+
+    const totalRows = await Job.find({ ...filters }).count();
 
     const totalPage = Math.ceil(totalRows / limit);
 
     await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
+      ...filters,
     })
       .skip(offset)
       .limit(limit)
@@ -465,22 +476,27 @@ const EmptySlotsByClinicId = async (req, res) => {
   const page = parseInt(req.query.page) - 1 || 0;
   const limit = parseInt(req.query.limit) || 100;
   const offset = limit * page;
+  const now = DateTime.now().toMillis();
+
+  let filters = {};
+  filters.clinic = req.query.id;
+  filters.work_time_start = { $gte: now };
+  filters.booked_by = [];
+  filters.work_time_start = { $gte: now };
+
+  if (req.query.profession) {
+    filters.profession = req.query.profession;
+  }
 
   try {
-    const now = DateTime.now().toMillis();
-
     const totalRows = await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
-      booked_by: [],
+      ...filters,
     }).count();
 
     const totalPage = Math.ceil(totalRows / limit);
 
     await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
-      booked_by: [],
+      ...filters,
     })
       .skip(offset)
       .limit(limit)
@@ -522,13 +538,19 @@ const needApprovedByClinicId = async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   const offset = limit * page;
 
-  try {
-    const now = DateTime.now().toMillis();
+  const now = DateTime.now().toMillis();
+  let filters = {};
+  filters.clinic = req.query.id;
+  filters.work_time_start = { $gte: now };
+  filters.assigned_to = [];
 
+  if (req.query.profession) {
+    filters.profession = req.query.profession;
+  }
+
+  try {
     const totalRows = await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
-      assigned_to: [],
+      ...filters,
       $or: [
         {
           booked_by: { $ne: [] },
@@ -540,10 +562,13 @@ const needApprovedByClinicId = async (req, res) => {
     const totalPage = Math.ceil(totalRows / limit);
 
     await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
-      booked_by: { $ne: [] },
-      assigned_to: [],
+      ...filters,
+      $or: [
+        {
+          booked_by: { $ne: [] },
+        },
+        { rejected: { $ne: [] } },
+      ],
     })
       .skip(offset)
       .limit(limit)
@@ -586,24 +611,27 @@ const filledSlotsByClinicId = async (req, res) => {
   const page = parseInt(req.query.page) - 1 || 0;
   const limit = parseInt(req.query.limit) || 100;
   const offset = limit * page;
+  const now = DateTime.now().toMillis();
+
+  let filters = {};
+  filters.clinic = req.query.id;
+  filters.work_time_start = { $gte: now };
+  filters.booked_by = { $ne: [] };
+  filters.assigned_to = { $ne: [] };
+
+  if (req.query.profession) {
+    filters.profession = req.query.profession;
+  }
 
   try {
-    const now = DateTime.now().toMillis();
-
     const totalRows = await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
-      booked_by: { $ne: [] },
-      assigned_to: { $ne: [] },
+      ...filters,
     }).count();
 
     const totalPage = Math.ceil(totalRows / limit);
 
     await Job.find({
-      clinic: req.query.id,
-      work_time_start: { $gte: now },
-      booked_by: { $ne: [] },
-      assigned_to: { $ne: [] },
+      ...filters,
     })
       .skip(offset)
       .limit(limit)
