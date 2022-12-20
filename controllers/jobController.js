@@ -15,6 +15,7 @@ const { info } = require("winston");
 const ObjectId = require("mongoose/lib/types/objectid.js");
 const Preference = require("../models/Preference.js");
 const { setUrgentJobStatus } = require("../utils/job/setUrgentJob/index.js");
+const { checkPair } = require("../services/preferencesPair/checkPair");
 
 const getAllJobs = async (req, res) => {
   try {
@@ -842,12 +843,17 @@ const saveJob = async (req, res) => {
 
   req.body.code = string.slice(0, 10 - number.toString().length) + number;
 
-  return res.json(req.body);
+  const check = await checkPair(req.body.preferences);
 
-  // const check = await checkPair(preference_id);
+  if (check?.status === 400)
+    return res.status(check.status).json({ message: check.message });
 
-  // if (check?.status === 400)
-  //   return res.status(check.status).json({ message: check.message });
+  const checkCriteria = await checkPair(req.body.criterias);
+
+  if (checkCriteria?.status === 400)
+    return res
+      .status(checkCriteria?.status)
+      .json({ message: "Please check criteria items." });
 
   const data = await postData(req, res);
 
@@ -915,6 +921,18 @@ const updateJob = async (req, res) => {
   if (!jobId)
     return res.status(404).json({ message: "The slot is not found." });
   try {
+    const check = await checkPair(req.body.preferences);
+
+    if (check?.status === 400)
+      return res.status(check.status).json({ message: check.message });
+
+    const checkCriteria = await checkPair(req.body.criterias);
+
+    if (checkCriteria?.status === 400)
+      return res
+        .status(checkCriteria?.status)
+        .json({ message: "Please check criteria items." });
+
     const data = await postData(req, res);
     const updatedJob = await Job.updateOne(
       { _id: req.params.id },
