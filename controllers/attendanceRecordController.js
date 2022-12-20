@@ -317,6 +317,20 @@ const getAppointmentUserByDay = async (req, res) => {
           })
           .lean();
         user.job_id = item._id;
+
+        const attendance = await Record.findOne({
+          job_id: item._id,
+          user_id: user._id,
+        });
+
+        if (attendance) {
+          user.check_in = attendance.check_in ?? "";
+          user.check_out = attendance.check_out ?? "";
+        } else {
+          user.check_in = "";
+          user.check_out = "";
+        }
+
         users.push(user);
       });
 
