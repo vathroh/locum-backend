@@ -1,4 +1,5 @@
 const { authJwtMiddleware } = require("../middleware/authMiddleware");
+const mustChoosePreference = require("./mustChoosePreferenceRoutes");
 const attendanceRoute = require("./attendanceRecordRoutes.js");
 const doctorRanksRoute = require("./doctorRanksRoutes.js");
 const clinicRoute = require("./clinicRoutes.js");
@@ -25,6 +26,7 @@ module.exports = function (app) {
     require("./certificateItemRoutes")
   );
 
+  app.use("/must-choose-preferences", mustChoosePreference);
   app.use("/achievement", authJwtMiddleware, require("./achievementRoutes"));
   app.use("/certificates", authJwtMiddleware, require("./certificateRoutes"));
   app.use("/clinic-group", authJwtMiddleware, require("./clinicGroupRoutes"));
