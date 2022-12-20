@@ -323,12 +323,30 @@ const getAppointmentUserByDay = async (req, res) => {
           user_id: user._id,
         });
 
+        const convertFromMilis = (time) => {
+          if (time > 0) {
+            return DateTime.fromMillis(time)
+              .setZone("Asia/Singapore")
+              .toLocaleString(DateTime.TIME_SIMPLE);
+          } else {
+            return "";
+          }
+        };
+
         if (attendance) {
-          user.check_in = attendance.check_in ?? "";
-          user.check_out = attendance.check_out ?? "";
+          const check_in = convertFromMilis(attendance.check_in).split(" ");
+          const check_out = convertFromMilis(attendance.check_out).split(" ");
+
+          user.check_in_time = check_in[0] ?? "";
+          user.check_in_meridiem = check_in[1] ?? "";
+
+          user.check_out_time = check_out[0] ?? "";
+          user.check_out_meridiem = check_out[1] ?? "";
         } else {
-          user.check_in = "";
-          user.check_out = "";
+          user.check_in_time = "";
+          user.check_in_meridiem = "";
+          user.check_out_time = "";
+          user.check_out_meridiem = "";
         }
 
         users.push(user);
