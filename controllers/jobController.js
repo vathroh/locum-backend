@@ -842,6 +842,13 @@ const saveJob = async (req, res) => {
 
   req.body.code = string.slice(0, 10 - number.toString().length) + number;
 
+  return res.json(req.body);
+
+  // const check = await checkPair(preference_id);
+
+  // if (check?.status === 400)
+  //   return res.status(check.status).json({ message: check.message });
+
   const data = await postData(req, res);
 
   const job = new Job(data);
@@ -1251,6 +1258,15 @@ const statusJob = (e, req) => {
 
 const formatData = (data) => {
   return data.map((e) => {
+    let price = 0;
+    if (e.urgent_status == "24") {
+      price = e.urgent_price_24;
+    } else if (e.urgent_status == "72") {
+      price = e.urgent_price_72;
+    } else {
+      price = e.price;
+    }
+
     return {
       _id: e._id,
       code: e.code ?? "",
@@ -1283,12 +1299,7 @@ const formatData = (data) => {
       status: e.status ?? "",
       isFavorite: e.isFavorite ?? false,
       image: process.env.BASE_URL + e.image ?? "",
-      price:
-        e.urgent_status == "24"
-          ? e.urgent_status == "72"
-            ? e.urgent_price_24
-            : e.urgent_price_72
-          : e.price,
+      price: price,
       duration: Duration.fromMillis(e.work_time_finish - e.work_time_start)
         .shiftTo("hours")
         .toObject(),
