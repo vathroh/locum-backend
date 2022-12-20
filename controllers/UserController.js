@@ -10,6 +10,8 @@ const ObjectId = require("mongoose/lib/types/objectid.js");
 const Preferences = require("../models/Preference");
 const { listenerCount } = require("process");
 const Preference = require("../models/Preference");
+const { getPair } = require("../services/preferencesPair/index.js");
+const { checkPair } = require("../services/preferencesPair/checkPair.js");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -254,9 +256,10 @@ const postPreferences = async (req, res) => {
     const user = await User.findById(req.params.userId);
     const preferences = user.preferences;
 
-    preference_id.map((data) => {
-      preferences.push(data);
-    });
+    const check = await checkPair(preference_id);
+
+    if (check?.status === 400)
+      return res.status(check.status).json({ message: check.message });
 
     let newPreferences = [...new Set(preferences)];
 

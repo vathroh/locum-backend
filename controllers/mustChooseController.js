@@ -9,20 +9,10 @@ const getMustChoosePreferences = async (req, res) => {
   }
 };
 
-const getMustChoosePreferencesByItem = async (req, res) => {
-  try {
-    const device = await MustChoose.find();
-    res.json(device);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 const saveMustChoosePreference = async (req, res) => {
-  //   return res.json(req.query);
   try {
     const isExists = await MustChoose.findOne({
-      items: req.query.item,
+      items: { $in: [req.query.item] },
     });
     if (isExists) return res.json(isExists);
 
@@ -34,16 +24,20 @@ const saveMustChoosePreference = async (req, res) => {
   }
 };
 
-const getDeviceById = async (req, res) => {
+const getPair = async (req, res) => {
   try {
-    const device = await MustChoose.findById(req.params.id);
-    res.json(device);
+    const preferences = await MustChoose.findOne({
+      items: { $in: [req.query.item] },
+    });
+
+    const pair = preferences.items.filter((item) => item !== req.query.item);
+    res.json(pair);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
 };
 
-const updateDevice = async (req, res) => {
+const updatePair = async (req, res) => {
   try {
     const cekId = await MustChoose.findById(req.params.id);
     if (!cekId)
@@ -60,7 +54,7 @@ const updateDevice = async (req, res) => {
   }
 };
 
-const deleteDevice = async (req, res) => {
+const deletePair = async (req, res) => {
   try {
     const cekId = await MustChoose.findById(req.params.id);
     if (!cekId)
@@ -75,4 +69,8 @@ const deleteDevice = async (req, res) => {
   }
 };
 
-module.exports = { getMustChoosePreferences, saveMustChoosePreference };
+module.exports = {
+  getMustChoosePreferences,
+  saveMustChoosePreference,
+  getPair,
+};
