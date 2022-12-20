@@ -30,8 +30,12 @@ const getPair = async (req, res) => {
       items: { $in: [req.query.item] },
     });
 
-    const pair = preferences.items.filter((item) => item !== req.query.item);
-    res.json(pair);
+    if (preferences) {
+      const pair = preferences.items.filter((item) => item !== req.query.item);
+      return res.status(400).json(pair);
+    } else {
+      return res.status(200).json([]);
+    }
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
