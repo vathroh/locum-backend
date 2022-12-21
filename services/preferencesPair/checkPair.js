@@ -1,7 +1,8 @@
 const { getPair } = require(".");
 
-const checkPair = async (preferences) => {
+const checkPair = async (data) => {
   const isExists = [];
+  const preferences = data;
 
   if (preferences.length > 0) {
     const checking = preferences?.map(async (data) => {
