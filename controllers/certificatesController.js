@@ -19,13 +19,16 @@ const saveCertificate = async (req, res) => {
     if (!req.file)
       return res.status(400).json({ message: "The file is empty" });
 
-    if (!req.body.item)
-      return res.status(400).json({ message: "The item must not empty" });
+    if (!req.body.certificate)
+      return res
+        .status(400)
+        .json({ message: "The certificate must not empty" });
 
     data = {};
     data.user_id = req.params.userId;
-    data.item = req.body.item;
+    data.certificate = req.body.certificate;
     data.file = "/" + req.file?.destination + "/" + req.file?.filename;
+
     const certificate = new Certificate(data);
     await certificate.save();
 
@@ -46,7 +49,9 @@ const getCertificate = async (req, res) => {
   try {
     const certificate = await Certificate.find({
       user_id: ObjectId(req.user._id),
-    }).lean();
+    })
+      .populate({ path: "certificate", select: "item" })
+      .lean();
 
     const data = [];
 
@@ -54,7 +59,7 @@ const getCertificate = async (req, res) => {
       const response = {
         _id: item._id,
         user_id: item.user_id,
-        item: item.item,
+        certificate: item.certificate,
         file: item.file,
         verification: {
           isVerified: item.verification?.isVerified ?? false,
@@ -84,7 +89,7 @@ const editCertificate = async (req, res) => {
       return res.status(400).json({ message: "The item must not empty" });
 
     data = {};
-    data.item = req.body.item;
+    data.certificate = req.body.certificate;
     data.file = "/" + req.file?.destination + "/" + req.file?.filename;
 
     const certificate = await Certificate.updateOne(

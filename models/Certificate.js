@@ -7,8 +7,10 @@ const CertificateSchema = mongoose.Schema({
     ref: "User",
     exists: true,
   },
-  item: {
-    type: String,
+  certificate: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Certificateitem",
+    exists: true,
   },
   file: {
     type: String,
