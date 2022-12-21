@@ -9,8 +9,8 @@ const {
 } = require("../controllers/certificatesController");
 
 router.get("/:userId", getCertificate);
-router.post("/:userId", upload.single("certificate"), saveCertificate);
-router.put("/:certificateId", upload.single("certificate"), editCertificate);
+router.post("/:userId", upload.single("file"), saveCertificate);
+router.put("/:certificateId", upload.single("file"), editCertificate);
 router.delete("/:certificateId", deleteCertificate);
 
 module.exports = router;
