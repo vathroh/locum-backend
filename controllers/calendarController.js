@@ -85,7 +85,7 @@ const getEventsByClinicByMonth = async (req, res) => {
   try {
     const monthQuery = parseInt(req.query.month);
     const yearQuery = parseInt(req.query.year);
-    const filters = {
+    let filters = {
       clinic_id: req.query.clinicId,
     };
     const getevents = await events(filters, monthQuery, yearQuery);
@@ -101,7 +101,7 @@ const getEventsByUserByMonth = async (req, res) => {
     const userId = req.query.user_id;
     const monthQuery = parseInt(req.query.month);
     const yearQuery = parseInt(req.query.year);
-    const filters = {
+    let filters = {
       $or: [{ user_id: userId }, { attendees: { $in: [userId] } }],
     };
     const getevents = await events(filters, monthQuery, yearQuery);
