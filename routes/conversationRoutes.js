@@ -67,6 +67,7 @@ router.get("/users/:userId", async (req, res) => {
     })
       .lean()
       .then(async (data) => {
+        console.log(data);
         data.map((item) => {
           item.members.map((e) => {
             if (e !== req.params.userId) {
@@ -80,25 +81,30 @@ router.get("/users/:userId", async (req, res) => {
     const users = new Array();
 
     const getUsers = user.map(async (item) => {
-      const user = await User.findById(item.user_id)
-        .select({
-          role_id: 1,
-          role: 1,
-          full_name: 1,
-          profile_pict: 1,
-        })
-        .lean();
+      const isExists = await User.findById(item.user_id);
+      console.log(isExists);
 
-      user.conversation_id = item._id;
-      user.last_message = "";
-      user.time_message = "";
+      if (isExists) {
+        const user = await User.findById(item.user_id)
+          .select({
+            role_id: 1,
+            role: 1,
+            full_name: 1,
+            profile_pict: 1,
+          })
+          .lean();
 
-      if (!user.profile_pict) {
-        user.profile_pict = "";
-      } else {
-        user.profile_pict = process.env.BASE_URL + user.profile_pict;
+        user.conversation_id = item._id;
+        user.last_message = "";
+        user.time_message = "";
+
+        if (!user.profile_pict) {
+          user.profile_pict = "";
+        } else {
+          user.profile_pict = process.env.BASE_URL + user.profile_pict;
+        }
+        users.push(user);
       }
-      users.push(user);
     });
 
     await Promise.all(getUsers);
