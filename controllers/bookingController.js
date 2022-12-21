@@ -82,8 +82,8 @@ const createBooking = async (req, res) => {
           const sendingChats = uniqueReceiver.map(async (userId) => {
             const conversation = await createConversation(req.user._id, userId);
 
-            const type = "";
-            const text = "";
+            let type = "";
+            let text = "";
 
             if (jobId.listing_type === "automated_listing") {
               type = "badge";
