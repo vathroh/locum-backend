@@ -152,8 +152,12 @@ const deleteBooking = async (req, res) => {
       user !== req.body.user_id;
     });
 
+    const canceledBy = [];
+    canceledBy.push(req.user._id);
+
     updatedData.booked_by = book;
     updatedData.assigned_to = assigned;
+    updatedData.canceled_by = canceledBy;
 
     const calendar = await Calendar.findOne({
       job_id: jobId._id,
