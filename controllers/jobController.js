@@ -868,10 +868,18 @@ const sharedTo = async (data) => {
 
 const saveJob = async (req, res) => {
   const clinic = await Clinic.findById(req.body.clinic).select({ initials: 1 });
-  const count = await Job.find({ clinic: ObjectId(req.body.clinic) }).count();
+  const last = await Job.find({ clinic: ObjectId(req.body.clinic) })
+    .sort({ createdAt: -1 })
+    .limit(1);
+
+  let count = 0;
+  if (last.length > 0) {
+    const lastCode = last[0].code;
+    count = parseInt(lastCode.split("-")[1]);
+  }
+
   const number = parseInt(count) + 1;
   const string = clinic?.initials + "-000000";
-
   req.body.code = string.slice(0, 10 - number.toString().length) + number;
 
   const check = await checkPair(req.body.preferences);
@@ -887,8 +895,6 @@ const saveJob = async (req, res) => {
       .json({ message: "Please check criteria items." });
 
   const data = await postData(req, res);
-
-  console.log(data);
 
   const job = new Job(data);
 
