@@ -888,6 +888,8 @@ const saveJob = async (req, res) => {
 
   const data = await postData(req, res);
 
+  console.log(data);
+
   const job = new Job(data);
 
   try {
