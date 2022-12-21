@@ -46,9 +46,27 @@ const getCertificate = async (req, res) => {
   try {
     const certificate = await Certificate.find({
       user_id: ObjectId(req.user._id),
+    }).lean();
+
+    const data = [];
+
+    certificate.map((item) => {
+      const response = {
+        _id: item._id,
+        user_id: item.user_id,
+        item: item.item,
+        file: item.file,
+        verification: {
+          isVerified: item.verification?.isVerified ?? false,
+          user_id: item.verification?.user_id ?? "",
+          date_time: item.verification?.date_time ?? "",
+        },
+      };
+
+      data.push(response);
     });
 
-    res.json(certificate);
+    res.json(data);
   } catch (error) {
     certificateLogger.error(
       `url: ${req.originalUrl}, error: ${error.message}, user:${req.params.userId}`

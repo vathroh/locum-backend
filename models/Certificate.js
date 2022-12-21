@@ -2,17 +2,31 @@ const mongoose = require("mongoose");
 const exists = require("mongoose-exists");
 
 const CertificateSchema = mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    exists: true,
+  },
+  item: {
+    type: String,
+  },
+  file: {
+    type: String,
+  },
+  verification: {
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
     user_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        exists: true,
+      type: String,
+      default: "",
     },
-    item: {
-        type: String,
+    date_time: {
+      type: Number,
+      default: 0,
     },
-    file: {
-        type: String,
-    },
+  },
 });
 
 CertificateSchema.plugin(exists);
