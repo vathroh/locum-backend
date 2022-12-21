@@ -2,13 +2,13 @@ const { getPair } = require(".");
 
 const checkPair = async (data) => {
   const isExists = [];
-  const preferences = [];
+  let preferences = [];
 
   console.log(typeof data);
-  if (typeof data === "array") {
-    preferences = data;
-  } else {
+  if (typeof data === "string") {
     preferences.push(data);
+  } else {
+    preferences = data;
   }
 
   const checking = preferences?.map(async (data) => {
