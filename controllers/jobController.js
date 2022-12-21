@@ -801,13 +801,44 @@ const getCalendarJobByClinicId = async (req, res) => {
   }
 };
 
+const duplicateJob = async (req, res) => {
+  const job = await Job.findById(req.params.jobId).lean();
+
+  if (!job)
+    return res.status(404).json({ message: "The slot cannot be found." });
+
+  const newJob = job;
+  delete newJob._id;
+  delete newJob.code;
+  delete newJob.createdAt;
+  delete newJob.updatedAt;
+  delete newJob.__v;
+  newJob.booked_by = [];
+  newJob.assigned_to = [];
+  newJob.canceled_by = [];
+  newJob.rejected = [];
+  newJob.completed = false;
+  req.body = newJob;
+
+  // return res.json(newJob);
+  saveJob(req, res);
+};
+
 const postManualListing = (req, res) => {
   req.body.listing_type = "manual_listing";
+
+  if (!req.file)
+    return res.status(400).json({ message: "The image must not empty." });
+
   saveJob(req, res);
 };
 
 const postAutomatedListing = (req, res) => {
   req.body.listing_type = "automated_listing";
+
+  if (!req.file)
+    return res.status(400).json({ message: "The image must not empty." });
+
   saveJob(req, res);
 };
 
@@ -815,6 +846,9 @@ const postDirectListing = async (req, res) => {
   req.body.listing_type = "direct_listing";
   const data = await sharedTo(req.body);
   req.body = data;
+
+  if (!req.file)
+    return res.status(400).json({ message: "The image must not empty." });
 
   await saveJob(req, res);
 };
@@ -833,9 +867,6 @@ const sharedTo = async (data) => {
 };
 
 const saveJob = async (req, res) => {
-  if (!req.file)
-    return res.status(400).json({ message: "The image must not empty." });
-
   const clinic = await Clinic.findById(req.body.clinic).select({ initials: 1 });
   const count = await Job.find({ clinic: ObjectId(req.body.clinic) }).count();
   const number = parseInt(count) + 1;
@@ -876,35 +907,47 @@ const postData = async (req, res) => {
   }
 
   data.break = {};
-  data.work_time_start = DateTime.fromISO(
-    req.body.date + "T" + req.body.work_time_start,
-    { zone: "Asia/Singapore" }
-  ).toMillis();
+  if (typeof req.body.work_time_start == "string") {
+    data.work_time_start = DateTime.fromISO(
+      req.body.date + "T" + req.body.work_time_start,
+      { zone: "Asia/Singapore" }
+    ).toMillis();
+  }
 
-  data.work_time_finish = DateTime.fromISO(
-    req.body.date + "T" + req.body.work_time_finish,
-    { zone: "Asia/Singapore" }
-  ).toMillis();
+  if (typeof req.body.work_time_finish == "string") {
+    data.work_time_finish = DateTime.fromISO(
+      req.body.date + "T" + req.body.work_time_finish,
+      { zone: "Asia/Singapore" }
+    ).toMillis();
+  }
 
-  data.break.start = req.body.break_start
-    ? DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
-        zone: "Asia/Singapore",
-      }).toMillis()
-    : 0;
+  if (typeof req.body.break_start == "string") {
+    data.break.start = req.body.break_start
+      ? DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
+          zone: "Asia/Singapore",
+        }).toMillis()
+      : 0;
+  }
 
-  data.break.finish = req.body.break_finish
-    ? DateTime.fromISO(req.body.date + "T" + req.body.break_finish, {
-        zone: "Asia/Singapore",
-      }).toMillis()
-    : 0;
+  if (typeof req.body.break_finish == "string") {
+    data.break.finish = req.body.break_finish
+      ? DateTime.fromISO(req.body.date + "T" + req.body.break_finish, {
+          zone: "Asia/Singapore",
+        }).toMillis()
+      : 0;
+  }
 
-  const a = DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
-    zone: "Asia/Singapore",
-  }).toMillis();
+  if (typeof req.body.date == "string") {
+    const a = DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
+      zone: "Asia/Singapore",
+    }).toMillis();
+  }
 
-  data.date = DateTime.fromISO(req.body.date, {
-    zone: "Asia/Singapore",
-  }).toMillis();
+  if (typeof req.body.date == "string") {
+    data.date = DateTime.fromISO(req.body.date, {
+      zone: "Asia/Singapore",
+    }).toMillis();
+  }
 
   let body = data;
   if (data.listing_type == "direct_listing") {
@@ -1530,6 +1573,7 @@ module.exports = {
   getExploreJobs,
   getCurrentJob,
   youMightLike,
+  duplicateJob,
   filteredJob,
   setFavorite,
   formatData,

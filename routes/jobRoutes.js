@@ -30,6 +30,7 @@ const {
   getPastJobs,
   filteredJob,
   youMightLike,
+  duplicateJob,
   getCurrentJob,
   getExploreJobs,
   getCurrentSlot,
@@ -68,6 +69,7 @@ router.get("/favorites-by-user/:userId", favoritesByUser);
 router.get("/need-approval", needApprovedByClinicId);
 router.get("/upcoming/clinic", upcomingByClinicId);
 router.post("/set-favorite/:jobId", setFavorite);
+router.post("/duplicate/:jobId", duplicateJob);
 router.get("/get-current-job", getCurrentJob);
 router.get("/doctor", getUpcomingDoctorJobs);
 router.get("/you-might-like", youMightLike);
