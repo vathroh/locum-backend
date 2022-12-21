@@ -1,8 +1,7 @@
-// import mongoose
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
+const existsValidator = require("mongoose-exists");
 
-// Buat Schema
 const Job = mongoose.Schema(
   {
     code: {
@@ -66,11 +65,15 @@ const Job = mongoose.Schema(
     preferences: [
       {
         type: String,
+        ref: "Preference",
+        exists: true,
       },
     ],
     criterias: [
       {
         type: String,
+        ref: "Preference",
+        exists: true,
       },
     ],
     booked_by: [
@@ -118,5 +121,6 @@ const Job = mongoose.Schema(
 );
 
 Job.plugin(uniqueValidator);
-// export model
+Job.plugin(existsValidator);
+
 module.exports = mongoose.model("Job", Job);

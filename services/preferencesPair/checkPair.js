@@ -11,8 +11,6 @@ const checkPair = async (preferences) => {
         if (preferences.includes(item)) isExists.push(item);
       });
     }
-
-    preferences.push(data);
   });
 
   if (checking) await Promise.all(checking);

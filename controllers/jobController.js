@@ -896,10 +896,12 @@ const saveJob = async (req, res) => {
 
   const data = await postData(req, res);
 
+  return res.json(data);
+
   const job = new Job(data);
 
   try {
-    const savedJob = await job.save();
+    // const savedJob = await job.save();
     res.status(200).json(savedJob);
   } catch (error) {
     res.status(400).json({ message: error.message });
