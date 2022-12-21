@@ -4,7 +4,6 @@ const checkPair = async (data) => {
   const isExists = [];
   let preferences = [];
 
-  console.log(typeof data);
   if (typeof data === "string") {
     preferences.push(data);
   } else {

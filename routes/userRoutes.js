@@ -18,6 +18,7 @@ const {
   personalInformation,
   updateProfilePicture,
   practicingInformation,
+  registrationStepNumber,
 } = require("../controllers/UserController.js");
 
 const { updateUserModel } = require("../services/updateModels/user");
@@ -66,6 +67,7 @@ router.put(
 router.get("/get-inclusion-by-clinic", getWhitelistByClinic);
 router.get("/get-exclusion-by-clinic", getBlacklistByClinic);
 router.put("/delete-preferences/:userId", deletePreferences);
+router.get("/step-of-registration", registrationStepNumber);
 router.put("/edit-preferences/:userId", editPreferences);
 router.post("/delete-exclusion", removeFromBlacklist);
 router.post("/delete-inclusion", removeFromWhitelist);

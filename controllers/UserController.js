@@ -461,6 +461,32 @@ const me = async (req, res) => {
   }
 };
 
+const registrationStepNumber = async (req, res) => {
+  try {
+    const user = await User.findById(req.query.user_id);
+    const personal = await Personal.findOne({ user_id: req.query.user_id });
+    const practicing = await practicingDocument.findOne({
+      user_id: req.query.user_id,
+    });
+    const document = await Document.findOne({ user_id: req.query.user_id });
+
+    let step = 0;
+    if (user.status === "verified") {
+      step = 4;
+    } else if (document) {
+      step = 3;
+    } else if (personal || practicing) {
+      step = 2;
+    } else if (user.role !== "user") {
+      step = 1;
+    }
+
+    res.json({ user_id: user._id, full_name: user.full_name, step: step });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 const findUser = async (req, res) => {
   try {
     const filters = {};
@@ -505,4 +531,5 @@ module.exports = {
   personalInformation,
   updateProfilePicture,
   practicingInformation,
+  registrationStepNumber,
 };
