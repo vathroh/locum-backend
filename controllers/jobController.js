@@ -1357,9 +1357,6 @@ const formatData = (data) => {
         clinicName: e.clinic.clinicName ?? "",
         clinicAddress: e.clinic.clinicAddress ?? "",
       },
-      date: e.date ?? "",
-      work_time_start: e.work_time_start ?? 0,
-      work_time_finish: e.work_time_finish ?? 0,
       break: {
         start: e.break?.start
           ? DateTime.fromMillis(e.break.start)
