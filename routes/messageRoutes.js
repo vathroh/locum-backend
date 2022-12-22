@@ -72,11 +72,13 @@ router.get("/:conversationId", async (req, res) => {
 
 router.get("/mobile/:conversationId", async (req, res) => {
   try {
+    const conversation = await Conversation.findById(req.params.conversationId);
+    if (!conversation)
+      return res.status(404).json({ message: "Wrong conversation Id" });
+
     const totalRows = await Message.find({
       conversation_id: req.params.conversationId,
     }).count();
-
-    console.log(totalRows);
 
     const limit = parseInt(req.query.limit) || 100;
     const totalPage = Math.ceil(totalRows / limit);
