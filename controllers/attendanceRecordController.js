@@ -68,7 +68,7 @@ const getData = async (jobId, userId) => {
 
 const getNewAttendance = async (req, res) => {
   try {
-    const data = await getData(req, res);
+    const data = await getData(req.params.jobId, req.user._id);
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });

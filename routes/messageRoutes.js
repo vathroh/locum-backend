@@ -76,6 +76,8 @@ router.get("/mobile/:conversationId", async (req, res) => {
       conversation_id: req.params.conversationId,
     }).count();
 
+    console.log(totalRows);
+
     const limit = parseInt(req.query.limit) || 100;
     const totalPage = Math.ceil(totalRows / limit);
     const page = parseInt(req.query.page) || totalPage;
