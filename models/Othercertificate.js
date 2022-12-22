@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const exists = require("mongoose-exists");
 
-const CertificateSchema = mongoose.Schema({
+const OtherCertificateSchema = mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -30,6 +30,6 @@ const CertificateSchema = mongoose.Schema({
   },
 });
 
-CertificateSchema.plugin(exists);
+OtherCertificateSchema.plugin(exists);
 
-module.exports = mongoose.model("Certificate", CertificateSchema);
+module.exports = mongoose.model("OtherCertificate", OtherCertificateSchema);

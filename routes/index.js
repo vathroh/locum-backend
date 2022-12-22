@@ -26,6 +26,7 @@ module.exports = function (app) {
     require("./certificateItemRoutes")
   );
 
+  app.use("/other-certificate", require("./otherCertificateRoutes"));
   app.use("/must-choose-preferences", mustChoosePreference);
   app.use("/achievement", authJwtMiddleware, require("./achievementRoutes"));
   app.use("/certificates", authJwtMiddleware, require("./certificateRoutes"));

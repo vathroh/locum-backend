@@ -1,38 +1,67 @@
-const OtherCertificate = require("../models/Device");
+const OtherCertificate = require("../models/Othercertificate");
+const multer = require("multer");
 
-const getDevices = async (req, res) => {
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images/user");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+const getOtherCertificate = async (req, res) => {
   try {
-    const device = await Device.find();
-    res.json(device);
+    const certificates = await OtherCertificate.find();
+    res.json(certificates);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// const getDeviceById = async (req, res) => {
-//   try {
-//     const device = await Device.findById(req.params.id);
-//     res.json(device);
-//   } catch (error) {
-//     res.status(404).json({ message: error.message });
-//   }
-// };
+const getOtherCertificateByUser = async (req, res) => {
+  try {
+    const certificates = await OtherCertificate.find({
+      user_id: req.params.userId,
+    });
+    res.json(certificates);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
 
-// const saveDevice = async (req, res) => {
-//   try {
-//     const isExists = await Device.findOne({
-//       user_id: req.body.user_id,
-//       device_id: req.body.device_id,
-//     });
-//     if (isExists) return res.json(isExists);
+const saveOtherCertificate = async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: "The file is empty" });
 
-//     const device = new Device(req.body);
-//     const savedDevice = await device.save();
-//     res.status(200).json(savedDevice);
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+  if (!req.body.certificate)
+    return res.status(400).json({ message: "The certificate must not empty" });
+
+  data = {};
+  data.user_id = req.body.user_id;
+  data.certificate = req.body.certificate;
+  data.file = "/" + req.file?.destination + "/" + req.file?.filename;
+
+  try {
+    const isExists = await OtherCertificate.findOne({
+      user_id: req.body.user_id,
+      certificate: req.body.certificate,
+    });
+    console.log(isExists);
+    if (isExists)
+      return res.status(400).json({
+        message:
+          "The certificate has been uploaded before. Please upload other.",
+      });
+
+    const otherCertificate = new OtherCertificate(data);
+    const certificate = await otherCertificate.save();
+    res.status(200).json(certificate);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // const updateDevice = async (req, res) => {
 //   try {
@@ -66,4 +95,9 @@ const getDevices = async (req, res) => {
 //   }
 // };
 
-module.exports = {};
+module.exports = {
+  getOtherCertificate,
+  getOtherCertificateByUser,
+  saveOtherCertificate,
+  upload,
+};

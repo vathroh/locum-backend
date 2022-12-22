@@ -104,8 +104,6 @@ router.get("/mobile/:conversationId", async (req, res) => {
       .limit(limit)
       .lean();
 
-    console.log(messages);
-
     const data = [];
 
     messages.map((message) => {
@@ -123,7 +121,6 @@ router.get("/mobile/:conversationId", async (req, res) => {
       msg.is_read = message.is_read ?? false;
       msg.date_time = "";
 
-      console.log(msg);
       data.push(msg);
     });
 
