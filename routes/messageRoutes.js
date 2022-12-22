@@ -117,7 +117,7 @@ router.get("/mobile/:conversationId", async (req, res) => {
 
     return res.json(data);
   } catch (error) {
-    return res.json(500).json({ message: error });
+    return res.status(500).json({ message: error });
   }
 });
 
