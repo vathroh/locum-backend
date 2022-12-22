@@ -82,6 +82,7 @@ router.get("/mobile/:conversationId", async (req, res) => {
       return res.status(404).json({ message: "Wrong conversation Id" });
 
     console.log(conversation);
+    console.log(req.params);
 
     const totalRows = await Message.find({
       conversation_id: req.params.conversationId,
