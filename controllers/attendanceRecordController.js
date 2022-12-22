@@ -68,7 +68,7 @@ const getData = async (jobId, userId) => {
 
 const getNewAttendance = async (req, res) => {
   try {
-    const job = await Job.findJobById(req.params.jobId);
+    const job = await Job.findById(req.params.jobId);
     if (!job) return res.status(404).json({ message: "Slot not found" });
 
     const data = await getData(req.params.jobId, req.user._id);
