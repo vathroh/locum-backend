@@ -321,6 +321,18 @@ const getJobById = async (req, res) => {
         data.date = DateTime.fromMillis(data.date)
           .setZone("Asia/Singapore")
           .toFormat("dd LLLL yyyy");
+        data.break = {
+          start: data.break?.start
+            ? DateTime.fromMillis(data.break.start)
+                .setZone("Asia/Singapore")
+                .toLocaleString(DateTime.TIME_SIMPLE)
+            : "",
+          finish: data.break?.finish
+            ? DateTime.fromMillis(data.break.finish)
+                .setZone("Asia/Singapore")
+                .toLocaleString(DateTime.TIME_SIMPLE)
+            : "",
+        };
 
         if (data.urgent_status == "24") {
           data.price = data.urgent_price_24;
