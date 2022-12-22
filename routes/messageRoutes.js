@@ -58,7 +58,7 @@ router.get("/:conversationId", async (req, res) => {
       data.push(msg);
     });
 
-    res.json({
+    return res.json({
       page: page,
       limit: limit,
       totalRows: totalRows,
@@ -66,7 +66,7 @@ router.get("/:conversationId", async (req, res) => {
       data: data,
     });
   } catch (error) {
-    res.json(500).json({ message: error });
+    return res.json(500).json({ message: error });
   }
 });
 
@@ -115,9 +115,9 @@ router.get("/mobile/:conversationId", async (req, res) => {
       data.push(msg);
     });
 
-    res.json(data);
+    return res.json(data);
   } catch (error) {
-    res.json(500).json({ message: error });
+    return res.json(500).json({ message: error });
   }
 });
 
