@@ -185,7 +185,7 @@ const get3DaysEventByUserId = async (req, res) => {
     const item = {};
     const date = DateTime.now().plus({ days: i });
     item.date = date.toFormat("dd LLL");
-    item.event = "No Appoinment";
+    item.event = "No Slot";
 
     const cal = await Calendar.find({
       user_id: req.params.userId,
