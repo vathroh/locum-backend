@@ -13,6 +13,10 @@ router.post("/", async (req, res) => {
 
 router.get("/:conversationId", async (req, res) => {
   try {
+    const conversation = await Conversation.findById(req.params.conversationId);
+    if (!conversation)
+      return res.status(404).json({ message: "Wrong conversation Id" });
+
     const totalRows = await Message.find({
       conversation_id: req.params.conversationId,
     }).count();
