@@ -1,14 +1,22 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
+const exists = require("mongoose-exists");
 
 const ConversationSchema = new mongoose.Schema(
-    {
-        members: {
-            type: Array
-        }
-    },
-    {
-        timestamps: true
-    }
-)
+  {
+    members: [
+      {
+        type: String,
+        required: true,
+        ref: "User",
+        exists: true,
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
-module.exports = mongoose.model("Conversation", ConversationSchema)
+ConversationSchema.plugin(exists);
+
+module.exports = mongoose.model("Conversation", ConversationSchema);

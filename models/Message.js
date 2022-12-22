@@ -1,17 +1,62 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const MessageSchema = new mongoose.Schema(
-    {
-        conversation_id: {
-            type: String
-        },
-        sender: {
-            type: String
-        },
-        text: {
-            type: String
-        }
-    }
-)
+  {
+    type: {
+      type: String,
+      required: true,
+      enum: [
+        "text",
+        "badge",
+        "datetime",
+        "locumCard",
+        "clinicCard",
+        "image",
+        "video",
+        "audio",
+      ],
+    },
+    conversation_id: {
+      type: String,
+      required: true,
+    },
+    sender: {
+      type: String,
+      required: true,
+    },
+    card: {
+      title: {
+        type: String,
+      },
+      subtitle: {
+        type: String,
+      },
+      date: {
+        type: String,
+      },
+      work_time_start: {
+        type: String,
+      },
+      work_time_finish: {
+        type: String,
+      },
+    },
+    text: {
+      type: String,
+    },
+    is_read: {
+      type: Boolean,
+      default: false,
+    },
+    is_deleted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+    underscored: true,
+  }
+);
 
-module.exports = mongoose.model("Message", MessageSchema)
+module.exports = mongoose.model("Message", MessageSchema);

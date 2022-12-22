@@ -16,7 +16,7 @@
     "amqplib": "^0.10.3",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
-    "connect-mongodb-session": "^3.1.1",
+    "connect-mongo": "^4.6.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
@@ -39,9 +39,10 @@
     "node-fetch": "^3.2.10",
     "nodemailer": "^6.7.8",
     "nodemon": "^2.0.19",
-    "socket.io": "^4.5.2",
+    "react-cookie": "^4.1.1",
     "twilio": "^3.83.0",
+    "uniqid": "^5.4.0",
     "winston": "^3.8.2",
-    "winston-mongodb": "^5.1.0"
+    "ws": "^8.11.0"
   }
 }
