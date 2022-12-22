@@ -55,6 +55,7 @@ const MessageSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    underscored: true,
   }
 );
 
