@@ -1167,8 +1167,9 @@ const searchJob = async (req, res) => {
           data.push(e);
         }
       });
+
       jobs.filter((e) => {
-        let clinic = e.location.toLowerCase();
+        let clinic = e.clinic.location.toLowerCase();
         if (clinic.search(req.query.keyword.toLowerCase()) > -1) {
           data.push(e);
         }
