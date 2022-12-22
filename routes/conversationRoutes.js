@@ -67,7 +67,6 @@ router.get("/users/:userId", async (req, res) => {
     })
       .lean()
       .then(async (data) => {
-        console.log(data);
         data.map((item) => {
           item.members.map((e) => {
             if (e !== req.params.userId) {
@@ -82,7 +81,6 @@ router.get("/users/:userId", async (req, res) => {
 
     const getUsers = user.map(async (item) => {
       const isExists = await User.findById(item.user_id);
-      console.log(isExists);
 
       if (isExists) {
         const user = await User.findById(item.user_id)
