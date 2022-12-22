@@ -19,7 +19,7 @@ const OtherCertificateSchema = mongoose.Schema({
       type: Boolean,
       default: false,
     },
-    user_id: {
+    verified_by: {
       type: String,
       default: "",
     },
