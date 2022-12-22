@@ -84,6 +84,11 @@ router.get("/mobile/:conversationId", async (req, res) => {
     console.log(conversation);
     console.log(req.params);
 
+    const hal = await Message.find({
+      conversationId: "63a3328f2ac77f2e4331c43e",
+    });
+    console.log(hal);
+
     const totalRows = await Message.find({
       conversation_id: req.params.conversationId,
     }).count();
