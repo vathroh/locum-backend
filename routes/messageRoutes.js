@@ -95,6 +95,8 @@ router.get("/mobile/:conversationId", async (req, res) => {
       minus = 0;
     }
 
+    console.log(limit, totalRows, totalPage, page);
+
     const offset = limit * (page - 1) - minus;
 
     const messages = await Message.find({
