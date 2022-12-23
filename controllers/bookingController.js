@@ -677,7 +677,9 @@ const pastBookingByClinic = async (req, res) => {
             user_id: item.user._id,
             full_name: item.user.full_name,
             role_id: item.user.role_id,
-            profile_pict: item.user.profile_pict,
+            profile_pict: item.user.profile_pict
+              ? process.env.BASE_URL + item.user.profile_pict
+              : "",
             price: item.price,
             date: item.date_format,
             work_time_start: item.time_start_format,
