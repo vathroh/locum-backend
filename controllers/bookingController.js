@@ -47,9 +47,7 @@ const createBooking = async (req, res) => {
     return res.status(404).json({ message: "The listing is not found." });
 
   if (hasAppointment)
-    return res
-      .status(404)
-      .json({ message: "You have an appointment at this slot time." });
+    return res.status(404).json({ message: "You have an slot at this time." });
 
   let hasUserBooked = jobId.booked_by.includes(req.user._id);
 
@@ -114,8 +112,6 @@ const createBooking = async (req, res) => {
               },
             };
 
-            console.log(chatMessage);
-
             await sendMessage(chatMessage);
           });
         }
@@ -136,52 +132,6 @@ const createBooking = async (req, res) => {
 };
 
 const deleteBooking = async (req, res) => {
-  const jobId = await Job.findById(req.params.id);
-
-  if (!jobId)
-    return res.status(404).json({ message: "The slot is not found." });
-
-  let hasUserBooked = jobId.booked_by.includes(req.body.user_id);
-
-  if (hasUserBooked) {
-    let updatedData = jobId;
-
-    const assignedUser = updatedData.assigned_to;
-
-    const assigned = assignedUser.filter((user) => {
-      user !== req.body.user_id;
-    });
-
-    const canceledBy = [];
-    canceledBy.push(req.user._id);
-
-    updatedData.assigned_to = assigned;
-    updatedData.canceled_by = canceledBy;
-
-    const calendar = await Calendar.findOne({
-      job_id: jobId._id,
-    });
-
-    if (calendar?.google_calendar_id)
-      await deleteEvent(calendar.google_calendar_id);
-
-    if (calendar) await Calendar.deleteOne({ _id: calendar._id });
-
-    try {
-      const bookedJob = await Job.updateOne(
-        { _id: req.params.id },
-        { $set: updatedData }
-      );
-      res.json(bookedJob);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  } else {
-    res.json("You have already canceled booking this job.");
-  }
-};
-
-const deleteBookingByAdmin = async (req, res) => {
   const jobId = await Job.findById(req.params.id);
 
   if (!jobId)
@@ -273,11 +223,11 @@ const AssignTo = async (req, res) => {
         data.clinic_id = jobId.clinic;
         data.start = jobId.work_time_start;
         data.finish = jobId.work_time_finish;
-        data.event = "Appointment at " + clinic.clinicName;
+        data.event = "Slot at " + clinic.clinicName;
 
         const summary = data.event;
         const location = clinic.clinicAddress;
-        const description = "You have appointmen at " + clinic.clinicName;
+        const description = "You have a slot at " + clinic.clinicName;
         const eventStartTime = DateTime.fromMillis(
           jobId.work_time_start
         ).toISO();
@@ -752,7 +702,6 @@ module.exports = {
   createBooking,
   deleteBooking,
   pastBookingByClinic,
-  deleteBookingByAdmin,
   upcomingBookingsByUserId,
   upcomingAssignmentsByUserId,
   countUpcomingAssignmentsByUserId,

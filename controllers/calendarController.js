@@ -1,5 +1,6 @@
 const Calendar = require("../models/Calendar");
 const { DateTime } = require("luxon");
+const Clinic = require("../models/Clinic");
 
 const getEvents = async (req, res) => {
   try {
@@ -135,6 +136,7 @@ const events = async (filters, monthQuery, yearQuery) => {
       link: 1,
       job_id: 1,
       attendees: 1,
+      clinic_id: 1,
     })
     .lean();
 
@@ -145,7 +147,7 @@ const events = async (filters, monthQuery, yearQuery) => {
       .setZone("Asia/Singapore")
       .toFormat("dd LLL");
     const events = [];
-    calendar.map(async (cal) => {
+    const promisedCal = calendar.map(async (cal) => {
       if (cal.start >= i && cal.start <= i + 86400000) {
         if (
           cal.start > now.startOf("day").toMillis() &&
@@ -155,6 +157,10 @@ const events = async (filters, monthQuery, yearQuery) => {
         } else {
           cal.currentDate = false;
         }
+
+        const clinic = await Clinic.findById(cal.clinic_id);
+
+        cal.address = clinic?.clinicAddress;
 
         cal.start =
           DateTime.fromMillis(cal.start)
@@ -168,9 +174,14 @@ const events = async (filters, monthQuery, yearQuery) => {
         cal.link = cal.link ?? "";
         cal.attendees = cal.attendees ?? [];
 
+        delete cal.clinic_id;
+
         events.push(cal);
       }
     });
+
+    await Promise.all(promisedCal);
+
     dates.push({ date: date, events: events });
     i = i + 86400000;
   }
