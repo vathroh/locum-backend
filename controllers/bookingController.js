@@ -137,25 +137,23 @@ const createBooking = async (req, res) => {
 const deleteBooking = async (req, res) => {
   const jobId = await Job.findById(req.params.id);
 
-  if (!jobId) return res.status(404).json({ message: "The job is not found." });
+  if (!jobId)
+    return res.status(404).json({ message: "The slot is not found." });
 
   let hasUserBooked = jobId.booked_by.includes(req.user._id);
 
   if (hasUserBooked) {
     let updatedData = jobId;
 
-    const book = updatedData.booked_by.filter((user) => {
-      user !== req.body.user_id;
-    });
+    const assignedUser = updatedData.assigned_to;
 
-    const assigned = updatedData.assigned_to.filter((user) => {
+    const assigned = assignedUser.filter((user) => {
       user !== req.body.user_id;
     });
 
     const canceledBy = [];
     canceledBy.push(req.user._id);
 
-    updatedData.booked_by = book;
     updatedData.assigned_to = assigned;
     updatedData.canceled_by = canceledBy;
 
@@ -163,10 +161,10 @@ const deleteBooking = async (req, res) => {
       job_id: jobId._id,
     });
 
-    if (calendar) await Calendar.deleteOne({ _id: calendar._id });
-
     if (calendar?.google_calendar_id)
       await deleteEvent(calendar.google_calendar_id);
+
+    if (calendar) await Calendar.deleteOne({ _id: calendar._id });
 
     try {
       const bookedJob = await Job.updateOne(
@@ -595,7 +593,7 @@ const pastBookingByClinic = async (req, res) => {
 
     const totalRows = await Job.find({
       clinic: req.query.clinic_id,
-      work_time_start: { $gte: now },
+      work_time_start: { $lte: now },
       assigned_to: { $ne: [] },
     }).count();
 
@@ -608,18 +606,23 @@ const pastBookingByClinic = async (req, res) => {
     })
       .sort({ date: -1 })
       .lean()
-      .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .then((data) => {
-        data.map((e, index) => {
-          statusJob(e, req);
-          e.duration = Duration.fromMillis(
-            e.work_time_finish - e.work_time_start
-          )
-            .shiftTo("hours")
-            .toObject();
-        });
+        data.map(async (job, index) => {
+          const user = await User.findById(job.assigned_to[0])
+            .select({
+              _id: 1,
+              phone_number: 1,
+              full_name: 1,
+              profile_pict: 1,
+              role: 1,
+              role_id: 1,
+              preferences: 1,
+            })
+            .lean();
 
-        const output = formatData(data);
+          job.user = user;
+          console.log(job.user);
+        });
 
         jobLogger.info(req.originalUrl);
 
@@ -628,7 +631,7 @@ const pastBookingByClinic = async (req, res) => {
           limit: limit,
           totalRows: totalRows,
           totalPage: totalPage,
-          data: output,
+          data: data,
         });
       });
   } catch (error) {
