@@ -21,6 +21,7 @@ const {
   sendMessage,
 } = require("../services/sendingChat/index.js");
 const Calendar = require("../models/Calendar.js");
+const { datacatalog_v1beta1 } = require("googleapis");
 
 const createBooking = async (req, res) => {
   const user_id = ObjectId.isValid(req.body.user_id);
@@ -636,7 +637,6 @@ const pastBookingByClinic = async (req, res) => {
 
   try {
     const now = DateTime.now().toMillis();
-
     const totalRows = await Job.find({
       clinic: req.query.clinic_id,
       work_time_start: { $lte: now },
@@ -645,14 +645,15 @@ const pastBookingByClinic = async (req, res) => {
 
     const totalPage = Math.ceil(totalRows / limit);
 
-    const jobs = await Job.find({
+    await Job.find({
       clinic: req.query.clinic_id,
-      work_time_start: { $gte: now },
+      work_time_start: { $lte: now },
       assigned_to: { $ne: [] },
     })
       .sort({ date: -1 })
       .lean()
-      .then((data) => {
+      .then(async (response) => {
+        const data = formatData(response);
         const jobs = data.map(async (job, index) => {
           const user = await User.findById(job.assigned_to[0])
             .select({
@@ -662,12 +663,26 @@ const pastBookingByClinic = async (req, res) => {
               profile_pict: 1,
               role: 1,
               role_id: 1,
-              preferences: 1,
             })
             .lean();
 
           job.user = user;
-          console.log(job.user);
+        });
+
+        await Promise.all(jobs);
+
+        const output = data.map((item) => {
+          return {
+            _id: item._id,
+            user_id: item.user._id,
+            full_name: item.user.full_name,
+            role_id: item.user.role_id,
+            profile_pict: item.user.profile_pict,
+            price: item.price,
+            date: item.date_format,
+            work_time_start: item.time_start_format,
+            work_time_finish: item.time_finish_format,
+          };
         });
 
         jobLogger.info(req.originalUrl);
@@ -677,7 +692,7 @@ const pastBookingByClinic = async (req, res) => {
           limit: limit,
           totalRows: totalRows,
           totalPage: totalPage,
-          data: jobs,
+          data: output,
         });
       });
   } catch (error) {
@@ -733,6 +748,7 @@ const completedBookingsByMonth = async (req, res) => {};
 module.exports = {
   createBooking,
   deleteBooking,
+  pastBookingByClinic,
   deleteBookingByAdmin,
   upcomingBookingsByUserId,
   upcomingAssignmentsByUserId,

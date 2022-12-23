@@ -20,7 +20,7 @@ const {
 
 router.put("/create/:id", createBooking);
 router.put("/delete/:id", deleteBooking);
-// router.get("/past-booking", pastBookingByClinic);
+router.get("/past-booking", pastBookingByClinic);
 router.get("/canceled/:userId", canceledJobsByUser);
 router.post("/send-interview-request", sendInterviewRequest);
 router.get("/upcoming-by-user/:userId", upcomingBookingsByUserId);
