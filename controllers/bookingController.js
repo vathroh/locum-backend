@@ -140,7 +140,53 @@ const deleteBooking = async (req, res) => {
   if (!jobId)
     return res.status(404).json({ message: "The slot is not found." });
 
-  let hasUserBooked = jobId.booked_by.includes(req.user._id);
+  let hasUserBooked = jobId.booked_by.includes(req.body.user_id);
+
+  if (hasUserBooked) {
+    let updatedData = jobId;
+
+    const assignedUser = updatedData.assigned_to;
+
+    const assigned = assignedUser.filter((user) => {
+      user !== req.body.user_id;
+    });
+
+    const canceledBy = [];
+    canceledBy.push(req.user._id);
+
+    updatedData.assigned_to = assigned;
+    updatedData.canceled_by = canceledBy;
+
+    const calendar = await Calendar.findOne({
+      job_id: jobId._id,
+    });
+
+    if (calendar?.google_calendar_id)
+      await deleteEvent(calendar.google_calendar_id);
+
+    if (calendar) await Calendar.deleteOne({ _id: calendar._id });
+
+    try {
+      const bookedJob = await Job.updateOne(
+        { _id: req.params.id },
+        { $set: updatedData }
+      );
+      res.json(bookedJob);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  } else {
+    res.json("You have already canceled booking this job.");
+  }
+};
+
+const deleteBookingByAdmin = async (req, res) => {
+  const jobId = await Job.findById(req.params.id);
+
+  if (!jobId)
+    return res.status(404).json({ message: "The slot is not found." });
+
+  let hasUserBooked = jobId.booked_by.includes(req.body.user_id);
 
   if (hasUserBooked) {
     let updatedData = jobId;
@@ -687,7 +733,7 @@ const completedBookingsByMonth = async (req, res) => {};
 module.exports = {
   createBooking,
   deleteBooking,
-  pastBookingByClinic,
+  deleteBookingByAdmin,
   upcomingBookingsByUserId,
   upcomingAssignmentsByUserId,
   countUpcomingAssignmentsByUserId,
