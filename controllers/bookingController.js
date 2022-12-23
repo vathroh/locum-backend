@@ -653,7 +653,7 @@ const pastBookingByClinic = async (req, res) => {
       .sort({ date: -1 })
       .lean()
       .then((data) => {
-        data.map(async (job, index) => {
+        const jobs = data.map(async (job, index) => {
           const user = await User.findById(job.assigned_to[0])
             .select({
               _id: 1,
@@ -677,7 +677,7 @@ const pastBookingByClinic = async (req, res) => {
           limit: limit,
           totalRows: totalRows,
           totalPage: totalPage,
-          data: data,
+          data: jobs,
         });
       });
   } catch (error) {
