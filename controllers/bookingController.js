@@ -674,7 +674,7 @@ const pastBookingByClinic = async (req, res) => {
         const output = data.map((item) => {
           return {
             _id: item._id,
-            clinic: item.clinic,
+            clinic: item.clinic._id,
             user_id: item.user._id,
             full_name: item.user.full_name,
             role_id: item.user.role_id,
