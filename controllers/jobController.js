@@ -959,10 +959,13 @@ const saveJob = async (req, res) => {
 
     const deviceIds = [];
 
-    users.map(async (user) => {
+    const promisedDevice = users.map(async (user) => {
       const device = await Device.findById(user._id);
+      console.log(device);
       deviceIds.push(device?._id);
     });
+
+    await Promise.all(promisedDevice);
 
     console.log(deviceIds);
 
