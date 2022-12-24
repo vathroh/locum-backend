@@ -960,14 +960,14 @@ const saveJob = async (req, res) => {
     const deviceIds = [];
 
     const promisedDevice = users.map(async (user) => {
-      const device = await Device.findById(user._id);
-      console.log(device);
-      deviceIds.push(device?._id);
+      await Device.find({ user_id: user._id }).then((devices) => {
+        devices.map((device) => {
+          deviceIds.push(device.device_id);
+        });
+      });
     });
 
     await Promise.all(promisedDevice);
-
-    console.log(deviceIds);
 
     let notification = {
       title: "New slot has been posted.",
