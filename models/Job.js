@@ -51,7 +51,6 @@ const Job = mongoose.Schema(
     job_description: [
       {
         type: String,
-        required: true,
       },
     ],
     break: {

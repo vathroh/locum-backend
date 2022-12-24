@@ -840,19 +840,11 @@ const duplicateJob = async (req, res) => {
 
 const postManualListing = (req, res) => {
   req.body.listing_type = "manual_listing";
-
-  if (!req.file)
-    return res.status(400).json({ message: "The image must not empty." });
-
   saveJob(req, res);
 };
 
 const postAutomatedListing = (req, res) => {
   req.body.listing_type = "automated_listing";
-
-  if (!req.file)
-    return res.status(400).json({ message: "The image must not empty." });
-
   saveJob(req, res);
 };
 
@@ -865,9 +857,6 @@ const postDirectListing = async (req, res) => {
   }
 
   req.body = data;
-
-  if (!req.file)
-    return res.status(400).json({ message: "The image must not empty." });
 
   await saveJob(req, res);
 };
@@ -903,6 +892,8 @@ const sharedTo = async (data) => {
 };
 
 const saveJob = async (req, res) => {
+  if (!req.file) req.body.image = "";
+
   const clinic = await Clinic.findById(req.body.clinic).select({
     initials: 1,
     clinicName: 1,
