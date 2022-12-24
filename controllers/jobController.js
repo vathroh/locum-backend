@@ -1434,7 +1434,7 @@ const formatData = (data) => {
           : "",
       },
       scope: e.scope ?? [],
-      job_description: e.job_description ?? "",
+      job_description: e.job_description ?? [],
       booked_by: e.booked_by ?? [],
       assigned_to: e.assigned_to ?? [],
       completed: e.completed ?? false,
