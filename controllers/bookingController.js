@@ -190,6 +190,21 @@ const AssignTo = async (req, res) => {
   const user = await User.findById(req.body.user_id);
   if (!user) return res.status(404).json({ message: "User is not found" });
 
+  if (jobId.profession === "doctor" && user.role !== "doctor") {
+    return res
+      .status(400)
+      .json({ message: `Please select approriate profession for your slot.` });
+  }
+
+  if (
+    jobId.profession === "clinical assistant" &&
+    user.role !== "clinic_assistants"
+  ) {
+    return res
+      .status(400)
+      .json({ message: `Please select approriate profession for your slot.` });
+  }
+
   const hasAppointment = await Job.findOne({
     assigned_to: { $in: [req.body.user_id] },
     work_time_start: {
@@ -201,7 +216,7 @@ const AssignTo = async (req, res) => {
   if (hasAppointment)
     return res.status(400).json({
       message:
-        "The person you aprroved already has an appointment. Please choose another one.",
+        "The person you aprroved already has a slot. Please choose another one.",
     });
 
   let assignmentAmount = jobId.assigned_to?.length;

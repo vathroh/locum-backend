@@ -16,6 +16,8 @@ const ObjectId = require("mongoose/lib/types/objectid.js");
 const Preference = require("../models/Preference.js");
 const { setUrgentJobStatus } = require("../utils/job/setUrgentJob/index.js");
 const { checkPair } = require("../services/preferencesPair/checkPair");
+const sendFCM = require("../services/notification/fcm/index.js");
+const Device = require("../models/Device.js");
 
 const getAllJobs = async (req, res) => {
   try {
@@ -857,6 +859,11 @@ const postAutomatedListing = (req, res) => {
 const postDirectListing = async (req, res) => {
   req.body.listing_type = "direct_listing";
   const data = await sharedTo(req.body);
+
+  if (data.status === 400) {
+    return res.status(data.status).json({ message: data.message });
+  }
+
   req.body = data;
 
   if (!req.file)
@@ -875,11 +882,31 @@ const sharedTo = async (data) => {
 
   data.booked_by = booked_by;
   data.assigned_to = assigned_to;
+
+  if (data.profession === "doctor" && user.role !== "doctor") {
+    return {
+      status: 400,
+      message: `Please select approriate profession for your slot.`,
+    };
+  }
+
+  if (
+    data.profession === "clinical assistant" &&
+    user.role !== "clinic_assistants"
+  ) {
+    return {
+      status: 400,
+      message: `Please select approriate profession for your slot.`,
+    };
+  }
   return data;
 };
 
 const saveJob = async (req, res) => {
-  const clinic = await Clinic.findById(req.body.clinic).select({ initials: 1 });
+  const clinic = await Clinic.findById(req.body.clinic).select({
+    initials: 1,
+    clinicName: 1,
+  });
   const last = await Job.find({ clinic: ObjectId(req.body.clinic) })
     .sort({ createdAt: -1 })
     .limit(1);
@@ -908,10 +935,49 @@ const saveJob = async (req, res) => {
 
   const data = await postData(req, res);
 
+  if (
+    parseInt(data.work_time_finish) - parseInt(data.work_time_start) <
+    3600000
+  ) {
+    return res
+      .status(400)
+      .json({ message: "The slot must have over 1 hour work time." });
+  }
+
   const job = new Job(data);
 
   try {
     const savedJob = await job.save();
+
+    let users = [];
+
+    if (data.profession == "doctor") {
+      users = await User.find({ role: "doctor" });
+    } else if (data.profession == "clinical assistant") {
+      users = await User.find({ role: "clinic_assistants" });
+    }
+
+    const deviceIds = [];
+
+    users.map(async (user) => {
+      const device = await Device.findById(user._id);
+      deviceIds.push(device?._id);
+    });
+
+    console.log(deviceIds);
+
+    let notification = {
+      title: "New slot has been posted.",
+      body: `${clinic.clinicName} has  posted a slot.`,
+    };
+
+    let notification_body = {
+      notification: notification,
+      registration_ids: deviceIds,
+    };
+
+    sendFCM(notification_body);
+
     res.status(200).json(savedJob);
   } catch (error) {
     res.status(400).json({ message: error.message });
