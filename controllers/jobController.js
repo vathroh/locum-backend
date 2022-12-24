@@ -935,9 +935,13 @@ const saveJob = async (req, res) => {
       .json({ message: "The slot must have over 1 hour work time." });
   }
 
+  if (data.urgent_price_24 == 0) delete data.urgent_price_24;
+  if (data.urgent_price_72 == 0) delete data.urgent_price_72;
+
   const job = new Job(data);
 
   try {
+    console.log(data);
     const savedJob = await job.save();
 
     let users = [];
