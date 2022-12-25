@@ -375,7 +375,7 @@ const practicingInformation = async (req, res) => {
     });
     const practicingInformation = await information.save();
 
-    userLogger.info(`url: ${req.originalUrl}, data: ${user._id})}`);
+    userLogger.info(`url: ${req.originalUrl}, data: ${req.user._id})}`);
 
     res.json(practicingInformation);
   } catch (error) {
