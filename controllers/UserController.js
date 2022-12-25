@@ -306,6 +306,10 @@ const editPreferences = async (req, res) => {
 const personalInformation = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
+
+    if (!user)
+      return res.status(404).json({ message: "The user id not found." });
+
     user.full_name = req.body.name;
     await User.updateOne({ _id: req.params.userId }, { $set: user });
 
