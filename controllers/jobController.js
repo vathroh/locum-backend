@@ -310,7 +310,6 @@ const getJobById = async (req, res) => {
       })
       .exec(async (err, data) => {
         statusJob(data, req);
-        console.log(data);
         data.image = data.image ? process.env.BASE_URL + data.image : "";
         data.work_time_start = DateTime.fromMillis(data.work_time_start)
           .setZone("Asia/Singapore")
@@ -336,8 +335,6 @@ const getJobById = async (req, res) => {
                 .toLocaleString(DateTime.TIME_SIMPLE)
             : "",
         };
-
-        console.log(data);
 
         if (data.urgent_status == "24") {
           data.price = data.urgent_price_24 ?? data.price;
@@ -367,8 +364,6 @@ const getJobById = async (req, res) => {
         }
 
         delete data.favorites;
-
-        console.log(data);
 
         jobLogger.info(req.originalUrl);
         res.json(data);
@@ -1273,7 +1268,20 @@ const searchJob = async (req, res) => {
           data.push(e);
         }
       });
+
       const unique = [...new Set(data.map((item) => item))];
+
+      if (req.query.rate === "lowtohigh") {
+        unique.sort((a, b) => (a.price > b.price ? 1 : -1));
+      } else {
+        unique.sort((a, b) => (a.price < b.price ? 1 : -1));
+      }
+
+      if (req.query.order === "earlier_to_latest") {
+        unique.sort((a, b) => (a.work_time_start > b.work_time_start ? 1 : -1));
+      } else {
+        unique.sort((a, b) => (a.work_time_start < b.work_time_start ? 1 : -1));
+      }
 
       unique.map((e, index) => {
         statusJob(e, req);
