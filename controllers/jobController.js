@@ -1429,8 +1429,8 @@ const formatData = (data) => {
       price = e.price;
     }
 
-    const breaks = [];
-    const breakTime = 0;
+    let breaks = [];
+    let breakTime = 0;
 
     e.break.map((item) => {
       const brk = {
