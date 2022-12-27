@@ -657,20 +657,23 @@ const filledSlotsByClinicId = async (req, res) => {
         const users = [];
 
         const promised = data.map(async (e, index) => {
-          const user = await User.findById(e.assigned_to[0]).select({
-            full_name: 1,
-            role_id: 1,
-            phone_number: 1,
-            role: 1,
-            profile_pict: 1,
-          });
+          const user = await User.findById(e.assigned_to[0])
+            .select({
+              full_name: 1,
+              role_id: 1,
+              phone_number: 1,
+              role: 1,
+              profile_pict: 1,
+            })
+            .lean();
 
           if (user) {
+            user.job_id = e._id;
             if (user.profile_pict !== "") {
               user.profile_pict = process.env.BASE_URL + user.profile_pict;
             }
+            users.push(user);
           }
-          users.push(user);
         });
 
         await Promise.all(promised);
