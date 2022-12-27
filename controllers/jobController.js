@@ -337,9 +337,9 @@ const getJobById = async (req, res) => {
         };
 
         if (data.urgent_status == "24") {
-          data.price = data.urgent_price_24;
+          data.price = data.urgent_price_24 ?? data.price;
         } else if (data.urgent_status == "72") {
-          data.price = data.urgent_price_72;
+          data.price = data.urgent_price_72 ?? data.price;
         }
 
         delete data.urgent_price_24;
