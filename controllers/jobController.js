@@ -1433,14 +1433,14 @@ const formatData = (data) => {
     let breakStart = 0;
     if (e.break.start === "") {
       breakStart = 0;
-    } else {
+    } else if (e.break.start !== "") {
       breakStart = e.break.start;
     }
 
     let breakFinish = 0;
     if (e.break.finish === "") {
       breakFinish = 0;
-    } else {
+    } else if (e.break.finish !== "") {
       breakFinish = e.break.finish;
     }
 
