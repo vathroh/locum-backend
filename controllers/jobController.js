@@ -1271,16 +1271,16 @@ const searchJob = async (req, res) => {
 
       const unique = [...new Set(data.map((item) => item))];
 
-      if (req.query.rate === "lowtohigh") {
-        unique.sort((a, b) => (a.price > b.price ? 1 : -1));
-      } else {
-        unique.sort((a, b) => (a.price < b.price ? 1 : -1));
-      }
-
       if (req.query.order === "earlier_to_latest") {
         unique.sort((a, b) => (a.work_time_start > b.work_time_start ? 1 : -1));
-      } else {
+      } else if (req.query.order === "latest_to_earlier") {
         unique.sort((a, b) => (a.work_time_start < b.work_time_start ? 1 : -1));
+      }
+
+      if (req.query.rate === "lowtohigh") {
+        unique.sort((a, b) => (a.price > b.price ? 1 : -1));
+      } else if (req.query.rate === "hightolow") {
+        unique.sort((a, b) => (a.price < b.price ? 1 : -1));
       }
 
       unique.map((e, index) => {
