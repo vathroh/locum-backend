@@ -1431,16 +1431,16 @@ const formatData = (data) => {
     }
 
     let breakStart = 0;
-    if (e.break.start === "") {
+    if (e.break?.start === "") {
       breakStart = 0;
-    } else if (e.break.start !== "") {
+    } else if (e.break?.start !== "") {
       breakStart = e.break.start;
     }
 
     let breakFinish = 0;
     if (e.break?.finish === "") {
       breakFinish = 0;
-    } else if (e.break.finish !== "") {
+    } else if (e.break?.finish !== "") {
       breakFinish = e.break.finish;
     }
 
@@ -1452,7 +1452,9 @@ const formatData = (data) => {
         clinicName: e.clinic.clinicName ?? "",
         clinicAddress: e.clinic.clinicAddress ?? "",
       },
-      duration: Duration.fromMillis(e.work_time_finish - e.work_time_start)
+      duration: Duration.fromMillis(
+        e.work_time_finish - e.work_time_start + (breakStart - breakFinish)
+      )
         .shiftTo("hours")
         .toObject(),
       break: {
