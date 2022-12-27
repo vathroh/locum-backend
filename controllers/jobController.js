@@ -1430,6 +1430,20 @@ const formatData = (data) => {
       price = e.price;
     }
 
+    let breakStart = 0;
+    if (e.break.start === "") {
+      breakStart = 0;
+    } else {
+      breakStart = e.break.start;
+    }
+
+    let breakFinish = 0;
+    if (e.break.finish === "") {
+      breakFinish = 0;
+    } else {
+      breakFinish = e.break.finish;
+    }
+
     return {
       _id: e._id,
       code: e.code ?? "",
@@ -1439,13 +1453,7 @@ const formatData = (data) => {
         clinicAddress: e.clinic.clinicAddress ?? "",
       },
       duration: Duration.fromMillis(
-        e.work_time_finish -
-          e.work_time_start +
-          (e.break?.start == ""
-            ? 0
-            : e.break?.start - e.break?.finish == ""
-            ? 0
-            : e.break?.finish)
+        e.work_time_finish - e.work_time_start + (breakStart - breakFinish)
       )
         .shiftTo("hours")
         .toObject(),
