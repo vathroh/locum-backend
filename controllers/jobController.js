@@ -655,8 +655,11 @@ const filledSlotsByClinicId = async (req, res) => {
       .sort({ work_time_start: -1 })
       .then(async (data) => {
         const users = [];
+        const newdata = formatData(data);
 
-        const promised = data.map(async (e, index) => {
+        console.log(newdata);
+
+        const promised = newdata.map(async (e, index) => {
           const user = await User.findById(e.assigned_to[0])
             .select({
               full_name: 1,
@@ -669,6 +672,11 @@ const filledSlotsByClinicId = async (req, res) => {
 
           if (user) {
             user.job_id = e._id;
+            user.price = e.price;
+            user.priceDuration = e.priceDuration;
+            user.date_format = e.date_format;
+            user.time_start_format = e.time_start_format;
+            user.time_finish_format = e.time_finish_format;
             if (user.profile_pict !== "") {
               user.profile_pict = process.env.BASE_URL + user.profile_pict;
             }
@@ -1416,9 +1424,9 @@ const formatData = (data) => {
   return data.map((e) => {
     let price = 0;
     if (e.urgent_status == "24") {
-      price = e.urgent_price_24;
+      price = e.urgent_price_24 ?? e.price;
     } else if (e.urgent_status == "72") {
-      price = e.urgent_price_72;
+      price = e.urgent_price_72 ?? e.price;
     } else {
       price = e.price;
     }
