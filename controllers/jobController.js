@@ -1188,22 +1188,8 @@ const searchJob = async (req, res) => {
     };
   }
 
-  let sorts = {};
-  if (req.query.order === "earlier_to_latest") {
-    sorts.work_time_start = 1;
-  } else {
-    sorts.work_time_start = -1;
-  }
-
-  if (req.query.rate === "lowtohigh") {
-    sorts.price = 1;
-  } else {
-    sorts.price = -1;
-  }
-
   await Job.find({ ...filters })
     .populate("clinic")
-    .sort({ ...sorts })
     .then((jobs) => {
       let data = [];
       jobs.filter((e) => {
@@ -1452,6 +1438,13 @@ const formatData = (data) => {
         clinicName: e.clinic.clinicName ?? "",
         clinicAddress: e.clinic.clinicAddress ?? "",
       },
+      duration: Duration.fromMillis(
+        e.work_time_finish -
+          e.work_time_start +
+          (e.break?.start - e.break?.finish)
+      )
+        .shiftTo("hours")
+        .toObject(),
       break: {
         start: e.break?.start
           ? DateTime.fromMillis(e.break.start)
@@ -1474,9 +1467,6 @@ const formatData = (data) => {
       isFavorite: e.isFavorite ?? false,
       image: process.env.BASE_URL + e.image ?? "",
       price: price,
-      duration: Duration.fromMillis(e.work_time_finish - e.work_time_start)
-        .shiftTo("hours")
-        .toObject(),
       priceDuration:
         Duration.fromMillis(e.work_time_finish - e.work_time_start)
           .shiftTo("hours")

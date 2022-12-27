@@ -245,7 +245,11 @@ const afterCheckout = async (req, res) => {
     const job = await Job.findById(req.params.jobId).lean();
     if (!job) return res.status(404).json({ message: "The Slot not found." });
 
-    const workHour = job.work_time_finish - job.work_time_start;
+    const workHour =
+      job.work_time_finish -
+      job.work_time_start +
+      (job.break?.start - job.break?.finish);
+
     let clinic = await Clinic.findById(job.clinic).lean();
     const comments = clinic.comments;
     comments.push({
