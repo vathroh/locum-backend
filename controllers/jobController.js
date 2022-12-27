@@ -310,6 +310,32 @@ const getJobById = async (req, res) => {
       })
       .exec(async (err, data) => {
         statusJob(data, req);
+
+        let breaks = [];
+        let breakTime = 0;
+
+        e.break.map((item) => {
+          const brk = {
+            start:
+              item.start !== 0
+                ? DateTime.fromMillis(item.start)
+                    .setZone("Asia/Singapore")
+                    .toLocaleString(DateTime.TIME_SIMPLE)
+                : "",
+            finish:
+              item.finish !== 0
+                ? DateTime.fromMillis(item.finish)
+                    .setZone("Asia/Singapore")
+                    .toLocaleString(DateTime.TIME_SIMPLE)
+                : "",
+          };
+          breaks.push(brk);
+
+          if (item.start !== 0 && item.finish !== 0) {
+            breakTime += item.finish - item.start;
+          }
+        });
+
         data.image = data.image ? process.env.BASE_URL + data.image : "";
         data.work_time_start = DateTime.fromMillis(data.work_time_start)
           .setZone("Asia/Singapore")
@@ -317,24 +343,13 @@ const getJobById = async (req, res) => {
         data.work_time_finish = DateTime.fromMillis(data.work_time_finish)
           .setZone("Asia/Singapore")
           .toLocaleString(DateTime.TIME_SIMPLE);
-        data.day = DateTime.fromMillis(data.date)
+        data.day = DateTime.fromMillis(data.work_time_start)
           .setZone("Asia/Singapore")
           .toFormat("cccc");
-        data.date = DateTime.fromMillis(data.date)
+        data.date = DateTime.fromMillis(data.work_time_start)
           .setZone("Asia/Singapore")
           .toFormat("dd LLLL yyyy");
-        data.break = {
-          start: data.break?.start
-            ? DateTime.fromMillis(data.break.start)
-                .setZone("Asia/Singapore")
-                .toLocaleString(DateTime.TIME_SIMPLE)
-            : "",
-          finish: data.break?.finish
-            ? DateTime.fromMillis(data.break.finish)
-                .setZone("Asia/Singapore")
-                .toLocaleString(DateTime.TIME_SIMPLE)
-            : "",
-        };
+        data.break = breaks;
 
         if (data.urgent_status == "24") {
           data.price = data.urgent_price_24 ?? data.price;
@@ -1491,7 +1506,7 @@ const formatData = (data) => {
       date_format: DateTime.fromMillis(e.work_time_start)
         .setZone("Asia/Singapore")
         .toFormat("dd LLLL yyyy"),
-      day: DateTime.fromMillis(e.date)
+      day: DateTime.fromMillis(e.work_time_start)
         .setZone("Asia/Singapore")
         .toFormat("cccc"),
     };
