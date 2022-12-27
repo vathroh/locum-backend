@@ -653,25 +653,29 @@ const filledSlotsByClinicId = async (req, res) => {
       .lean()
       .populate({ path: "clinic", select: "clinicName clinicAddress" })
       .sort({ work_time_start: -1 })
-      .then((data) => {
-        data.map((e, index) => {
-          statusJob(e, req);
-          e.duration = Duration.fromMillis(
-            e.work_time_finish - e.work_time_start
-          )
-            .shiftTo("hours")
-            .toObject();
+      .then(async (data) => {
+        const users = [];
+
+        const promised = data.map(async (e, index) => {
+          const user = await User.findById(e.assigned_to[0]).select({
+            full_name: 1,
+            role_id: 1,
+            phone_number: 1,
+            role: 1,
+            profile_pict: 1,
+          });
+
+          if (user) {
+            if (user.profile_pict !== "") {
+              user.profile_pict = process.env.BASE_URL + user.profile_pict;
+            }
+          }
+          users.push(user);
         });
 
-        const output = formatData(data);
-        jobLogger.info(req.originalUrl);
-        res.json({
-          page: page + 1,
-          limit: limit,
-          totalRows: totalRows,
-          totalPage: totalPage,
-          data: output,
-        });
+        await Promise.all(promised);
+
+        res.json(users);
       });
   } catch (error) {
     jobLogger.error(
