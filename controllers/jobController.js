@@ -910,8 +910,6 @@ const sharedTo = async (data) => {
 };
 
 const saveJob = async (req, res) => {
-  if (!req.file) req.body.image = "";
-
   const clinic = await Clinic.findById(req.body.clinic).select({
     initials: 1,
     clinicName: 1,
@@ -943,6 +941,7 @@ const saveJob = async (req, res) => {
       .json({ message: "Please check criteria items." });
 
   const data = await postData(req, res);
+  if (!req.file) data.image = "";
 
   if (
     parseInt(data.work_time_finish) - parseInt(data.work_time_start) <
@@ -1430,19 +1429,25 @@ const formatData = (data) => {
       price = e.price;
     }
 
-    // let breakStart = 0;
-    // if (e.break?.start === "") {
-    //   breakStart = 0;
-    // } else if (e.break?.start !== "") {
-    //   breakStart = e.break.start;
-    // }
+    const breaks = [];
 
-    // let breakFinish = 0;
-    // if (e.break?.finish === "") {
-    //   breakFinish = 0;
-    // } else if (e.break?.finish !== "") {
-    //   breakFinish = e.break.finish;
-    // }
+    e.break.map((item) => {
+      const brk = {
+        start:
+          item.start !== 0
+            ? DateTime.fromMillis(e.break.start)
+                .setZone("Asia/Singapore")
+                .toLocaleString(DateTime.TIME_SIMPLE)
+            : "",
+        finish:
+          item.finish !== 0
+            ? DateTime.fromMillis(e.break.finish)
+                .setZone("Asia/Singapore")
+                .toLocaleString(DateTime.TIME_SIMPLE)
+            : "",
+      };
+      breaks.push(brk);
+    });
 
     return {
       _id: e._id,
@@ -1455,18 +1460,7 @@ const formatData = (data) => {
       duration: Duration.fromMillis(e.work_time_finish - e.work_time_start)
         .shiftTo("hours")
         .toObject(),
-      break: {
-        start: e.break?.start
-          ? DateTime.fromMillis(e.break.start)
-              .setZone("Asia/Singapore")
-              .toLocaleString(DateTime.TIME_SIMPLE)
-          : "",
-        finish: e.break?.finish
-          ? DateTime.fromMillis(e.break.finish)
-              .setZone("Asia/Singapore")
-              .toLocaleString(DateTime.TIME_SIMPLE)
-          : "",
-      },
+      break: breaks,
       scope: e.scope ?? [],
       job_description: e.job_description ?? [],
       booked_by: e.booked_by ?? [],
@@ -1475,7 +1469,7 @@ const formatData = (data) => {
       canceled_by: e.canceled_by ?? [],
       status: e.status ?? "",
       isFavorite: e.isFavorite ?? false,
-      image: process.env.BASE_URL + e.image ?? "",
+      image: e.image ? process.env.BASE_URL + e.image : "",
       price: price,
       priceDuration:
         Duration.fromMillis(e.work_time_finish - e.work_time_start)
