@@ -688,6 +688,9 @@ const bookedBy = async (req, res) => {
     const now = DateTime.now().toMillis();
     const job = await Job.findById(req.query.jobId);
 
+    if (!job)
+      return res.status(404).json({ message: "The slot can not be found." });
+
     const users = [];
     const booked_by = job.booked_by;
 
