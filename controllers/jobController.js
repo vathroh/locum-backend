@@ -926,7 +926,7 @@ const saveJob = async (req, res) => {
 
   const number = parseInt(count) + 1;
   const string = clinic?.initials + "-000000";
-  req.body.code = string.slice(0, 10 - number.toString().length) + number;
+  req.body.code = string.slice(1, 11 - number.toString().length) + number;
 
   const check = await checkPair(req.body.preferences);
 
@@ -1045,7 +1045,7 @@ const postData = async (req, res) => {
   }
 
   if (typeof req.body.date == "string") {
-    data.date = DateTime.fromISO(req.body.date, {
+    data.date = DateTime.fromISO(req.body.date + "T00:00:00.000+08:00", {
       zone: "Asia/Singapore",
     }).toMillis();
   }
@@ -1430,6 +1430,7 @@ const formatData = (data) => {
     }
 
     const breaks = [];
+    const breakTime = 0;
 
     e.break.map((item) => {
       const brk = {
@@ -1447,6 +1448,10 @@ const formatData = (data) => {
             : "",
       };
       breaks.push(brk);
+
+      if (item.start !== 0 && item.finish !== 0) {
+        breakTime += item.finish - item.start;
+      }
     });
 
     return {
@@ -1457,7 +1462,9 @@ const formatData = (data) => {
         clinicName: e.clinic.clinicName ?? "",
         clinicAddress: e.clinic.clinicAddress ?? "",
       },
-      duration: Duration.fromMillis(e.work_time_finish - e.work_time_start)
+      duration: Duration.fromMillis(
+        e.work_time_finish - e.work_time_start - breakTime
+      )
         .shiftTo("hours")
         .toObject(),
       break: breaks,
@@ -1481,7 +1488,7 @@ const formatData = (data) => {
       time_finish_format: DateTime.fromMillis(e.work_time_finish)
         .setZone("Asia/Singapore")
         .toLocaleString(DateTime.TIME_SIMPLE),
-      date_format: DateTime.fromMillis(e.date)
+      date_format: DateTime.fromMillis(e.work_time_start)
         .setZone("Asia/Singapore")
         .toFormat("dd LLLL yyyy"),
       day: DateTime.fromMillis(e.date)
