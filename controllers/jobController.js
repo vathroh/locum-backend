@@ -314,7 +314,7 @@ const getJobById = async (req, res) => {
         let breaks = [];
         let breakTime = 0;
 
-        e.break.map((item) => {
+        data.break.map((item) => {
           const brk = {
             start:
               item.start !== 0
