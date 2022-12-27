@@ -1441,7 +1441,7 @@ const formatData = (data) => {
       duration: Duration.fromMillis(
         e.work_time_finish -
           e.work_time_start +
-          (e.break?.start - e.break?.finish)
+          (e.break?.start ?? 0 - e.break?.finish ?? 0)
       )
         .shiftTo("hours")
         .toObject(),
