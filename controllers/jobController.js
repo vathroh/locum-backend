@@ -337,9 +337,7 @@ const getJobById = async (req, res) => {
         });
 
         data.image = data.image ? process.env.BASE_URL + data.image : "";
-        data.work_time_start = DateTime.fromMillis(data.work_time_start)
-          .setZone("Asia/Singapore")
-          .toLocaleString(DateTime.TIME_SIMPLE);
+
         data.work_time_finish = DateTime.fromMillis(data.work_time_finish)
           .setZone("Asia/Singapore")
           .toLocaleString(DateTime.TIME_SIMPLE);
@@ -349,6 +347,9 @@ const getJobById = async (req, res) => {
         data.date = DateTime.fromMillis(data.work_time_start)
           .setZone("Asia/Singapore")
           .toFormat("dd LLLL yyyy");
+        data.work_time_start = DateTime.fromMillis(data.work_time_start)
+          .setZone("Asia/Singapore")
+          .toLocaleString(DateTime.TIME_SIMPLE);
         data.break = breaks;
 
         if (data.urgent_status == "24") {
@@ -672,8 +673,6 @@ const filledSlotsByClinicId = async (req, res) => {
         const users = [];
         const newdata = formatData(data);
 
-        console.log(newdata);
-
         const promised = newdata.map(async (e, index) => {
           const user = await User.findById(e.assigned_to[0])
             .select({
@@ -973,7 +972,6 @@ const saveJob = async (req, res) => {
   const job = new Job(data);
 
   try {
-    console.log(data);
     const savedJob = await job.save();
 
     let users = [];
