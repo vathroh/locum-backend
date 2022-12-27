@@ -1435,13 +1435,13 @@ const formatData = (data) => {
       const brk = {
         start:
           item.start !== 0
-            ? DateTime.fromMillis(e.break.start)
+            ? DateTime.fromMillis(item.start)
                 .setZone("Asia/Singapore")
                 .toLocaleString(DateTime.TIME_SIMPLE)
             : "",
         finish:
           item.finish !== 0
-            ? DateTime.fromMillis(e.break.finish)
+            ? DateTime.fromMillis(item.finish)
                 .setZone("Asia/Singapore")
                 .toLocaleString(DateTime.TIME_SIMPLE)
             : "",
