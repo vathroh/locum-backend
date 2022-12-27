@@ -310,6 +310,7 @@ const getJobById = async (req, res) => {
       })
       .exec(async (err, data) => {
         statusJob(data, req);
+        console.log(data);
         data.image = data.image ? process.env.BASE_URL + data.image : "";
         data.work_time_start = DateTime.fromMillis(data.work_time_start)
           .setZone("Asia/Singapore")
@@ -335,6 +336,8 @@ const getJobById = async (req, res) => {
                 .toLocaleString(DateTime.TIME_SIMPLE)
             : "",
         };
+
+        console.log(data);
 
         if (data.urgent_status == "24") {
           data.price = data.urgent_price_24 ?? data.price;
@@ -364,6 +367,8 @@ const getJobById = async (req, res) => {
         }
 
         delete data.favorites;
+
+        console.log(data);
 
         jobLogger.info(req.originalUrl);
         res.json(data);
