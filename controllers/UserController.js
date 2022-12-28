@@ -356,7 +356,6 @@ const personalInformation = async (req, res) => {
 };
 
 const getpersonalInformation = async (req, res) => {
-  console.log(req.params);
   try {
     const personal = await Personal.findOne({
       user_id: req.params.userId,
@@ -367,6 +366,14 @@ const getpersonalInformation = async (req, res) => {
         .status(404)
         .json({ message: "you don't have inputed the data." });
 
+    const dob = DateTime.fromMillis(personal.date_of_birth);
+    personal.yearOfBirth = dob.toFormat("yyyy");
+    personal.monthOfBirth = dob.toFormat("LL");
+    personal.dayOfBirth = dob.toFormat("dd");
+
+    delete personal.createdAt;
+    delete personal.updatedAt;
+    delete personal.date_of_birth;
     delete personal.__v;
 
     res.status(200).json(personal);
