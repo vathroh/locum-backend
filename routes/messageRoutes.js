@@ -32,7 +32,11 @@ router.get("/:conversationId", async (req, res) => {
       minus = 0;
     }
 
-    const offset = limit * (page - 1) - minus;
+    let offset = 0;
+
+    if (page != 1) {
+      offset = limit * (page - 1) - minus;
+    }
 
     const messages = await Message.find({
       conversation_id: req.params.conversationId,
