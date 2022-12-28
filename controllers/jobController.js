@@ -1495,11 +1495,20 @@ const formatData = (data) => {
       }
     });
 
-    const createdAt = DateTime.fromISO(e.createdAt);
-    console.log(e.createdAt, createdAt);
+    const createdAt = DateTime.fromJSDate(e.createdAt).toMillis();
+    old = DateTime.now().toMillis() - createdAt;
+    console.log(DateTime.now().toMillis(), createdAt);
+    console.log(old);
+
+    let isNew = false;
+    if (old < 86400000) {
+      isNew = true;
+    }
 
     return {
       _id: e._id,
+      isNew: isNew,
+      profession: e.profession,
       code: e.code ?? "",
       clinic: {
         _id: e.clinic._id,
