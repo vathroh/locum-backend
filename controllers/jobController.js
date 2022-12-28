@@ -1343,16 +1343,26 @@ const youMightLike = async (req, res) => {
 
     let jobs = "";
 
+    const filters = {
+      work_time_start: {
+        $gte: DateTime.now().toMillis(),
+      },
+      booked_by: { $nin: req.user._id },
+      assigned_to: [],
+    };
+
+    if (req.user.role === "doctor") {
+      filters.profession = "doctor";
+    } else if (req.user.role === "clinic_assistants") {
+      filters.profession = "clinical assistant";
+    }
+
     if (personal) {
       const newjobs = await Job.find({
-        work_time_start: {
-          $gte: now,
-        },
         clinic: {
           $nin: blaclistedClinics,
         },
-        booked_by: { $nin: req.user._id },
-        assigned_to: [],
+        ...filters,
       })
         .populate({
           path: "clinic",
@@ -1362,9 +1372,7 @@ const youMightLike = async (req, res) => {
       jobs = newjobs;
     } else {
       const newjobs = await Job.find({
-        work_time_start: {
-          $gte: now,
-        },
+        ...filters,
         clinic: {
           $nin: blaclistedClinics,
         },
