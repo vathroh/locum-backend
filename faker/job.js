@@ -15,15 +15,21 @@ const seedJobs = async () => {
     const array = clinics.map(async (e) => {
       const date = DateTime.now().plus({ days: 6 }).toISODate();
 
-      const count = await Job.find({
-        clinic: ObjectId(e._id),
-      }).count();
+      const last = await Job.find({ clinic: ObjectId(req.body.clinic) })
+        .sort({ createdAt: -1 })
+        .limit(1);
+
+      let count = 0;
+      if (last.length > 0) {
+        const lastCode = last[0].code;
+        count = parseInt(lastCode.split("-")[1]);
+      }
 
       const number = parseInt(count) + 1;
-      const string = e.initials + "-000000";
+      const string = clinic?.initials + "-000000";
 
       await data.push({
-        code: string.slice(0, 10 - number.toString().length) + number,
+        code: string.slice(1, 11 - number.toString().length) + number,
         image: faker.helpers.arrayElement([
           "/public/images/1663816528905-istockphoto-138205019-612x612.jpg",
           "/public/images/jobs/1665109795766-doctors-standing.jpg",

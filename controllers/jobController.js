@@ -54,11 +54,24 @@ const getNewJobs = async (req, res) => {
   try {
     const now = DateTime.now().toMillis();
 
-    await Job.find({
-      profession: req.user.role,
+    const filters = {
       work_time_start: { $gt: now },
       booked_by: { $nin: req.user._id },
       assigned_to: [],
+    };
+
+    let profession = "";
+
+    if (req.user.role === "doctor") {
+      profession = "doctor";
+      filters.push(profession);
+    } else if (req.user.role === "clinic_assistants") {
+      profession = "clinical assistant";
+      filters.push(profession);
+    }
+
+    await Job.find({
+      ...filters,
     })
       .sort({ createdAt: -1 })
       .lean()
@@ -130,13 +143,26 @@ const getExploreJobs = async (req, res) => {
   const today = moment().startOf("day");
 
   try {
-    await Job.find({
+    const filters = {
       work_time_start: {
         $gte: DateTime.now().toMillis(),
       },
-      profession: req.user.role,
       booked_by: { $nin: req.user._id },
       assigned_to: [],
+    };
+
+    let profession = "";
+
+    if (req.user.role === "doctor") {
+      profession = "doctor";
+      filters.push(profession);
+    } else if (req.user.role === "clinic_assistants") {
+      profession = "clinical assistant";
+      filters.push(profession);
+    }
+
+    await Job.find({
+      ...filters,
     })
       .sort({ date: 1 })
       .lean()
@@ -940,7 +966,7 @@ const saveJob = async (req, res) => {
 
   const number = parseInt(count) + 1;
   const string = clinic?.initials + "-000000";
-  req.body.code = string.slice(1, 11 - number.toString().length) + number;
+  req.body.code = string.slice(0, 10 - number.toString().length) + number;
 
   const check = await checkPair(req.body.preferences);
 
@@ -1466,6 +1492,9 @@ const formatData = (data) => {
         breakTime += item.finish - item.start;
       }
     });
+
+    const createdAt = DateTime.fromISO(e.createdAt);
+    console.log(e.createdAt, createdAt);
 
     return {
       _id: e._id,
