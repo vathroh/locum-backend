@@ -447,6 +447,14 @@ const personalDocument = async (req, res) => {
   }
 };
 
+const getPersonalDocuments = async (req, res) => {
+  try {
+    return res.json(req.params);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const updateProfilePicture = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -560,6 +568,7 @@ module.exports = {
   personalDocument,
   deletePreferences,
   personalInformation,
+  getPersonalDocuments,
   updateProfilePicture,
   practicingInformation,
   registrationStepNumber,

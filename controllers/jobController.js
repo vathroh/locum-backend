@@ -1040,7 +1040,6 @@ const postData = async (req, res) => {
     delete data.image;
   }
 
-  data.break = {};
   if (typeof req.body.work_time_start == "string") {
     data.work_time_start = DateTime.fromISO(
       req.body.date + "T" + req.body.work_time_start,
@@ -1055,21 +1054,29 @@ const postData = async (req, res) => {
     ).toMillis();
   }
 
-  if (typeof req.body.break_start == "string") {
-    data.break.start = req.body.break_start
-      ? DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
-          zone: "Asia/Singapore",
-        }).toMillis()
-      : 0;
-  }
+  const breakTime = [];
 
-  if (typeof req.body.break_finish == "string") {
-    data.break.finish = req.body.break_finish
-      ? DateTime.fromISO(req.body.date + "T" + req.body.break_finish, {
-          zone: "Asia/Singapore",
-        }).toMillis()
-      : 0;
-  }
+  data?.break.map((item) => {
+    let br = {};
+    if (typeof item.break_start == "string") {
+      br.start = item.break_start
+        ? DateTime.fromISO(req.body.date + "T" + item.break_start, {
+            zone: "Asia/Singapore",
+          }).toMillis()
+        : 0;
+    }
+
+    if (typeof item.break_finish == "string") {
+      br.finish = item.break_finish
+        ? DateTime.fromISO(req.body.date + "T" + item.break_finish, {
+            zone: "Asia/Singapore",
+          }).toMillis()
+        : 0;
+    }
+    breakTime.push(br);
+  });
+
+  data.break = breakTime;
 
   if (typeof req.body.date == "string") {
     const a = DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
@@ -1111,6 +1118,8 @@ const updateJob = async (req, res) => {
         .json({ message: "Please check criteria items." });
 
     const data = await postData(req, res);
+    console.log(data);
+
     const updatedJob = await Job.updateOne(
       { _id: req.params.id },
       { $set: data }

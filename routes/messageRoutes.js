@@ -71,7 +71,7 @@ router.get("/:conversationId", async (req, res) => {
       data: data,
     });
   } catch (error) {
-    return res.json(500).json({ message: error });
+    return res.json(500).json({ message: error.message });
   }
 });
 
@@ -82,7 +82,7 @@ router.get("/mobile/:conversationId", async (req, res) => {
       return res.status(404).json({ message: "Wrong conversation Id" });
 
     const totalRows = await Message.find({
-      conversationId: req.params.conversationId,
+      conversation_id: req.params.conversationId,
     }).count();
 
     const limit = parseInt(req.query.limit) || 100;

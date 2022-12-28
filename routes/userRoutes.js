@@ -17,6 +17,7 @@ const {
   deletePreferences,
   personalInformation,
   updateProfilePicture,
+  getPersonalDocuments,
   practicingInformation,
   registrationStepNumber,
   getpersonalInformation,
@@ -66,6 +67,7 @@ router.put(
 );
 
 router.get("/personal-information/:userId", getpersonalInformation);
+router.get("/personal-document/:userId", getPersonalDocuments);
 router.get("/get-inclusion-by-clinic", getWhitelistByClinic);
 router.get("/get-exclusion-by-clinic", getBlacklistByClinic);
 router.put("/delete-preferences/:userId", deletePreferences);
