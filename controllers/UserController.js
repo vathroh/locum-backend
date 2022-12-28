@@ -367,13 +367,13 @@ const getpersonalInformation = async (req, res) => {
         .json({ message: "you don't have inputed the data." });
 
     const dob = DateTime.fromMillis(personal.date_of_birth);
-    personal.yearOfBirth = dob.toFormat("yyyy");
-    personal.monthOfBirth = dob.toFormat("LL");
-    personal.dayOfBirth = dob.toFormat("dd");
+    personal.year_of_birth = dob.toFormat("yyyy");
+    personal.month_of_birth = dob.toFormat("LL");
+    personal.day_of_birth = dob.toFormat("dd");
 
+    delete personal.date_of_birth;
     delete personal.createdAt;
     delete personal.updatedAt;
-    delete personal.date_of_birth;
     delete personal.__v;
 
     res.status(200).json(personal);
