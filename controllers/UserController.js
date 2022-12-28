@@ -355,6 +355,26 @@ const personalInformation = async (req, res) => {
   }
 };
 
+const getpersonalInformation = async (req, res) => {
+  console.log(req.params);
+  try {
+    const personal = await Personal.findOne({
+      user_id: req.params.userId,
+    }).lean();
+
+    if (!personal)
+      return res
+        .status(404)
+        .json({ message: "you don't have inputed the data." });
+
+    delete personal.__v;
+
+    res.status(200).json(personal);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const practicingInformation = async (req, res) => {
   const { registration_number, full_registration, valid_until, valid_from } =
     req.body;
@@ -536,4 +556,5 @@ module.exports = {
   updateProfilePicture,
   practicingInformation,
   registrationStepNumber,
+  getpersonalInformation,
 };

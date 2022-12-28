@@ -19,6 +19,7 @@ const {
   updateProfilePicture,
   practicingInformation,
   registrationStepNumber,
+  getpersonalInformation,
 } = require("../controllers/UserController.js");
 
 const { updateUserModel } = require("../services/updateModels/user");
@@ -64,6 +65,7 @@ router.put(
   updateProfilePicture
 );
 
+router.get("/personal-information/:userId", getpersonalInformation);
 router.get("/get-inclusion-by-clinic", getWhitelistByClinic);
 router.get("/get-exclusion-by-clinic", getBlacklistByClinic);
 router.put("/delete-preferences/:userId", deletePreferences);

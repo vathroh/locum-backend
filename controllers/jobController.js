@@ -1497,8 +1497,6 @@ const formatData = (data) => {
 
     const createdAt = DateTime.fromJSDate(e.createdAt).toMillis();
     old = DateTime.now().toMillis() - createdAt;
-    console.log(DateTime.now().toMillis(), createdAt);
-    console.log(old);
 
     let isNew = false;
     if (old < 86400000) {
