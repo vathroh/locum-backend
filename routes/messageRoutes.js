@@ -31,12 +31,17 @@ router.get("/:conversationId", async (req, res) => {
     if (totalRows < limit || page == 1) {
       minus = 0;
     }
-
-    let offset = 0;
-
-    if (page != 1) {
-      offset = limit * (page - 1) - minus;
-    }
+    console.log(
+      "minus",
+      minus,
+      "totalRows",
+      totalRows,
+      "page",
+      page,
+      "limit",
+      limit
+    );
+    const offset = limit * (page - 1) - minus;
 
     const messages = await Message.find({
       conversation_id: req.params.conversationId,
