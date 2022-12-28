@@ -96,8 +96,6 @@ const getOtherOutlet = async (req, res) => {
       return formatData(item);
     });
 
-    console.log(data);
-
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message });

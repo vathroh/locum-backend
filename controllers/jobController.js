@@ -1034,6 +1034,7 @@ const saveJob = async (req, res) => {
 
 const postData = async (req, res) => {
   let data = req.body;
+  console.log(data);
   if (req.file) {
     data.image = "/" + req.file?.destination + "/" + req.file?.filename;
   } else {
