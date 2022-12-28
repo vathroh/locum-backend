@@ -63,11 +63,9 @@ const getNewJobs = async (req, res) => {
     let profession = "";
 
     if (req.user.role === "doctor") {
-      profession = "doctor";
-      filters.push(profession);
+      filters.profession = "doctor";
     } else if (req.user.role === "clinic_assistants") {
-      profession = "clinical assistant";
-      filters.push(profession);
+      filters.profession = "clinical assistant";
     }
 
     await Job.find({
@@ -151,14 +149,10 @@ const getExploreJobs = async (req, res) => {
       assigned_to: [],
     };
 
-    let profession = "";
-
     if (req.user.role === "doctor") {
-      profession = "doctor";
-      filters.push(profession);
+      filters.profession = "doctor";
     } else if (req.user.role === "clinic_assistants") {
-      profession = "clinical assistant";
-      filters.push(profession);
+      filters.profession = "clinical assistant";
     }
 
     await Job.find({
