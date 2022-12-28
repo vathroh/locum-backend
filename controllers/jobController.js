@@ -944,6 +944,7 @@ const sharedTo = async (data) => {
 };
 
 const saveJob = async (req, res) => {
+  console.log(req.body);
   const clinic = await Clinic.findById(req.body.clinic).select({
     initials: 1,
     clinicName: 1,
