@@ -999,31 +999,34 @@ const saveJob = async (req, res) => {
 
   if (data.break) {
     data.break?.map((item) => {
-      if (item.start > item.finish) {
-        stat = {
-          status: 400,
-          message: "begin must be older than end.",
-        };
-      }
+      if (item.start !== 0 || item.end !== 0) {
+        if (item.start > item.finish) {
+          stat = {
+            status: 400,
+            message: "begin must be older than end.",
+          };
+        }
 
-      if (
-        item.start < data.work_time_start ||
-        item.start > data.work_time_finish
-      ) {
-        stat = {
-          status: 400,
-          message: "begin of break must between start of work and end of work.",
-        };
-      }
+        if (
+          item.start < data.work_time_start ||
+          item.start > data.work_time_finish
+        ) {
+          stat = {
+            status: 400,
+            message:
+              "begin of break must between start of work and end of work.",
+          };
+        }
 
-      if (
-        item.finish < data.work_time_start ||
-        item.finish > data.work_time_finish
-      ) {
-        stat = {
-          status: 400,
-          message: "end of break must between start of work and end of work.",
-        };
+        if (
+          item.finish < data.work_time_start ||
+          item.finish > data.work_time_finish
+        ) {
+          stat = {
+            status: 400,
+            message: "end of break must between start of work and end of work.",
+          };
+        }
       }
     });
   }
