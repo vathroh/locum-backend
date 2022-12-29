@@ -1074,7 +1074,7 @@ const postData = async (req, res) => {
     breakTime.push(br);
   });
 
-  if (breakTime == []) {
+  if (breakTime == [] || !data.break) {
     let br = { start: 0, finish: 0 };
     breakTime.push(br);
   }
