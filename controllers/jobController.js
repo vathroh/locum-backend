@@ -1080,6 +1080,8 @@ const postData = async (req, res) => {
 
   data.break = breakTime;
 
+  if (breakTime.length == 0) delete data.break;
+
   if (typeof req.body.date == "string") {
     const a = DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
       zone: "Asia/Singapore",
