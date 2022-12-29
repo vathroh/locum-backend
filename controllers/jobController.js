@@ -1060,27 +1060,26 @@ const postData = async (req, res) => {
 
   data.break?.map((item) => {
     let br = {};
-    if (typeof item.break_start == "string") {
-      br.start = item.break_start
-        ? DateTime.fromISO(req.body.date + "T" + item.break_start, {
-            zone: "Asia/Singapore",
-          }).toMillis()
-        : 0;
-    }
+    br.start = item.break_start
+      ? DateTime.fromISO(req.body.date + "T" + item.break_start, {
+          zone: "Asia/Singapore",
+        }).toMillis()
+      : 0;
 
-    if (typeof item.break_finish == "string") {
-      br.finish = item.break_finish
-        ? DateTime.fromISO(req.body.date + "T" + item.break_finish, {
-            zone: "Asia/Singapore",
-          }).toMillis()
-        : 0;
-    }
+    br.finish = item.break_finish
+      ? DateTime.fromISO(req.body.date + "T" + item.break_finish, {
+          zone: "Asia/Singapore",
+        }).toMillis()
+      : 0;
     breakTime.push(br);
   });
 
-  data.break = breakTime;
+  if (breakTime == []) {
+    let br = { start: 0, finish: 0 };
+    breakTime.push(br);
+  }
 
-  if (breakTime.length == 0) delete data.break;
+  data.break = breakTime;
 
   if (typeof req.body.date == "string") {
     const a = DateTime.fromISO(req.body.date + "T" + req.body.break_start, {
