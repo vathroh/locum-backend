@@ -944,7 +944,6 @@ const sharedTo = async (data) => {
 };
 
 const saveJob = async (req, res) => {
-  console.log(req.body);
   const clinic = await Clinic.findById(req.body.clinic).select({
     initials: 1,
     clinicName: 1,
@@ -989,6 +988,14 @@ const saveJob = async (req, res) => {
 
   if (data.urgent_price_24 == 0) delete data.urgent_price_24;
   if (data.urgent_price_72 == 0) delete data.urgent_price_72;
+
+  if (data.work_time_start < DateTime.now().toMillis())
+    return res.status(400).json({ message: "You input old date." });
+
+  if (data.price == 0)
+    return res.status(400).json({ message: "You haven't input hourly rate." });
+
+  console.log(data);
 
   const job = new Job(data);
 
@@ -1035,7 +1042,6 @@ const saveJob = async (req, res) => {
 
 const postData = async (req, res) => {
   let data = req.body;
-  console.log(data);
   if (req.file) {
     data.image = "/" + req.file?.destination + "/" + req.file?.filename;
   } else {
@@ -1121,7 +1127,6 @@ const updateJob = async (req, res) => {
         .json({ message: "Please check criteria items." });
 
     const data = await postData(req, res);
-    console.log(data);
 
     const updatedJob = await Job.updateOne(
       { _id: req.params.id },
