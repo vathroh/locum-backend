@@ -1058,7 +1058,7 @@ const postData = async (req, res) => {
 
   const breakTime = [];
 
-  data?.break.map((item) => {
+  data.break?.map((item) => {
     let br = {};
     if (typeof item.break_start == "string") {
       br.start = item.break_start
