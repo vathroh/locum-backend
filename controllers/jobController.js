@@ -352,7 +352,7 @@ const getJobById = async (req, res) => {
           breaks.push(brk);
 
           if (item.start !== 0 && item.finish !== 0) {
-            breakTime += item.finish - item.start;
+            breakTime = breakTime + item.finish - item.start;
           }
         });
 
@@ -1541,7 +1541,7 @@ const formatData = (data) => {
       image: e.image ? process.env.BASE_URL + e.image : "",
       price: price,
       priceDuration:
-        Duration.fromMillis(e.work_time_finish - e.work_time_start)
+        Duration.fromMillis(e.work_time_finish - e.work_time_start - breakTime)
           .shiftTo("hours")
           .toObject().hours * price,
       time_start_format: DateTime.fromMillis(e.work_time_start)
