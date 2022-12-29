@@ -35,6 +35,17 @@ const createBooking = async (req, res) => {
     select: "clinicName clinicAddress",
   });
 
+  const user = await User.findById(req.body.user_id);
+
+  if (jobId.profession === "doctor" && user.role !== "doctor")
+    return res.status(403).json({ message: "Please select approriate slot." });
+
+  if (
+    jobId.profession === "clinical assistant" &&
+    user.role !== "clinic_assistants"
+  )
+    return res.status(403).json({ message: "Please select approriate slot." });
+
   const hasAppointment = await Job.findOne({
     assigned_to: { $in: [req.user._id] },
     work_time_start: {

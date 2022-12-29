@@ -1031,8 +1031,6 @@ const saveJob = async (req, res) => {
   if (stat.status === 400)
     return res.status(400).json({ message: stat.message });
 
-  console.log(stat);
-
   const job = new Job(data);
 
   try {
